@@ -73,7 +73,17 @@ namespace Hl7.Fhir.Packages
         public static IEnumerable<FileEntry> ExtractFiles(string path, Predicate<string> predicate)
         {
             using (var file = File.OpenRead(path))
-            using (var gzip = new GZipInputStream(file))
+            {
+                foreach (FileEntry entry in ExtractFiles(file, predicate))
+                {
+                    yield return entry;
+                }
+            }
+        }
+
+        public static IEnumerable<FileEntry> ExtractFiles(Stream stream, Predicate<string> predicate)
+        {
+            using (var gzip = new GZipInputStream(stream))
             using (var tar = new TarInputStream(gzip))
             {
                 for (TarEntry tarEntry = tar.GetNextEntry(); tarEntry != null; tarEntry = tar.GetNextEntry())
@@ -91,7 +101,6 @@ namespace Hl7.Fhir.Packages
                     }
                 }
             }
-
         }
 
         public static IEnumerable<FileEntry> ExtractMatchingFiles(string packagefile, string match)

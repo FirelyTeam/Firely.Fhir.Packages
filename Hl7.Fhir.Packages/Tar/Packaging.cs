@@ -93,10 +93,11 @@ namespace Hl7.Fhir.Packages
             return Tar.ExtractFiles(path, _ => true);
         }
 
+        public static IEnumerable<FileEntry> ExtractFiles(Stream stream)
+        {
+            return Tar.ExtractFiles(stream, _ => true);
+        }
     }
-
-
-
 }
 
 
