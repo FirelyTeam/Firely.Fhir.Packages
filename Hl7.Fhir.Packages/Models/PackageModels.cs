@@ -110,6 +110,30 @@ namespace Hl7.Fhir.Packages
         {
             manifest.AddDependency(dependency.Name, dependency.Version);
         }
-     
+
+        public static bool HasDependency(this PackageManifest manifest, string pkgname)
+        {
+            foreach (var key in manifest.Dependencies.Keys)
+            {
+                if (string.Compare(key, pkgname, ignoreCase: true) == 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool RemoveDependency(this PackageManifest manifest, string pkgname)
+        {
+            foreach (var key in manifest.Dependencies.Keys)
+            {
+                if (string.Compare(key, pkgname, ignoreCase: true) == 0)
+                {
+                    manifest.Dependencies.Remove(key);
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

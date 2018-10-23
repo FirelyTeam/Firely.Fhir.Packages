@@ -14,7 +14,7 @@ namespace Hl7.Fhir.Packages
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return OperatingSystem.Windows;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return OperatingSystem.Linux;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return OperatingSystem.OSX;
-            else return default;
+            else return OperatingSystem.Unknown;
         }
 
         public static string GetGenericDataLocation()
@@ -33,9 +33,8 @@ namespace Hl7.Fhir.Packages
                     {
                         var path = Environment.GetEnvironmentVariable("HOME");
                         return path;
-                        //return Path.Combine(path, "/Library/Application Support");
                     }
-                default: return null;
+                default: throw new Exception("Unknown OS");
             }
         }
 

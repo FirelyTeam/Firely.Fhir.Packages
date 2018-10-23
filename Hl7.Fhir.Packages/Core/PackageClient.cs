@@ -18,12 +18,19 @@ namespace Hl7.Fhir.Packages
             this.httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
         }
 
-        public static PackageClient Create(string source, bool npm, bool insecure = false)
+        public static PackageClient Create(string source, bool npm = false, bool insecure = false)
         {
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
 
             return new PackageClient(urlprovider, Console.WriteLine, insecure);
 
+        }
+
+        public static PackageClient Create()
+        {
+            var source = "https://packages.simplifier.net";
+            var urlprovider = new FhirPackageUrlProvider(source);
+            return new PackageClient(urlprovider, null);
         }
 
         IPackageUrlProvider urlProvider;
