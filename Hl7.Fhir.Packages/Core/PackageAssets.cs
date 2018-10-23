@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SemVer;
+using System.Collections.Generic;
 
 namespace Hl7.Fhir.Packages
 {
@@ -11,12 +12,51 @@ namespace Hl7.Fhir.Packages
 
         public bool AddRef(PackageReference reference)
         {
-            if (!Refs.Contains(reference))
+            if (Find(reference.Name, out var existing))
+            {
+                if (existing == reference) return false;
+                
+                var highest = Highest(reference, existing);
+                if (highest != existing)
+                {
+                    Refs.Remove(existing);
+                    Refs.Add(highest);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                
+            }
+            else 
             {
                 Refs.Add(reference);
                 return true;
             }
-            return false;
+        }
+
+        public PackageReference Highest(PackageReference A, PackageReference B)
+        {
+            var versionA = new Version(A.Version);
+            var versionB = new Version(B.Version);
+            var highest = (versionA > versionB) ? A : B;
+
+            return highest;
+        }
+
+        public bool Find(string pkgname, out PackageReference reference)
+        {
+            foreach(var refx in Refs)
+            {
+                if (string.Compare(refx.Name, pkgname, ignoreCase: true) == 0)
+                {
+                    reference = refx;
+                    return true;
+                }
+            }
+            reference = default;
+            return false; 
         }
 
         public void AddMissing(PackageReference reference)

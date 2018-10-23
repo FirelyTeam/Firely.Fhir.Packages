@@ -41,14 +41,14 @@ namespace Hl7.Fhir.Packages
                 return; throw new Exception($"Package {reference} was not found.");
             }
 
-            if (assets.AddRef(actual))
+            if (assets.AddRef(actual)) // conflicts are resolved by: highest = winner.
             {
                 var manifest = await installer.InstallPackage(actual);
 
                 if (manifest != null)
                     await RestoreManifest(manifest, assets);
             }
-            // later, we should have a algoritm for detecting and resolving conflicts. --mh
+            
             
         }
     }

@@ -82,5 +82,7 @@ namespace Hl7.Fhir.Packages
         {
             return (Name, Version).GetHashCode();
         }
+
+
     }
 }
