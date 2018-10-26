@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hl7.Fhir.Packages
 {
+
+    /// <summary>
+    /// A class to open up all functionality need to manage packages in a project.
+    /// </summary>
     public class Project
     {
-        string folder;
-        PackageCache cache;
-        PackageContext context;
-        PackageClient client;
-        PackageInstaller installer;
-        PackageRestorer restorer;
+        readonly string folder;
+        readonly PackageCache cache;
+        internal readonly PackageContext context;
+        readonly PackageClient client;
+        readonly PackageInstaller installer;
+        readonly PackageRestorer restorer;
 
         public Project(string folder)
         {
@@ -60,12 +65,11 @@ namespace Hl7.Fhir.Packages
             manifest = Disk.CreateManifest(pkgname);
             Disk.WriteFolderManifest(manifest, folder);
         }
-
-        public void Install(string package, string version = null)
+           
+        public async ValueTask Install(string package, string version = null)
         {
-            // todo: make it async
             var manifest = ReadManifest();
-            var pkgmanifest = installer.InstallPackage(package, version).Result;
+            var pkgmanifest = await installer.InstallPackage(package, version);
             manifest.AddDependency(pkgmanifest);
             SaveManifest(manifest);
         }
@@ -84,5 +88,24 @@ namespace Hl7.Fhir.Packages
             }
         }
                
+        public Reference Resolve(string canonical)
+        { 
+            if (context.TryFindReference(canonical, out Reference reference))
+            {
+                return reference;
+            }
+            else
+            {
+                return null;
+            }
+                
+        }
+
+        public async ValueTask<IList<string>> GetPackagesWithCanonical(string canonical)
+        {
+            return await client.FindCanonical(canonical);
+        }
+       
     }
+
 }

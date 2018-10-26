@@ -7,9 +7,9 @@ namespace Hl7.Fhir.Packages
 {
     public class PackageInstaller 
     {
-        private readonly PackageClient client;
-        private readonly PackageCache cache;
-        private readonly Action<string> report;
+        readonly PackageClient client;
+        readonly PackageCache cache;
+        readonly Action<string> report;
 
         public PackageInstaller(PackageClient client, PackageCache cache, Action<string> report)
         {
@@ -23,7 +23,7 @@ namespace Hl7.Fhir.Packages
             report?.Invoke(message);
         }
 
-        public async Task InstallDependencies(IEnumerable<PackageReference> dependencies)
+        public async ValueTask InstallDependencies(IEnumerable<PackageReference> dependencies)
         {
             foreach (var dependency in dependencies)
             {
@@ -35,7 +35,7 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public async Task InstallDependencies(PackageManifest manifest)
+        public async ValueTask InstallDependencies(PackageManifest manifest)
         {
             
             // Report($"Installing Dependencies for: {manifest.Name} {manifest.Version}: ");
@@ -44,7 +44,7 @@ namespace Hl7.Fhir.Packages
 
         }
 
-        public async Task<PackageManifest> InstallPackage(PackageReference reference) 
+        public async ValueTask<PackageManifest> InstallPackage(PackageReference reference) 
         {
             bool installed = cache.IsInstalled(reference);
 
@@ -60,7 +60,7 @@ namespace Hl7.Fhir.Packages
             return manifest;
         }
         
-        public async Task InstallPackageAndDependencies(PackageReference reference)
+        public async ValueTask InstallPackageAndDependencies(PackageReference reference)
         {
             var manifest = await InstallPackage(reference);
             if (manifest != null)
@@ -73,7 +73,7 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public async Task<PackageManifest> InstallPackage(string pkgname, string pkgversion)
+        public async ValueTask<PackageManifest> InstallPackage(string pkgname, string pkgversion)
         {
             var reference = await ResolveReference(pkgname, pkgversion);
             if (reference.Found)
@@ -87,7 +87,7 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public async Task<PackageReference> ResolveReference(PackageReference reference)
+        public async ValueTask<PackageReference> ResolveReference(PackageReference reference)
         {
             var listing = await client.DownloadListingAsync(reference);
             if (listing == null) return PackageReference.NotFound;
@@ -98,7 +98,7 @@ namespace Hl7.Fhir.Packages
             return reference;
         }
 
-        public async Task<PackageReference> ResolveReference(string pkgname, string pattern)
+        public async ValueTask<PackageReference> ResolveReference(string pkgname, string pattern)
         {
             //this could be faster by caching --mh
             var reference = new PackageReference(pkgname, pattern);

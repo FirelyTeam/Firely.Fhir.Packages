@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json;
-using System.IO;
+﻿using System.IO;
 using ICSharpCode.SharpZipLib.Tar;
 using System.Linq;
 using System.Collections.Generic;
-using ICSharpCode.SharpZipLib.GZip;
 using System.Text;
 
 namespace Hl7.Fhir.Packages

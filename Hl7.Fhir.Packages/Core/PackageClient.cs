@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Hl7.Fhir.Packages
 {
@@ -42,7 +41,7 @@ namespace Hl7.Fhir.Packages
             report?.Invoke(message);
         }
 
-        public async Task<string> DownloadListingRawAsync(PackageReference reference)
+        public async ValueTask<string> DownloadListingRawAsync(PackageReference reference)
         {
             if (reference.Version != null && reference.Version.StartsWith("git"))
             {
@@ -68,14 +67,14 @@ namespace Hl7.Fhir.Packages
             
         }
 
-        public async Task<string> DownloadListingRawAsync(string pkgname, string version = null)
+        public async ValueTask<string> DownloadListingRawAsync(string pkgname, string version = null)
         {
             var reference = new PackageReference(pkgname, version);
             var body = await DownloadListingRawAsync(reference);
             return body;
         }
 
-        public async Task<PackageListing> DownloadListingAsync(PackageReference reference)
+        public async ValueTask<PackageListing> DownloadListingAsync(PackageReference reference)
         {
             var body = await DownloadListingRawAsync(reference);
             if (body is null) return null;
@@ -83,7 +82,7 @@ namespace Hl7.Fhir.Packages
             return Parser.Deserialize<PackageListing>(body);
         }
 
-        public async Task<PackageListing> DownloadListingAsync(string pkgname, string version = null)
+        public async ValueTask<PackageListing> DownloadListingAsync(string pkgname, string version = null)
         {
             var reference = new PackageReference(pkgname, version);
             var body = await DownloadListingRawAsync(reference);
@@ -91,7 +90,7 @@ namespace Hl7.Fhir.Packages
             return Parser.Deserialize<PackageListing>(body);
         }
 
-        public async Task<IList<string>> FindCanonical(string canonical)
+        public async ValueTask<IList<string>> FindCanonical(string canonical)
         {
             string url = urlProvider.Root + "/find?canonical=" + canonical;
             var body = await httpClient.GetStringAsync(url);
@@ -99,7 +98,7 @@ namespace Hl7.Fhir.Packages
             return result;
         }
 
-        internal async Task<byte[]> DownloadPackage(PackageReference reference)
+        internal async ValueTask<byte[]> DownloadPackage(PackageReference reference)
         {
             string url = urlProvider.GetPackageUrl(reference); 
             return await httpClient.GetByteArrayAsync(url);

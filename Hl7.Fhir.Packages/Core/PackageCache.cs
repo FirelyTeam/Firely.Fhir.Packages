@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -102,17 +101,16 @@ namespace Hl7.Fhir.Packages
                 }
             }
         }
-       
 
-        public IEnumerable<PackageManifest> GetManifests()
-        {
-            foreach (var folder in GetPackageRootFolders())
-            {
-                var manifestpath = Path.Combine(folder, "package");
-                var manifest = Disk.ReadFolderManifest(manifestpath);
-                yield return manifest;
-            }
-        }
+        //public IEnumerable<PackageManifest> GetManifests()
+        //{
+        //    foreach (var folder in GetPackageRootFolders())
+        //    {
+        //        var manifestpath = Path.Combine(folder, "package");
+        //        var manifest = Disk.ReadFolderManifest(manifestpath);
+        //        yield return manifest;
+        //    }
+        //}
 
         public IEnumerable<PackageReference> GetPackageReferences()
         {
