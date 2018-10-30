@@ -4,7 +4,7 @@ using Hl7.Fhir.ElementModel;
 
 namespace Hl7.Fhir.Packages
 {
-    public static class Nav
+    public static class ElementNavigation
     {
         
         public static IElementNavigator GetNavigatorForFile(string filepath)

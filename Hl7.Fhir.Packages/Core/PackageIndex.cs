@@ -4,45 +4,50 @@ using System.Linq;
 
 namespace Hl7.Fhir.Packages
 {
-    public class PackageContext
+    public class PackageIndex
     {
-        private readonly PackageCache cache;
-        private readonly PackageAssets assets;
-        List<Reference> references; // canonical->filename
+        readonly PackageCache cache;
+        readonly PackageAssets assets;
+        readonly IList<CanonicalFileReference> references; // canonical->filename
         
-        public PackageContext(PackageCache cache, PackageAssets assets)
+        public PackageIndex(PackageCache cache, PackageAssets assets)
         {
             this.cache = cache;
             this.assets = assets;
-            references = new List<Reference>();
+            references = new List<CanonicalFileReference>();
             
             IndexPackages(); // lazy?
         }
 
-        public PackageContext(PackageCache cache, string folder)
+        public PackageIndex(PackageCache cache, string folder)
         {
             this.cache = cache;
-            Disk.ReadFolderAssets(folder);
+            LockFile.ReadFromFolder(folder);
         }
 
         public void IndexPackages()
         {
-            foreach (var folder in cache.GetPackageContentFolders(assets.Refs))
+            foreach (var folder in GetPackageContentFolders())
             {
                 IndexPackage(folder);
             }
         }
 
+        public IEnumerable<string> GetPackageContentFolders()
+        {
+            return cache.GetPackageContentFolders(assets.Refs);
+        }
+
         public void IndexPackage(string contentFolder)
         {
-            var manifest = Disk.ReadFolderManifest(contentFolder);
+            var manifest = ManifestFile.ReadFromFolder(contentFolder);
             if (manifest != null && manifest.Canonicals != null)
             {
                 IndexManifest(contentFolder, manifest);
             }
             else
             {
-                var references = Disk.ReadFolderReferences(contentFolder);
+                var references = CanonicalIndexFile.ReadFromFolder(contentFolder);
                 var packref = manifest.GetPackageReference();
                 IndexReferences(contentFolder, packref, references);
             }
@@ -57,7 +62,7 @@ namespace Hl7.Fhir.Packages
                 {
                     var path = Path.Combine(folder, item.Value);
                     var reference = manifest.GetPackageReference();
-                    references.Add(new Reference { Package = reference, Canonical = item.Key, FileName = path });
+                    references.Add(new CanonicalFileReference { Package = reference, Canonical = item.Key, FileName = path });
                 }
             }
         }
@@ -69,35 +74,22 @@ namespace Hl7.Fhir.Packages
                 foreach (var item in refs.Canonicals)
                 {
                     var path = Path.Combine(contentFolder, item.Value);
-                    references.Add(new Reference { Package = packref, Canonical = item.Key, FileName = path });
+                    references.Add(new CanonicalFileReference { Package = packref, Canonical = item.Key, FileName = path });
                 }
             }
         }
 
-        public bool TryFindReference(string canonical, out Reference reference)
+        public bool TryFindReference(string canonical, out CanonicalFileReference reference)
         {
             reference = references.FirstOrDefault(r => r.Canonical == canonical);
             return reference != null;
         }
 
-        public string GetFile(Reference reference)
+        public string GetFile(CanonicalFileReference reference)
         {
             return File.ReadAllText(reference.FileName);
 
         }
-        //public bool TryGetFile(string canonical, out string file)
-        //{
-        //    if (TryFindReference(canonical, out Reference reference))
-        //    {
-        //        Console.WriteLine($"Resolved {canonical} in {reference.Package}");
-        //        file = File.ReadAllText(reference.FileName);
-        //        return true;
-        //    }
-        //    else
-        //    {
-        //        file = null;
-        //        return false;
-        //    }
-        //}
+
     }
 }

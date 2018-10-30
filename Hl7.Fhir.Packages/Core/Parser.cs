@@ -54,12 +54,12 @@ namespace Hl7.Fhir.Packages
             return jcontent.ToString()+"\n";
         }
 
-        public static AssetsFile ReadAssets(string content)
+        public static Assets ReadAssets(string content)
         {
-            return JsonConvert.DeserializeObject<AssetsFile>(content);
+            return JsonConvert.DeserializeObject<Assets>(content);
         }
 
-        public static string WriteAssets(AssetsFile assets)
+        public static string WriteAssets(Assets assets)
         {
             return JsonConvert.SerializeObject(assets, Formatting.Indented)+"\n";
         }

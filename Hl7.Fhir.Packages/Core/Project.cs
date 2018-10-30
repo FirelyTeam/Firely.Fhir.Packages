@@ -12,38 +12,38 @@ namespace Hl7.Fhir.Packages
     public class Project
     {
         readonly string folder;
-        readonly PackageCache cache;
-        internal readonly PackageContext context;
-        readonly PackageClient client;
-        readonly PackageInstaller installer;
-        readonly PackageRestorer restorer;
+        public PackageCache Cache { get; }
+        public PackageIndex Index { get; }
+        public PackageClient Client { get; }
+        public PackageInstaller Installer { get; }
+        public PackageRestorer Restorer { get; }
 
         public Project(string folder)
         {
             this.folder = folder;
-            cache = PackageFactory.GlobalPackageCache();
-            
-            context = new PackageContext(cache, folder);
-            client = PackageClient.Create();
-            installer = new PackageInstaller(client, cache, null);
-            restorer = new PackageRestorer(client, installer);
+
+            Cache = PackageFactory.GlobalPackageCache();
+            Index = new PackageIndex(Cache, folder);
+            Client = PackageClient.Create();
+            Installer = new PackageInstaller(Client, Cache, null);
+            Restorer = new PackageRestorer(Client, Installer);
         }
 
         public PackageManifest ReadManifest()
         {
-            var manifest = Disk.ReadFolderManifest(folder);
+            var manifest = ManifestFile.ReadFromFolder(folder);
             return manifest;
         }
 
         public void SaveManifest(PackageManifest manifest)
         {
-            Disk.WriteFolderManifest(manifest, folder, merge: true);
+            ManifestFile.WriteToFolder(manifest, folder, merge: true);
         }
 
         public void Restore()
         {
             var manifest = ReadManifest();
-            restorer.Restore(manifest).Wait();
+            Restorer.Restore(manifest).Wait();
         }
 
         public void Init(string pkgname = null, string version = null)
@@ -55,42 +55,43 @@ namespace Hl7.Fhir.Packages
             }
 
             if (pkgname is null)
-                pkgname = Disk.CleanPackageName(Disk.GetFolderName(folder));
+                pkgname = ManifestFile.CleanPackageName(Disk.GetFolderName(folder));
 
-            if (!Disk.ValidPackageName(pkgname))
+            if (!ManifestFile.ValidPackageName(pkgname))
             {
                 throw new Exception($"Invalid package name {pkgname}");
             }
 
-            manifest = Disk.CreateManifest(pkgname);
-            Disk.WriteFolderManifest(manifest, folder);
+            manifest = ManifestFile.Create(pkgname);
+            ManifestFile.WriteToFolder(manifest, folder);
         }
            
         public async ValueTask Install(string package, string version = null)
         {
             var manifest = ReadManifest();
-            var pkgmanifest = await installer.InstallPackage(package, version);
+            var pkgmanifest = await Installer.InstallPackage(package, version);
+
             manifest.AddDependency(pkgmanifest);
             SaveManifest(manifest);
         }
 
         public void Remove(string package)
         {
-            var manifest = Disk.ReadOrCreateFolderManifest(folder);
+            var manifest = ManifestFile.ReadOrCreate(folder);
             if (manifest.Dependencies.Keys.Contains(package))
             {
                 manifest.Dependencies.Remove(package);
-                Disk.WriteFolderManifest(manifest, folder, merge: true);
+                ManifestFile.WriteToFolder(manifest, folder, merge: true);
             }
             else
             {
                 throw new Exception($"The package '{package}' was not installed.");
             }
         }
-               
-        public Reference Resolve(string canonical)
+
+        public CanonicalFileReference Resolve(string canonical)
         { 
-            if (context.TryFindReference(canonical, out Reference reference))
+            if (Index.TryFindReference(canonical, out CanonicalFileReference reference))
             {
                 return reference;
             }
@@ -103,9 +104,18 @@ namespace Hl7.Fhir.Packages
 
         public async ValueTask<IList<string>> GetPackagesWithCanonical(string canonical)
         {
-            return await client.FindCanonical(canonical);
+            return await Client.FindCanonical(canonical);
         }
        
+    }
+
+
+    public static class ProjectExtensions
+    {
+        public static IEnumerable<string> PackageContenFolders(this Project project)
+        {
+            return project.Index.GetPackageContentFolders();
+        }
     }
 
 }

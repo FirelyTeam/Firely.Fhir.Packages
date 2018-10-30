@@ -7,9 +7,9 @@ using System.Text;
 namespace Hl7.Fhir.Packages
 {
 
-    public static class Disk
+    public static class ManifestFile
     {
-        public static PackageManifest ReadManifest(string path)
+        public static PackageManifest Read(string path)
         {
             if (File.Exists(path))
             {
@@ -22,7 +22,18 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public static void WriteManifest(PackageManifest manifest, string path, bool merge = false)
+        public static PackageManifest ReadOrCreate(string folder)
+        {
+            var manifest = ReadFromFolder(folder);
+            if (manifest is null)
+            {
+                var name = CleanPackageName(Disk.GetFolderName(folder));
+                manifest = Create(name);
+            }
+            return manifest;
+        }
+
+        public static void Write(PackageManifest manifest, string path, bool merge = false)
         {
             if (File.Exists(path) && merge)
             {
@@ -37,7 +48,52 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public static PackageAssets ReadAssets(string path)
+        public static PackageManifest ReadFromFolder(string folder)
+        {
+            var path = Path.Combine(folder, DiskNames.Manifest);
+            return Read(path);
+        }
+
+        public static PackageManifest Create(string name)
+        {
+            return new PackageManifest
+            {
+                Name = name,
+                Description = "Put a description here",
+                Version = "0.1.0",
+                Dependencies = new Dictionary<string, string>()
+            };
+        }
+
+        public static void WriteToFolder(PackageManifest manifest, string folder, bool merge = false)
+        {
+            string path = Path.Combine(folder, DiskNames.Manifest);
+            Write(manifest, path, merge);
+        }
+
+        public static bool ValidPackageName(string name)
+        {
+            char[] invalidchars = new char[] { '/', '\\' };
+            int i = name.IndexOfAny(invalidchars);
+            bool valid = i == -1;
+            return valid;
+        }
+
+        public static string CleanPackageName(string name)
+        {
+            var builder = new StringBuilder();
+            foreach (char c in name)
+            {
+                if (c >= 'A' && c <= 'z') builder.Append(c);
+            }
+            return builder.ToString();
+        }
+
+    }
+
+    public static class LockFile
+    { 
+        public static PackageAssets Read(string path)
         {
             if (File.Exists(path))
             {
@@ -53,20 +109,60 @@ namespace Hl7.Fhir.Packages
             else return null;
         }
 
-        public static void WriteAssets(AssetsFile assets, string path)
+        public static void Write(Assets assets, string path)
         {
             assets.Updated = DateTime.Now;
             var content = Parser.WriteAssets(assets);
             File.WriteAllText(path, content);
         }
 
-        public static void WriteReferences(CanonicalReferences references, string path)
+        public static bool Outdated(string folder)
+        {
+            var man_path = Path.Combine(folder, DiskNames.Manifest);
+            var man_time = File.GetLastWriteTimeUtc(man_path);
+
+            var asset_path = Path.Combine(folder, DiskNames.Assets);
+            var asset_time = File.GetLastWriteTimeUtc(asset_path);
+            return asset_time < man_time;
+        }
+
+        public static PackageAssets ReadFromFolder(string folder)
+        {
+            var path = Path.Combine(folder, DiskNames.Assets);
+            return Read(path);
+        }
+
+        public static PackageAssets ReadFromFolderOrCreate(string folder)
+        {
+            var path = Path.Combine(folder, DiskNames.Assets);
+            if (File.Exists(path))
+            {
+                return Read(path);
+            }
+            else
+            {
+                return new PackageAssets();
+            }
+        }
+
+
+        public static void WriteToFolder(PackageAssets assets, string folder)
+        {
+            var dto = assets.CreateAssetsFile();
+            var path = Path.Combine(folder, DiskNames.Assets);
+            Write(dto, path);
+        }
+    }
+
+    public static class CanonicalIndexFile
+    {
+        public static void Write(CanonicalReferences references, string path)
         {
             var content = Parser.WriteReferences(references);
             File.WriteAllText(path, content);
         }
 
-        public static CanonicalReferences ReadReferences(string path)
+        public static CanonicalReferences Read(string path)
         {
             if (File.Exists(path))
             {
@@ -77,116 +173,23 @@ namespace Hl7.Fhir.Packages
             else return null;
         }
 
-        public static PackageManifest ReadFolderManifest(string folder)
-        {
-            var path = Path.Combine(folder, DiskNames.Manifest);
-            return ReadManifest(path);
-        }
-
-        public static bool AssetsOutdated(string folder)
-        {
-            var man_path = Path.Combine(folder, DiskNames.Manifest);
-            var man_time = File.GetLastWriteTimeUtc(man_path); 
-
-            var asset_path = Path.Combine(folder, DiskNames.Assets);
-            var asset_time = File.GetLastWriteTimeUtc(asset_path);
-            return asset_time < man_time;
-        }
-
-        public static PackageManifest ReadOrCreateFolderManifest(string folder)
-        {
-            var manifest = ReadFolderManifest(folder);
-            if (manifest is null)
-            {
-                var name = CleanPackageName(GetFolderName(folder));
-                manifest = CreateManifest(name);
-            }
-            return manifest;
-        }
-
-        public static PackageManifest CreateManifest(string name)
-        {
-            return new PackageManifest
-            {
-                Name = name,
-                Description = "Put a description here",
-                Version = "0.1.0",
-                Dependencies = new Dictionary<string, string>()
-            };
-        }
-
-        public static string CleanPackageName(string name)
-        {
-            var builder = new StringBuilder();
-            foreach(char c in name)
-            {
-                if (c >= 'A' && c <= 'z') builder.Append(c);
-            }
-            return builder.ToString();
-        }
-
-        public static CanonicalReferences ReadFolderReferences(string folder)
+        public static CanonicalReferences ReadFromFolder(string folder)
         {
             var path = Path.Combine(folder, DiskNames.References);
-            return ReadReferences(path);
+            return Read(path);
         }
 
-        public static void WriteFolderReferences(CanonicalReferences references, string folder)
+        public static void WriteToFolder(CanonicalReferences references, string folder)
         {
             var path = Path.Combine(folder, DiskNames.References);
-            WriteReferences(references, path);
-        }
-
-        public static PackageAssets ReadFolderAssets(string folder)
-        {
-            var path = Path.Combine(folder, DiskNames.Assets);
-            return ReadAssets(path);
-        }
-
-        public static PackageAssets ReadOrCreateFolderAssets(string folder)
-        {
-            var path = Path.Combine(folder, DiskNames.Assets);
-            if (File.Exists(path))
-            {
-                return ReadAssets(path);
-            }
-            else
-            {
-                return new PackageAssets();
-            }
-        }
-
-        public static void WriteFolderAssets(PackageAssets assets, string folder)
-        {
-            var dto = assets.CreateAssetsFile();
-            var path = Path.Combine(folder, DiskNames.Assets);
-            WriteAssets(dto, path);
-        }
-
-        public static void WriteFolderManifest(PackageManifest manifest, string folder, bool merge = false)
-        {
-            string path = Path.Combine(folder, DiskNames.Manifest);
-            WriteManifest(manifest, path, merge);
-        }
-     
-        public static string GetFolderName(string path)
-        {
-            return new DirectoryInfo(path).Name;
-        }
-
-        public static bool ValidPackageName(string name)
-        {
-            char[] invalidchars = new char[] { '/', '\\' };
-            int i = name.IndexOfAny(invalidchars);
-            bool valid = i == -1;
-            return valid;
+            Write(references, path);
         }
 
         public static string GetCanonicalFromFile(string filepath)
         {
             try
             {
-                var navigator = Nav.GetNavigatorForFile(filepath);
+                var navigator = ElementNavigation.GetNavigatorForFile(filepath);
                 var canonical = (string)navigator.Scalar("url");
                 return canonical;
             }
@@ -201,12 +204,11 @@ namespace Hl7.Fhir.Packages
             var dictionary = new Dictionary<string, string>();
             foreach (var filepath in filepaths)
             {
-                var canonical = Disk.GetCanonicalFromFile(filepath);
+                var canonical = GetCanonicalFromFile(filepath);
                 if (canonical != null)
                 {
                     var filename = Path.GetFileName(filepath);
                     dictionary[canonical] = filename;
-                    //dictionary.Add(canonical, filename);
                 }
             }
             return dictionary;
@@ -215,10 +217,20 @@ namespace Hl7.Fhir.Packages
         public static Dictionary<string, string> GetIndexFromFolderContents(string folder)
         {
             var filenames = Directory.GetFiles(folder);
-            return Disk.GetCanonicalsFromFiles(filenames);
+            return GetCanonicalsFromFiles(filenames);
         }
-
     }
+
+
+    public static class Disk
+    {
+    
+        public static string GetFolderName(string path)
+        {
+            return new DirectoryInfo(path).Name;
+        }
+        
+     }
 }
 
 

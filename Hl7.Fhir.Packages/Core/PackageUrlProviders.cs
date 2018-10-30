@@ -47,7 +47,7 @@
         public static IPackageUrlProvider Npm => new NodePackageUrlProvider("https://registry.npmjs.org");
         public static IPackageUrlProvider Simplifier => new FhirPackageUrlProvider("https://packages.simplifier.net");
         public static IPackageUrlProvider SimplifierNpm => new NodePackageUrlProvider("https://packages.simplifier.net");
-        public static IPackageUrlProvider Staging => new NodePackageUrlProvider("https://packages.staging.simplifier.net");
+        public static IPackageUrlProvider Staging => new NodePackageUrlProvider("https://packages-staging.simplifier.net");
         public static IPackageUrlProvider Localhost => new NodePackageUrlProvider("https://packages.localhost:3000/");
 
     }

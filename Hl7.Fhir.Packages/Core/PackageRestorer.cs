@@ -6,8 +6,8 @@ namespace Hl7.Fhir.Packages
 
     public class PackageRestorer
     {
-        private readonly PackageClient client;
-        private readonly PackageInstaller installer;
+        readonly PackageClient client;
+        readonly PackageInstaller installer;
 
         public PackageRestorer(PackageClient client, PackageInstaller installer)
         {

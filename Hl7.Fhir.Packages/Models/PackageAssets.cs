@@ -64,9 +64,9 @@ namespace Hl7.Fhir.Packages
             if (!Missing.Contains(reference)) Missing.Add(reference);
         }
         
-        public AssetsFile CreateAssetsFile()
+        public Assets CreateAssetsFile()
         {
-            return new AssetsFile
+            return new Assets
             {
                 PackageReferences = Refs.ToDictionary(),
                 MissingReferences = Missing.ToDictionary()

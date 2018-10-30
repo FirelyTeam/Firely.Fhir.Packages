@@ -1,6 +1,6 @@
 ﻿namespace Hl7.Fhir.Packages
 {
-    public class Reference
+    public class CanonicalFileReference
     {
         public PackageReference Package; 
         public string Canonical;

@@ -60,7 +60,7 @@ namespace Hl7.Fhir.Packages
         public Dictionary<string, string> Canonicals;
     }
 
-    public class AssetsFile
+    public class Assets
     {
         [JsonProperty(PropertyName = "updated")]
         public DateTime Updated;
@@ -88,7 +88,7 @@ namespace Hl7.Fhir.Packages
             return reference;
         }
 
-        public static IEnumerable<PackageReference> GetPackageReferences(this AssetsFile assets)
+        public static IEnumerable<PackageReference> GetPackageReferences(this Assets assets)
         {
             foreach (var item in assets.PackageReferences) yield return item; // implicit conversion
         }

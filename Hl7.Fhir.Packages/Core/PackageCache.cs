@@ -29,9 +29,9 @@ namespace Hl7.Fhir.Packages
         public void IndexReferences(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
-            var index = Disk.GetIndexFromFolderContents(folder);
+            var index = CanonicalIndexFile.GetIndexFromFolderContents(folder);
             var references = new CanonicalReferences { Canonicals = index };
-            Disk.WriteFolderReferences(references, folder);
+            CanonicalIndexFile.WriteToFolder(references, folder);
         }
 
         public PackageManifest ReadManifest(PackageReference reference)
@@ -40,7 +40,7 @@ namespace Hl7.Fhir.Packages
 
             if (Directory.Exists(folder))
             {
-                return Disk.ReadFolderManifest(folder);
+                return ManifestFile.ReadFromFolder(folder);
             }
             else
             {
@@ -51,7 +51,7 @@ namespace Hl7.Fhir.Packages
         public CanonicalReferences ReadCanonicalReferences(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
-            return Disk.ReadFolderReferences(folder);
+            return CanonicalIndexFile.ReadFromFolder(folder);
         }
 
         public string PackageRootFolder(PackageReference reference)
@@ -107,7 +107,7 @@ namespace Hl7.Fhir.Packages
         //    foreach (var folder in GetPackageRootFolders())
         //    {
         //        var manifestpath = Path.Combine(folder, "package");
-        //        var manifest = Disk.ReadFolderManifest(manifestpath);
+        //        var manifest = ManifestFile.ReadFromFolder(manifestpath);
         //        yield return manifest;
         //    }
         //}
