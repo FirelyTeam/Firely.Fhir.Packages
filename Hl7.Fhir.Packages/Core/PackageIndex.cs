@@ -7,13 +7,13 @@ namespace Hl7.Fhir.Packages
     public class PackageIndex
     {
         readonly PackageCache cache;
-        readonly PackageAssets assets;
+        readonly Dependencies dependencies;
         readonly IList<CanonicalFileReference> references; // canonical->filename
         
-        public PackageIndex(PackageCache cache, PackageAssets assets)
+        public PackageIndex(PackageCache cache, Dependencies dependencies)
         {
             this.cache = cache;
-            this.assets = assets;
+            this.dependencies = dependencies;
             references = new List<CanonicalFileReference>();
             
             IndexPackages(); // lazy?
@@ -35,7 +35,7 @@ namespace Hl7.Fhir.Packages
 
         public IEnumerable<string> GetPackageContentFolders()
         {
-            return cache.GetPackageContentFolders(assets.Refs);
+            return cache.GetPackageContentFolders(dependencies.Refs);
         }
 
         public void IndexPackage(string contentFolder)

@@ -15,37 +15,37 @@ namespace Hl7.Fhir.Packages
             this.installer = installer;
         }
  
-        public async Task<PackageAssets> Restore(PackageManifest manifest)
+        public async Task<Dependencies> Restore(PackageManifest manifest)
         {
-            var assets = new PackageAssets();
-            await RestoreManifest(manifest, assets);
-            return assets; 
+            var dependencies = new Dependencies();
+            await RestoreManifest(manifest, dependencies);
+            return dependencies; 
         }
 
-        private async Task RestoreManifest(PackageManifest manifest, PackageAssets assets)
+        private async Task RestoreManifest(PackageManifest manifest, Dependencies dependencies)
         {
             foreach(PackageReference dep in manifest.GetDependencies())
             {
-                await RestoreReference(dep, assets);
+                await RestoreReference(dep, dependencies);
             }
         }
 
-        private async Task RestoreReference(PackageReference reference, PackageAssets assets)
+        private async Task RestoreReference(PackageReference reference, Dependencies dependencies)
         {
             var actual = await installer.ResolveReference(reference);
 
             if (actual.IsEmpty)
             {
-                assets.AddMissing(reference);
+                dependencies.AddMissing(reference);
                 return; throw new Exception($"Package {reference} was not found.");
             }
 
-            if (assets.AddRef(actual)) // conflicts are resolved by: highest = winner.
+            if (dependencies.AddRef(actual)) // conflicts are resolved by: highest = winner.
             {
                 var manifest = await installer.InstallPackage(actual);
 
                 if (manifest != null)
-                    await RestoreManifest(manifest, assets);
+                    await RestoreManifest(manifest, dependencies);
             }
             
             

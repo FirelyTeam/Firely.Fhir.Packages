@@ -54,14 +54,14 @@ namespace Hl7.Fhir.Packages
             return jcontent.ToString()+"\n";
         }
 
-        public static Assets ReadAssets(string content)
+        public static LockFileDto ReadLockFileJson(string content)
         {
-            return JsonConvert.DeserializeObject<Assets>(content);
+            return JsonConvert.DeserializeObject<LockFileDto>(content);
         }
 
-        public static string WriteAssets(Assets assets)
+        public static string WriteLockFileDto(LockFileDto dto)
         {
-            return JsonConvert.SerializeObject(assets, Formatting.Indented)+"\n";
+            return JsonConvert.SerializeObject(dto, Formatting.Indented)+"\n";
         }
 
         public static CanonicalReferences ReadReferences(string content)
@@ -69,9 +69,9 @@ namespace Hl7.Fhir.Packages
             return JsonConvert.DeserializeObject<CanonicalReferences>(content);
         } 
 
-        public static string WriteReferences(CanonicalReferences assets)
+        public static string WriteReferences(CanonicalReferences references)
         {
-            return JsonConvert.SerializeObject(assets, Formatting.Indented);
+            return JsonConvert.SerializeObject(references, Formatting.Indented);
         }
 
     }

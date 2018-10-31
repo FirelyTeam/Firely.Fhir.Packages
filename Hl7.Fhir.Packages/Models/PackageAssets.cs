@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Hl7.Fhir.Packages
 {
-    public class PackageAssets
+    public class Dependencies
     {
         public bool Complete => Missing.Count == 0;
 
@@ -64,9 +64,9 @@ namespace Hl7.Fhir.Packages
             if (!Missing.Contains(reference)) Missing.Add(reference);
         }
         
-        public Assets CreateAssetsFile()
+        public LockFileDto CreateLockFileDto()
         {
-            return new Assets
+            return new LockFileDto
             {
                 PackageReferences = Refs.ToDictionary(),
                 MissingReferences = Missing.ToDictionary()

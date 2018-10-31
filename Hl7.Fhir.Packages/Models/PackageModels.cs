@@ -60,7 +60,7 @@ namespace Hl7.Fhir.Packages
         public Dictionary<string, string> Canonicals;
     }
 
-    public class Assets
+    public class LockFileDto
     {
         [JsonProperty(PropertyName = "updated")]
         public DateTime Updated;
@@ -79,7 +79,6 @@ namespace Hl7.Fhir.Packages
     }
 
 
-
     public static class PackageModelExtensions
     {
         public static PackageReference GetPackageReference(this PackageManifest manifest)
@@ -88,9 +87,9 @@ namespace Hl7.Fhir.Packages
             return reference;
         }
 
-        public static IEnumerable<PackageReference> GetPackageReferences(this Assets assets)
+        public static IEnumerable<PackageReference> GetPackageReferences(this LockFileDto dto)
         {
-            foreach (var item in assets.PackageReferences) yield return item; // implicit conversion
+            foreach (var item in dto.PackageReferences) yield return item; // implicit conversion
         }
 
         public static void AddDependency(this PackageManifest manifest, string name, string version)
