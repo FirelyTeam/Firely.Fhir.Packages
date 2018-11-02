@@ -7,16 +7,8 @@ using System.Threading.Tasks;
 namespace Hl7.Fhir.Packages
 {
 
-    public class PackageClient
+    public class PackageClient : IDisposable
     {
-        public PackageClient(IPackageUrlProvider urlProvider, Action<string> report, bool insecure = false)
-        {
-            this.urlProvider = urlProvider;
-            this.report = report;
-
-            this.httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
-        }
-
         public static PackageClient Create(string source, bool npm = false, bool insecure = false)
         {
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
@@ -32,9 +24,17 @@ namespace Hl7.Fhir.Packages
             return new PackageClient(urlprovider, null);
         }
 
-        IPackageUrlProvider urlProvider;
-        Action<string> report;
-        HttpClient httpClient;
+        public PackageClient(IPackageUrlProvider urlProvider, Action<string> report, bool insecure = false)
+        {
+            this.urlProvider = urlProvider;
+            this.report = report;
+
+            this.httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
+        }
+
+        readonly IPackageUrlProvider urlProvider;
+        readonly Action<string> report;
+        readonly HttpClient httpClient;
 
         private void Report(string message)
         {
@@ -64,7 +64,7 @@ namespace Hl7.Fhir.Packages
             {
                 return null;
             }
-            
+
         }
 
         public async ValueTask<string> DownloadListingRawAsync(string pkgname, string version = null)
@@ -78,7 +78,7 @@ namespace Hl7.Fhir.Packages
         {
             var body = await DownloadListingRawAsync(reference);
             if (body is null) return null;
-            
+
             return Parser.Deserialize<PackageListing>(body);
         }
 
@@ -100,12 +100,37 @@ namespace Hl7.Fhir.Packages
 
         internal async ValueTask<byte[]> DownloadPackage(PackageReference reference)
         {
-            string url = urlProvider.GetPackageUrl(reference); 
+            string url = urlProvider.GetPackageUrl(reference);
             return await httpClient.GetByteArrayAsync(url);
-    }
+        }
+
+        #region IDisposable
+
+        bool disposed;
+
+        void IDisposable.Dispose() => Dispose(true);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    // [WMR 20181102] HttpClient will dispose internal HttpClientHandler/WebRequestHandler
+                    httpClient?.Dispose();
+                }
+
+                // release any unmanaged objects
+                // set the object references to null
+
+                disposed = true;
+            }
+        }
+
+        #endregion
 
         public override string ToString() => urlProvider.ToString();
 
     }
- 
+
 }
