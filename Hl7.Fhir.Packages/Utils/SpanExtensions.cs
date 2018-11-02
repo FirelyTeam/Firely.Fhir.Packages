@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if NETSTANDARD2_0
+
+using System;
 
 namespace Hl7.Fhir.Packages
 {
@@ -11,3 +13,5 @@ namespace Hl7.Fhir.Packages
         }
     }
 }
+
+#endif

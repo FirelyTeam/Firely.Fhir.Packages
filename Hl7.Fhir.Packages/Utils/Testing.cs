@@ -9,9 +9,18 @@ namespace Hl7.Fhir.Packages
         public static HttpClient GetInsecureClient()
         {
             // for testing without proper certificate
+#if NETSTANDARD2_0
             var httpClientHandler = new HttpClientHandler();
             httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
             var client = new HttpClient(httpClientHandler, true);
+#else
+            // [WMR 20181102] HttpClientHandler and HttpClient are IDisposable ...
+
+            // ServerCertificateCustomValidationCallback needs NET471
+            var hander = new WebRequestHandler();
+            hander.ServerCertificateValidationCallback = (message, cert, chain, errors) => true;
+            var client = new HttpClient(hander, true);
+#endif
             return client;
         }
     }

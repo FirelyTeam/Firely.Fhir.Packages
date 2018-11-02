@@ -11,10 +11,22 @@ namespace Hl7.Fhir.Packages
 
         public static OperatingSystem GetPlatform()
         {
+#if NETSTANDARD2_0
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return OperatingSystem.Windows;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return OperatingSystem.Linux;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return OperatingSystem.OSX;
             else return OperatingSystem.Unknown;
+#else
+            // RuntimeInformation needs NET471
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32NT: return OperatingSystem.Windows;
+                case PlatformID.Unix: return OperatingSystem.Linux;
+                case PlatformID.MacOSX: return OperatingSystem.OSX;
+            //  case (PlatformID)128: return OperatingSystem.Linux; // Mono
+                default: return OperatingSystem.Unknown;
+            }
+#endif
         }
 
         public static string GetGenericDataLocation()
