@@ -104,9 +104,14 @@ namespace Hl7.Fhir.Packages
 
         public async ValueTask<IList<string>> GetPackagesWithCanonical(string canonical)
         {
-            return await Client.FindCanonical(canonical);
+            return await Client.FindPackageByCanonical(canonical);
         }
-       
+
+        public async ValueTask<IList<string>> GetPackagesByName(string name)
+        {
+            return await Client.FindPackageByName(name);
+        }
+
     }
 
 

@@ -90,12 +90,34 @@ namespace Hl7.Fhir.Packages
             return Parser.Deserialize<PackageListing>(body);
         }
 
-        public async ValueTask<IList<string>> FindCanonical(string canonical)
+        public async ValueTask<IList<string>> FindPackageByName(string partial)
         {
-            string url = urlProvider.Root + "/find?canonical=" + canonical;
-            var body = await httpClient.GetStringAsync(url);
-            var result = Parser.Deserialize<List<string>>(body);
-            return result;
+            string url = $"{urlProvider.Root}/find?name={partial}";
+            try
+            {
+                var body = await httpClient.GetStringAsync(url);
+                var result = Parser.Deserialize<List<string>>(body);
+                return result;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async ValueTask<IList<string>> FindPackageByCanonical(string canonical)
+        {
+            string url = $"{urlProvider.Root}/find?canonical={canonical}";
+            try
+            {
+                var body = await httpClient.GetStringAsync(url);
+                var result = Parser.Deserialize<List<string>>(body);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         internal async ValueTask<byte[]> DownloadPackage(PackageReference reference)
