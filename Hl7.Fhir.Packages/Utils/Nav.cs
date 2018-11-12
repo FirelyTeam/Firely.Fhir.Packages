@@ -1,25 +1,52 @@
-﻿using System.IO;
+﻿using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Serialization;
-using Hl7.Fhir.ElementModel;
+using System.IO;
 
 namespace Hl7.Fhir.Packages
 {
     public static class ElementNavigation
     {
-        
-        public static IElementNavigator GetNavigatorForFile(string filepath)
+        static readonly FhirJsonParsingSettings _jsonParsingSettings = new FhirJsonParsingSettings()
         {
-            var text = File.ReadAllText(filepath);
-            var extension = Path.GetExtension(filepath).ToLower();
+            PermissiveParsing = true,
+            ValidateFhirXhtml = false,
+            AllowJsonComments = true
+        };
 
-            switch (extension)
+        static readonly FhirXmlParsingSettings _xmlParsingSettings = new FhirXmlParsingSettings()
+        {
+            PermissiveParsing = true,
+            ValidateFhirXhtml = false
+        };
+
+        public static ISourceNode ParseToSourceNode(string filepath)
+        {
+            if (FhirFileFormats.HasXmlExtension(filepath))
             {
-                case ".xml": return XmlDomFhirNavigator.Create(text);
-                case ".json": return JsonDomFhirNavigator.Create(text);
-                default: return null;
+                return FhirXmlNode.Parse(File.ReadAllText(filepath), _xmlParsingSettings);
             }
 
+            if (FhirFileFormats.HasJsonExtension(filepath))
+            {
+                return FhirJsonNode.Parse(File.ReadAllText(filepath), null, _jsonParsingSettings);
+            }
+
+            return null;
         }
+
+        //public static IElementNavigator GetNavigatorForFile(string filepath)
+        //{
+        //    var text = File.ReadAllText(filepath);
+        //    var extension = Path.GetExtension(filepath).ToLower();
+
+        //    switch (extension)
+        //    {
+        //        case ".xml": return XmlDomFhirNavigator.Create(text);
+        //        case ".json": return JsonDomFhirNavigator.Create(text);
+        //        default: return null;
+        //    }
+        //}
+
     }
 
 

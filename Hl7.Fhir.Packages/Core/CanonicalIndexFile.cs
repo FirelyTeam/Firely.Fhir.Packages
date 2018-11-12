@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Collections.Generic;
-using Hl7.FhirPath;
+using System.Linq;
 
 namespace Hl7.Fhir.Packages
 {
@@ -39,8 +39,8 @@ namespace Hl7.Fhir.Packages
         {
             try
             {
-                var navigator = ElementNavigation.GetNavigatorForFile(filepath);
-                var canonical = (string)navigator.Scalar("url");
+                var node = ElementNavigation.ParseToSourceNode(filepath);
+                var canonical = (string)node.Children("url").FirstOrDefault().Text;
                 return canonical;
             }
             catch
