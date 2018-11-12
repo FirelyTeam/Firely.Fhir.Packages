@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -27,6 +27,7 @@ namespace Hl7.Fhir.Packages
 
         public void IndexPackages()
         {
+            references.Clear();
             foreach (var folder in GetPackageContentFolders())
             {
                 IndexPackage(folder);
