@@ -37,11 +37,16 @@ namespace Hl7.Fhir.Packages
             return versions;
         }
 
+        public static Version Latest(this List<Version> versions)
+        {
+            return versions.LastOrDefault();
+        }
+
         public static Version Resolve(this List<Version> versions, string pattern)
         {
             if (pattern == "latest" || pattern is null)
             {
-                return versions.LastOrDefault();
+                return versions.Latest();
             }
 
             var range = new Range(pattern);
@@ -51,6 +56,13 @@ namespace Hl7.Fhir.Packages
         public static List<Version> ToVersions(this PackageListing listing)
         {
             var list = listing.Versions?.Keys.ToVersions().ToList();
+            list?.Sort();
+            return list;
+        }
+
+        public static List<Version> ToVersions(this IEnumerable<PackageReference> references)
+        {
+            var list = references.Select(r => r.Version).ToVersions().ToList();
             list?.Sort();
             return list;
         }

@@ -50,21 +50,27 @@ namespace Hl7.Fhir.Packages
             }
 
             var url = urlProvider.GetPackageListingUrl(reference);
-            var response = await httpClient.GetAsync(url);
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
-                return await response.Content.ReadAsStringAsync();
+                var response = await httpClient.GetAsync(url);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else if (response.StatusCode == HttpStatusCode.NotFound)
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 return null;
             }
-            else
-            {
-                return null;
-            }
-
         }
 
         public async ValueTask<string> DownloadListingRawAsync(string pkgname, string version = null)

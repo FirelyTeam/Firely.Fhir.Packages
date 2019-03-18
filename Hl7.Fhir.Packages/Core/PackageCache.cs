@@ -144,6 +144,11 @@ namespace Hl7.Fhir.Packages
             return refs.Where(r => string.Compare(r.Name, name, ignoreCase: true) == 0);
         }
 
+        public static IEnumerable<PackageReference> GetInstalledVersions(this PackageCache cache, string pkgname)
+        {
+            return cache.GetPackageReferences().WithName(pkgname);
+        }
+
     }
 
 }
