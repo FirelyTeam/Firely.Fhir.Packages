@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -8,7 +8,7 @@ namespace Hl7.Fhir.Packages
     {
         readonly PackageCache cache;
         readonly Dependencies dependencies;
-        readonly IList<CanonicalFileReference> references; // canonical->filename
+        readonly List<CanonicalFileReference> references; // canonical->filename
         
         public PackageIndex(PackageCache cache, Dependencies dependencies)
         {
@@ -91,6 +91,8 @@ namespace Hl7.Fhir.Packages
             return File.ReadAllText(reference.FileName);
 
         }
+
+        public IEnumerable<CanonicalFileReference> References => references.AsReadOnly();
 
     }
 }
