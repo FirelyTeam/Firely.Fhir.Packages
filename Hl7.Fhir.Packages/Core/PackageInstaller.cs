@@ -5,7 +5,13 @@ using System.Threading.Tasks;
 
 namespace Hl7.Fhir.Packages
 {
-    public class PackageInstaller 
+    public interface IPackageInstaller
+    {
+        ValueTask<PackageReference> ResolveDependency(PackageDependency reference);
+        ValueTask<PackageManifest> InstallPackage(PackageReference reference);
+    }
+
+    public class PackageInstaller : IPackageInstaller
     {
         readonly PackageClient client;
         readonly PackageCache cache;
@@ -18,33 +24,18 @@ namespace Hl7.Fhir.Packages
             this.report = report;
         }
 
-        private void Report(string message)
+        public async ValueTask<PackageReference> ResolveDependency(PackageDependency dependency)
         {
-            report?.Invoke(message);
+            var listing = await client.DownloadListingAsync(dependency.Name);
+            if (listing == null) return PackageReference.NotFound;
+            var versions = listing.ToVersions();
+
+            var version = versions.Resolve(dependency.Range)?.ToString(); //null => NotFound
+
+            return new PackageReference(dependency.Name, version);
         }
 
-        public async ValueTask InstallDependencies(IEnumerable<PackageReference> dependencies)
-        {
-            foreach (var dependency in dependencies)
-            {
-                var reference = await ResolveReference(dependency);
-                if (reference.Found)
-                {
-                    await InstallPackageAndDependencies(reference);
-                }
-            }
-        }
-
-        public async ValueTask InstallDependencies(PackageManifest manifest)
-        {
-            
-            // Report($"Installing Dependencies for: {manifest.Name} {manifest.Version}: ");
-            var dependencies = manifest.GetDependencies();
-            await InstallDependencies(dependencies);
-
-        }
-
-        public async ValueTask<PackageManifest> InstallPackage(PackageReference reference) 
+        public async ValueTask<PackageManifest> InstallPackage(PackageReference reference)
         {
             bool installed = cache.IsInstalled(reference);
 
@@ -59,8 +50,36 @@ namespace Hl7.Fhir.Packages
 
             return manifest;
         }
+
+
+
+        private void Report(string message)
+        {
+            report?.Invoke(message);
+        }
+
+        private async ValueTask InstallDependencies(IEnumerable<PackageDependency> dependencies)
+        {
+            foreach (var dependency in dependencies)
+            {
+                var reference = await ResolveDependency(dependency);
+                if (reference.Found)
+                {
+                    await InstallPackageAndDependencies(reference);
+                }
+            }
+        }
+
+        private async ValueTask InstallDependencies(PackageManifest manifest)
+        {
+            
+            // Report($"Installing Dependencies for: {manifest.Name} {manifest.Version}: ");
+            var dependencies = manifest.GetDependencies();
+            await InstallDependencies(dependencies);
+
+        }
         
-        public async ValueTask InstallPackageAndDependencies(PackageReference reference)
+        private async ValueTask InstallPackageAndDependencies(PackageReference reference)
         {
             var manifest = await InstallPackage(reference);
             if (manifest != null)
@@ -72,13 +91,25 @@ namespace Hl7.Fhir.Packages
                 Report($"Error: could not find manifest for: {reference.Name}-{reference.Version}. Skipped installing dependencies.");
             }
         }
+    }
 
-        public async ValueTask<PackageManifest> InstallPackage(string pkgname, string pkgversion)
+     
+    public static class IPackageInstallerExtensions
+    {
+        public static async ValueTask<PackageReference> ResolveDependency(this IPackageInstaller installer, string pkgname, string range)
         {
-            var reference = await ResolveReference(pkgname, pkgversion);
+            //this could be faster by caching --mh
+            var dependency = new PackageDependency(pkgname, range);
+            return await installer.ResolveDependency(dependency);
+
+        }
+
+        public static async ValueTask<PackageManifest> InstallPackage(this IPackageInstaller installer, string pkgname, string pkgversion)
+        {
+            var reference = await installer.ResolveDependency(pkgname, pkgversion);
             if (reference.Found)
             {
-                var manifest = await InstallPackage(reference);
+                var manifest = await installer.InstallPackage(reference);
                 return manifest;
             }
             else
@@ -86,35 +117,8 @@ namespace Hl7.Fhir.Packages
                 return null;
             }
         }
-
-        public async ValueTask<PackageReference> ResolveReference(PackageReference reference)
-        {
-            var listing = await client.DownloadListingAsync(reference);
-            if (listing == null) return PackageReference.NotFound;
-            var versions = listing.ToVersions();
-
-            reference.Version = versions.Resolve(reference.Version)?.ToString(); //null => NotFound
-
-            return reference;
-        }
-
-        public async ValueTask<PackageReference> ResolveReference(string pkgname, string pattern)
-        {
-            //this could be faster by caching --mh
-            var reference = new PackageReference(pkgname, pattern);
-            return await ResolveReference(reference);
-            
-        }
-
-        public PackageManifest InstallFromFile(string path)
-        {
-            var manifest = Packaging.ExtractManifestFromPackageFile(path);
-            var reference = manifest.GetPackageReference();
-            var buffer = File.ReadAllBytes(path);
-            cache.Install(reference, buffer);
-            return manifest;
-        }
-
     }
+
+   
 
 }

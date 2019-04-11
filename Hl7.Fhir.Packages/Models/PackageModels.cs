@@ -69,7 +69,7 @@ namespace Hl7.Fhir.Packages
         public Dictionary<string, string> PackageReferences;
 
         [JsonProperty(PropertyName = "missing")]
-        public Dictionary<string, string> MissingReferences;
+        public Dictionary<string, string> MissingDependencies;
     }
 
     public class CanonicalReferences

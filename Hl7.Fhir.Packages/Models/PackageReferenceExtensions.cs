@@ -15,6 +15,16 @@ namespace Hl7.Fhir.Packages
             return dict;
         }
 
+        public static Dictionary<string, string> ToDictionary(this IEnumerable<PackageDependency> references)
+        {
+            var dict = new Dictionary<string, string>();
+            foreach (var reference in references)
+            {
+                dict.Add(reference.Name, reference.Range);
+            }
+            return dict;
+        }
+
         public static List<PackageReference> ToPackageReferences(this Dictionary<string, string> dict)
         {
             var list = new List<PackageReference>();
@@ -25,12 +35,22 @@ namespace Hl7.Fhir.Packages
             return list;
         }
 
+        public static List<PackageDependency> ToPackageDependencies(this Dictionary<string, string> dict)
+        {
+            var list = new List<PackageDependency>();
+            foreach (var item in dict)
+            {
+                list.Add(item); // implicit converion
+            }
+            return list;
+        }
 
-        public static IEnumerable<PackageReference> GetDependencies(this PackageManifest manifest)
+
+        public static IEnumerable<PackageDependency> GetDependencies(this PackageManifest manifest)
         {
             if (manifest.Dependencies is null) yield break;
 
-            foreach (PackageReference dep in manifest.Dependencies)
+            foreach (PackageDependency dep in manifest.Dependencies)
             {
                 yield return dep;
             }

@@ -41,15 +41,10 @@ namespace Hl7.Fhir.Packages
             report?.Invoke(message);
         }
 
-        public async ValueTask<string> DownloadListingRawAsync(PackageReference reference)
+        public async ValueTask<string> DownloadListingRawAsync(string pkgname)
         {
-            if (reference.Version != null && reference.Version.StartsWith("git"))
-            {
-                Report($"Git not implemented. Skipping download of: {reference.Version}");
-                return null;
-            }
-
-            var url = urlProvider.GetPackageListingUrl(reference);
+           
+            var url = urlProvider.GetPackageListingUrl(pkgname);
             try
             {
                 var response = await httpClient.GetAsync(url);
@@ -73,25 +68,9 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public async ValueTask<string> DownloadListingRawAsync(string pkgname, string version = null)
+        public async ValueTask<PackageListing> DownloadListingAsync(string pkgname)
         {
-            var reference = new PackageReference(pkgname, version);
-            var body = await DownloadListingRawAsync(reference);
-            return body;
-        }
-
-        public async ValueTask<PackageListing> DownloadListingAsync(PackageReference reference)
-        {
-            var body = await DownloadListingRawAsync(reference);
-            if (body is null) return null;
-
-            return Parser.Deserialize<PackageListing>(body);
-        }
-
-        public async ValueTask<PackageListing> DownloadListingAsync(string pkgname, string version = null)
-        {
-            var reference = new PackageReference(pkgname, version);
-            var body = await DownloadListingRawAsync(reference);
+            var body = await DownloadListingRawAsync(pkgname);
             if (body is null) return null;
             return Parser.Deserialize<PackageListing>(body);
         }
@@ -161,4 +140,18 @@ namespace Hl7.Fhir.Packages
 
     }
 
+
+    public static class PackageClientExtensions
+    {
+        public static async ValueTask<string> DownloadListingRawAsync(this PackageClient client, PackageReference reference)
+        {
+            if (reference.Version != null && reference.Version.StartsWith("git"))
+            {
+                throw new NotImplementedException("We cannot yet resolve git references");
+            }
+
+            return await client.DownloadListingRawAsync(reference.Name);
+        }
+
+    }
 }

@@ -7,10 +7,10 @@ namespace Hl7.Fhir.Packages
     {
         public bool Complete => Missing.Count == 0;
 
-        public List<PackageReference> Refs = new List<PackageReference>();
-        public List<PackageReference> Missing = new List<PackageReference>();
+        public List<PackageReference> References = new List<PackageReference>();
+        public List<PackageDependency> Missing = new List<PackageDependency>();
 
-        public bool AddRef(PackageReference reference)
+        public bool Add(PackageReference reference)
         {
             if (Find(reference.Name, out var existing))
             {
@@ -19,8 +19,8 @@ namespace Hl7.Fhir.Packages
                 var highest = Highest(reference, existing);
                 if (highest != existing)
                 {
-                    Refs.Remove(existing);
-                    Refs.Add(highest);
+                    References.Remove(existing);
+                    References.Add(highest);
                     return true;
                 }
                 else
@@ -31,7 +31,7 @@ namespace Hl7.Fhir.Packages
             }
             else 
             {
-                Refs.Add(reference);
+                References.Add(reference);
                 return true;
             }
         }
@@ -47,7 +47,7 @@ namespace Hl7.Fhir.Packages
 
         public bool Find(string pkgname, out PackageReference reference)
         {
-            foreach(var refx in Refs)
+            foreach(var refx in References)
             {
                 if (string.Compare(refx.Name, pkgname, ignoreCase: true) == 0)
                 {
@@ -59,7 +59,7 @@ namespace Hl7.Fhir.Packages
             return false; 
         }
 
-        public void AddMissing(PackageReference reference)
+        public void AddMissing(PackageDependency reference)
         {
             if (!Missing.Contains(reference)) Missing.Add(reference);
         }
@@ -68,8 +68,8 @@ namespace Hl7.Fhir.Packages
         {
             return new LockFileDto
             {
-                PackageReferences = Refs.ToDictionary(),
-                MissingReferences = Missing.ToDictionary()
+                PackageReferences = References.ToDictionary(),
+                MissingDependencies = Missing.ToDictionary()
             };
         }
 

@@ -36,7 +36,7 @@ namespace Hl7.Fhir.Packages
 
         public IEnumerable<string> GetPackageContentFolders()
         {
-            return cache.GetPackageContentFolders(dependencies.Refs);
+            return cache.GetPackageContentFolders(dependencies.References);
         }
 
         public void IndexPackage(string contentFolder)

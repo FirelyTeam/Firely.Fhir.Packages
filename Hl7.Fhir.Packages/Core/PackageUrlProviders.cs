@@ -9,10 +9,10 @@
             this.Root = root?.TrimEnd('/') ?? "https://registry.npmjs.org";
         }
 
-        public string GetPackageListingUrl(PackageReference reference) =>
-            (reference.Scope == null) 
-            ? $"{Root}/{reference.Name}"    
-            : $"{Root}/@{reference.Scope}%2F{reference.Name}";
+        public string GetPackageListingUrl(string scope, string name) => $"{Root}/@{scope}%2F{name}";
+
+        public string GetPackageListingUrl(string name) => $"{Root}/{name}";
+            
 
         public string GetPackageUrl(PackageReference reference)
         {
@@ -35,7 +35,7 @@
             this.Root = root.TrimEnd('/');
         }
 
-        public string GetPackageListingUrl(PackageReference reference) => $"{Root}/{reference.Name}";
+        public string GetPackageListingUrl(string name) => $"{Root}/{name}";
 
         public string GetPackageUrl(PackageReference reference) => $"{Root}/{reference.Name}/{reference.Version}";
 

@@ -15,8 +15,7 @@ namespace Hl7.Fhir.Packages
         public PackageCache Cache { get; }
         public PackageIndex Index { get; }
         public PackageClient Client { get; }
-        public PackageInstaller Installer { get; }
-        public PackageRestorer Restorer { get; }
+        public IPackageInstaller Installer { get; }
 
         public Project(string folder)
         {
@@ -26,7 +25,6 @@ namespace Hl7.Fhir.Packages
             Index = new PackageIndex(Cache, folder);
             Client = PackageClient.Create();
             Installer = new PackageInstaller(Client, Cache, null);
-            Restorer = new PackageRestorer(Client, Installer);
         }
 
         public PackageManifest ReadManifest()
@@ -43,7 +41,7 @@ namespace Hl7.Fhir.Packages
         public void Restore()
         {
             var manifest = ReadManifest();
-            Restorer.Restore(manifest).Wait();
+            Installer.Restore(manifest).Wait();
         }
 
         public void Init(string pkgname = null, string version = null)

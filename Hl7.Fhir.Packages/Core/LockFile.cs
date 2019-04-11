@@ -13,8 +13,8 @@ namespace Hl7.Fhir.Packages
                 var dto = Parser.ReadLockFileJson(content);
                 return new Dependencies
                 {
-                    Refs = dto.PackageReferences.ToPackageReferences(),
-                    Missing = dto.MissingReferences.ToPackageReferences()
+                    References = dto.PackageReferences.ToPackageReferences(),
+                    Missing = dto.MissingDependencies.ToPackageDependencies()
                 };
 
             }

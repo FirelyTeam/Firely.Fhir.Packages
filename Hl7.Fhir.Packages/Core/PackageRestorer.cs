@@ -4,48 +4,41 @@ using System.Threading.Tasks;
 namespace Hl7.Fhir.Packages
 {
 
-    public class PackageRestorer
+    public static class PackageRestorer
     {
-        readonly PackageClient client;
-        readonly PackageInstaller installer;
 
-        public PackageRestorer(PackageClient client, PackageInstaller installer)
-        {
-            this.client = client;
-            this.installer = installer;
-        }
- 
-        public async Task<Dependencies> Restore(PackageManifest manifest)
+        public static async Task<Dependencies> Restore(this IPackageInstaller installer, PackageManifest manifest)
         {
             var dependencies = new Dependencies();
-            await RestoreManifest(manifest, dependencies);
+            await installer.RestoreManifest(manifest, dependencies);
             return dependencies; 
         }
 
-        private async Task RestoreManifest(PackageManifest manifest, Dependencies dependencies)
+        private static async Task RestoreManifest(this IPackageInstaller installer, PackageManifest manifest, Dependencies dependencies)
         {
-            foreach(PackageReference dep in manifest.GetDependencies())
+            foreach(PackageDependency reference in manifest.GetDependencies())
             {
-                await RestoreReference(dep, dependencies);
+                await RestoreReference(installer, reference, dependencies);
             }
         }
 
-        private async Task RestoreReference(PackageReference reference, Dependencies dependencies)
+        private static async Task RestoreReference(this IPackageInstaller installer, PackageDependency dependency, Dependencies dependencies)
         {
-            var actual = await installer.ResolveReference(reference);
+            var reference = await installer.ResolveDependency(dependency);
 
-            if (actual.IsEmpty)
+            if (reference.IsEmpty)
             {
-                dependencies.AddMissing(reference);
-                return; throw new Exception($"Package {reference} was not found.");
+                dependencies.AddMissing(dependency);
+                return;
+                throw new Exception($"Package {reference} was not found.");
             }
 
-            if (dependencies.AddRef(actual)) // conflicts are resolved by: highest = winner.
+            if (dependencies.Add(reference)) // conflicts are resolved by: highest = winner.
             {
-                var manifest = await installer.InstallPackage(actual);
+                var manifest = await installer.InstallPackage(reference);
 
                 if (manifest != null)
-                    await RestoreManifest(manifest, dependencies);
+                    await installer.RestoreManifest(manifest, dependencies);
             }
             
             

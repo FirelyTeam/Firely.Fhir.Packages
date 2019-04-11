@@ -149,7 +149,16 @@ namespace Hl7.Fhir.Packages
             return cache.GetPackageReferences().WithName(pkgname);
         }
 
+        public static PackageManifest InstallFromFile(this PackageCache cache, string path)
+        {
+            var manifest = Packaging.ExtractManifestFromPackageFile(path);
+            var reference = manifest.GetPackageReference();
+            var buffer = File.ReadAllBytes(path);
+            cache.Install(reference, buffer);
+            return manifest;
+        }
     }
+
 
 }
 

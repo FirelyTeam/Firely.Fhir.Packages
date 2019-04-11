@@ -3,7 +3,7 @@
     public interface IPackageUrlProvider
     {
         string Root { get; }
-        string GetPackageListingUrl(PackageReference reference);
+        string GetPackageListingUrl(string name);
         string GetPackageUrl(PackageReference reference);
     }
 

@@ -2,6 +2,24 @@
 
 namespace Hl7.Fhir.Packages
 {
+    
+    public struct PackageDependency
+    {
+        public string Name;
+        public string Range; 
+
+        public PackageDependency(string name, string range)
+        {
+            this.Name = name;
+            this.Range = range;
+        }
+
+        public static implicit operator PackageDependency(KeyValuePair<string, string> pair)
+        {
+            return new PackageDependency(pair.Key, pair.Value);
+        }
+    }
+
 
     public struct PackageReference
     {
