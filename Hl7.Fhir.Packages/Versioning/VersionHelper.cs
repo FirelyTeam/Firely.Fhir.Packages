@@ -4,8 +4,34 @@ using SemVer;
 
 namespace Hl7.Fhir.Packages
 {
-    public static class VersionHelper
+    public class Versions
     {
+        List<Version> list = new List<Version>();
+
+        public IReadOnlyCollection<Version> Items => list;
+
+        public Versions(IEnumerable<string> versions)
+        {
+            Append(versions);
+        }
+
+        public void Append(IEnumerable<string> versions)   
+        {
+            foreach (var s in versions)
+            {
+                if (TryParseVersion(s, out Version version))
+                {
+                    list.Add(version);
+                }
+            }
+            list.Sort();
+        }
+
+        public Version Latest()
+        {
+            return list.LastOrDefault();
+        }
+
         public static bool TryParseVersion(string s, out Version v)
         {
             try
@@ -22,55 +48,36 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public static List<Version> ToVersions(this IEnumerable<string> list)
+        public Version Resolve(Range range)
         {
-            var versions = new List<Version>();
-
-            foreach(var s in list)
-            {
-                if (TryParseVersion(s, out Version version))
-                {
-                    versions.Add(version);
-                }
-            }
-            versions.Sort();
-            return versions;
+            return range.MaxSatisfying(list);
         }
 
-        public static Version Latest(this List<Version> versions)
-        {
-            return versions.LastOrDefault();
-        }
-
-        public static Version Resolve(this List<Version> versions, string pattern)
+        public Version Resolve(string pattern)
         {
             if (pattern == "latest" || pattern is null)
             {
-                return versions.Latest();
+                return Latest();
             }
-
             var range = new Range(pattern);
-            return range.MaxSatisfying(versions);
+            return Resolve(range);
         }
 
-        public static List<Version> ToVersions(this PackageListing listing)
+        public bool IsEmpty => list is null || list.Count == 0;
+    }
+
+    public static class VersionHelper
+    {
+        public static Versions ToVersions(this PackageListing listing)
         {
-            var list = listing.Versions?.Keys.ToVersions().ToList();
-            list?.Sort();
+            var versions = new Versions(listing.Versions?.Keys);
+            return versions;
+        }
+
+        public static Versions ToVersions(this IEnumerable<PackageReference> references)
+        {
+            var list = new Versions(references.Select(r => r.Version));
             return list;
         }
-
-        public static List<Version> ToVersions(this IEnumerable<PackageReference> references)
-        {
-            var list = references.Select(r => r.Version).ToVersions().ToList();
-            list?.Sort();
-            return list;
-        }
-
-        public static bool IsEmpty(this List<Version> list)
-        {
-            return list is null || list.Count == 0;
-        }
-
     }
 }
