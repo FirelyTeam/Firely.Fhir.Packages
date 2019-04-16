@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Firely;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -9,11 +10,11 @@ namespace Hl7.Fhir.Packages
 
     public class PackageClient : IDisposable
     {
-        public static PackageClient Create(string source, bool npm = false, bool insecure = false)
+        public static PackageClient Create(string source, IReporter reporter, bool npm = false, bool insecure = false)
         {
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
 
-            return new PackageClient(urlprovider, Console.WriteLine, insecure);
+            return new PackageClient(urlprovider, reporter, insecure);
 
         }
 
@@ -24,21 +25,21 @@ namespace Hl7.Fhir.Packages
             return new PackageClient(urlprovider, null);
         }
 
-        public PackageClient(IPackageUrlProvider urlProvider, Action<string> report, bool insecure = false)
+        public PackageClient(IPackageUrlProvider urlProvider, IReporter reporter, bool insecure = false)
         {
             this.urlProvider = urlProvider;
-            this.report = report;
+            this.reporter = reporter;
 
             this.httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
         }
 
         readonly IPackageUrlProvider urlProvider;
-        readonly Action<string> report;
+        readonly IReporter reporter; 
         readonly HttpClient httpClient;
 
         private void Report(string message)
         {
-            report?.Invoke(message);
+            reporter.Report(message);
         }
 
         public async ValueTask<string> DownloadListingRawAsync(string pkgname)
@@ -99,7 +100,7 @@ namespace Hl7.Fhir.Packages
                 var result = Parser.Deserialize<List<string>>(body);
                 return result;
             }
-            catch (Exception e)
+            catch 
             {
                 return null;
             }
