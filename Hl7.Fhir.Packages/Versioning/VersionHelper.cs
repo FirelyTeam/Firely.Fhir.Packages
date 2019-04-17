@@ -34,5 +34,6 @@ namespace Hl7.Fhir.Packages
             var version = versions.Resolve(dependency.Range).ToString();
             return new PackageReference(dependency.Name, version);
         }
+
     }
 }
