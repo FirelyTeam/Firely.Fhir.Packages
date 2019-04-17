@@ -5,7 +5,6 @@ using SemVer;
 namespace Hl7.Fhir.Packages
 {
 
-
     public static class VersionHelper
     {
         public static Versions ToVersions(this PackageListing listing)
@@ -28,6 +27,12 @@ namespace Hl7.Fhir.Packages
             }
             var range = new Range(pattern);
             return versions.Resolve(range);
+        }
+
+        public static PackageReference Resolve(this Versions versions, PackageDependency dependency)
+        {
+            var version = versions.Resolve(dependency.Range).ToString();
+            return new PackageReference(dependency.Name, version);
         }
     }
 }
