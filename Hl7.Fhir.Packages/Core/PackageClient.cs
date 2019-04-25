@@ -91,7 +91,7 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public async ValueTask<IList<string>> FindPackageByCanonical(string canonical)
+        public async ValueTask<IList<string>> FindPackagesByCanonical(string canonical)
         {
             string url = $"{urlProvider.Root}/find?canonical={canonical}";
             try

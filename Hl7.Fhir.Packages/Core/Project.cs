@@ -38,10 +38,10 @@ namespace Hl7.Fhir.Packages
             ManifestFile.WriteToFolder(manifest, folder, merge: true);
         }
 
-        public void Restore()
+        public async ValueTask Restore()
         {
             var manifest = ReadManifest();
-            Installer.Restore(manifest).Wait();
+            await Installer.Restore(manifest);
         }
 
         public void Init(string pkgname = null, string version = null)
@@ -102,7 +102,7 @@ namespace Hl7.Fhir.Packages
 
         public async ValueTask<IList<string>> GetPackagesWithCanonical(string canonical)
         {
-            return await Client.FindPackageByCanonical(canonical);
+            return await Client.FindPackagesByCanonical(canonical);
         }
 
         public async ValueTask<IList<string>> GetPackagesByName(string name)
