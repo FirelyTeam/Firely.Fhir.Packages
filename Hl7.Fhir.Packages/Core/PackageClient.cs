@@ -1,20 +1,24 @@
 ﻿using Firely;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Hl7.Fhir.Packages
 {
 
+
     public class PackageClient : IDisposable
     {
-        public static PackageClient Create(string source, IReporter reporter, bool npm = false, bool insecure = false)
+        public static PackageClient Create(string source, bool npm = false, bool insecure = false)
         {
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
 
-            return new PackageClient(urlprovider, reporter, insecure);
+            return new PackageClient(urlprovider, insecure);
 
         }
 
@@ -22,10 +26,10 @@ namespace Hl7.Fhir.Packages
         {
             var source = "https://packages.simplifier.net";
             var urlprovider = new FhirPackageUrlProvider(source);
-            return new PackageClient(urlprovider, null);
+            return new PackageClient(urlprovider);
         }
 
-        public PackageClient(IPackageUrlProvider urlProvider, IReporter reporter, bool insecure = false)
+        public PackageClient(IPackageUrlProvider urlProvider, bool insecure = false)
         {
             this.urlProvider = urlProvider;
             this.reporter = reporter;
@@ -36,11 +40,6 @@ namespace Hl7.Fhir.Packages
         readonly IPackageUrlProvider urlProvider;
         readonly IReporter reporter; 
         readonly HttpClient httpClient;
-
-        private void Report(string message)
-        {
-            reporter.Report(message);
-        }
 
         public async ValueTask<string> DownloadListingRawAsync(string pkgname)
         {
@@ -76,31 +75,28 @@ namespace Hl7.Fhir.Packages
             return Parser.Deserialize<PackageListing>(body);
         }
 
-        public async ValueTask<IList<string>> FindPackageByName(string partial)
-        {
-            string url = $"{urlProvider.Root}/find?name={partial}";
+        public async ValueTask<List<PackageCatalogEntry>> CatalogPackagesAsync(
+            string pkgname = null, 
+            string canonical = null, 
+            string fhirversion = null,
+            bool preview = false)
+        { 
+            var parameters = new NameValueCollection();
+            parameters.AddWhenValued("name", pkgname);
+            parameters.AddWhenValued("canonical", canonical);
+            parameters.AddWhenValued("fhirversion", fhirversion);
+            parameters.AddWhenValued("preview", preview ? "true" : "false");
+            string query = parameters.ToQueryString();
+
+            string url = $"{urlProvider.Root}/find?{query}";
+
             try
             {
                 var body = await httpClient.GetStringAsync(url);
-                var result = Parser.Deserialize<List<string>>(body);
+                var result = Parser.Deserialize<List<PackageCatalogEntry>>(body);
                 return result;
             }
             catch
-            {
-                return null;
-            }
-        }
-
-        public async ValueTask<IList<string>> FindPackagesByCanonical(string canonical)
-        {
-            string url = $"{urlProvider.Root}/find?canonical={canonical}";
-            try
-            {
-                var body = await httpClient.GetStringAsync(url);
-                var result = Parser.Deserialize<List<string>>(body);
-                return result;
-            }
-            catch 
             {
                 return null;
             }
@@ -153,6 +149,22 @@ namespace Hl7.Fhir.Packages
 
             return await client.DownloadListingRawAsync(reference.Name);
         }
+
+
+        public static async ValueTask<IList<string>> FindPackageByName(this PackageClient client, string partial)
+        {
+            // backwards compatibility
+            var result = await client.CatalogPackagesAsync(pkgname: partial);
+            return result.Select(c => c.Name).ToList();
+        }
+
+        public static async ValueTask<IList<string>> FindPackagesByCanonical(this PackageClient client, string canonical)
+        {
+            // backwards compatibility
+            var result = await client.CatalogPackagesAsync(canonical: canonical);
+            return result.Select(c => c.Name).ToList();
+        }
+
 
     }
 }

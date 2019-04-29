@@ -78,6 +78,13 @@ namespace Hl7.Fhir.Packages
         public Dictionary<string, string> Canonicals;
     }
 
+    public class PackageCatalogEntry
+    {
+        public string Name;
+        public string Description;
+        public string FhirVersion;
+    }
+
 
     public static class PackageModelExtensions
     {
