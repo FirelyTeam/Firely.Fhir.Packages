@@ -28,7 +28,7 @@ namespace Hl7.Fhir.Packages
             File.WriteAllText(path, content);
         }
 
-        public static bool Outdated(string folder)
+        public static bool IsOutdated(string folder)
         {
             var man_path = Path.Combine(folder, DiskNames.Manifest);
             var man_time = File.GetLastWriteTimeUtc(man_path);
