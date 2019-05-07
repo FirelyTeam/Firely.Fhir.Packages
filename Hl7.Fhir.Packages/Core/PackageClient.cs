@@ -85,10 +85,10 @@ namespace Hl7.Fhir.Packages
             parameters.AddWhenValued("name", pkgname);
             parameters.AddWhenValued("canonical", canonical);
             parameters.AddWhenValued("fhirversion", fhirversion);
-            parameters.AddWhenValued("preview", preview ? "true" : "false");
+            parameters.AddWhenValued("prerelease", preview ? "true" : "false");
             string query = parameters.ToQueryString();
 
-            string url = $"{urlProvider.Root}/find?{query}";
+            string url = $"{urlProvider.Root}/catalog?{query}";
 
             try
             {

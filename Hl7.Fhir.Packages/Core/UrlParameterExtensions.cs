@@ -9,7 +9,7 @@ namespace Hl7.Fhir.Packages
         public static void AddWhenValued(this NameValueCollection collection, string name, string value)
         {
             if (!string.IsNullOrEmpty(value))
-                collection.Add("name", value);
+                collection.Add(name, value);
         }
 
         public static string ToQueryString(this NameValueCollection collection)
