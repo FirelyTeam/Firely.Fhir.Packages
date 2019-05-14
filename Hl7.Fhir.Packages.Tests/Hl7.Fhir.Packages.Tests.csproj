@@ -12,4 +12,8 @@
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Hl7.Fhir.Packages\Hl7.Fhir.Packages.csproj" />
+  </ItemGroup>
+
 </Project>

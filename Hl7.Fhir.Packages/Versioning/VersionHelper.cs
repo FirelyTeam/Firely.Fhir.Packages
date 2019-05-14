@@ -31,8 +31,12 @@ namespace Hl7.Fhir.Packages
 
         public static PackageReference Resolve(this Versions versions, PackageDependency dependency)
         {
-            var version = versions.Resolve(dependency.Range).ToString();
-            return new PackageReference(dependency.Name, version);
+            var version = versions.Resolve(dependency.Range);
+            if (version == null)
+            {
+                return PackageReference.NotFound;
+            }
+            return new PackageReference(dependency.Name, version.ToString());
         }
 
     }
