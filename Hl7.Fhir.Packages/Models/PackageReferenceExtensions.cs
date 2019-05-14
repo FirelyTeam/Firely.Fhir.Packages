@@ -56,6 +56,10 @@ namespace Hl7.Fhir.Packages
             }
         }
 
+        public static string GetNpmName(this PackageReference reference)
+        {
+            return (reference.Scope == null) ? reference.Name : $"@{reference.Scope}%2F{reference.Name}";
+        }
 
     }
 }

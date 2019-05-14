@@ -26,7 +26,7 @@ namespace Hl7.Fhir.Packages
         {
             var reference = await installer.ResolveDependency(dependency);
 
-            if (reference.IsEmpty)
+            if (reference.NotFound)
             {
                 dependencies.AddMissing(dependency);
                 return;

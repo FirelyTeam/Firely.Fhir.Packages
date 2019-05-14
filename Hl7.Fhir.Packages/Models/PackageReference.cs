@@ -44,22 +44,14 @@ namespace Hl7.Fhir.Packages
             this.Version = version;
         }
 
-        public string NpmName
-        {
-            get
-            {
-                return (Scope == null) ? Name : $"@{Scope}%2F{Name}";
-            }
-        }
-
         public override string ToString()
         {
             return $"{Name} {Version}";
         }
 
-        public static PackageReference NotFound => new PackageReference { Name = null };
+        public static PackageReference None => new PackageReference { Name = null, Version = null };
 
-        public bool IsEmpty => (Name is null);
+        public bool NotFound => (Name is null || Version is null);
 
         public bool Found => !(Name is null || Version is null);
 
@@ -100,7 +92,5 @@ namespace Hl7.Fhir.Packages
         {
             return (Name, Version).GetHashCode();
         }
-
-
     }
 }

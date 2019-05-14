@@ -21,7 +21,7 @@ namespace Hl7.Fhir.Packages
         public async ValueTask<PackageReference> ResolveDependency(PackageDependency dependency)
         {
             var listing = await client.DownloadListingAsync(dependency.Name);
-            if (listing == null) return PackageReference.NotFound;
+            if (listing == null) return PackageReference.None;
             var versions = listing.ToVersions();
 
             var version = versions.Resolve(dependency.Range)?.ToString(); //null => NotFound

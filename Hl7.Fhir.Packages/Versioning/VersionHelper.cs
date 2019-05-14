@@ -5,7 +5,7 @@ using SemVer;
 namespace Hl7.Fhir.Packages
 {
 
-    public static class VersionHelper
+    public static class VersionsExtensions
     {
         public static Versions ToVersions(this PackageListing listing)
         {
@@ -21,7 +21,7 @@ namespace Hl7.Fhir.Packages
 
         public static Version Resolve(this Versions versions, string pattern)
         {
-            if (pattern == "latest" || pattern is null)
+            if (pattern == "latest" || string.IsNullOrEmpty(pattern))
             {
                 return versions.Latest();
             }
@@ -32,9 +32,9 @@ namespace Hl7.Fhir.Packages
         public static PackageReference Resolve(this Versions versions, PackageDependency dependency)
         {
             var version = versions.Resolve(dependency.Range);
-            if (version == null)
+            if (version is null)
             {
-                return PackageReference.NotFound;
+                return PackageReference.None;
             }
             return new PackageReference(dependency.Name, version.ToString());
         }
