@@ -1,11 +1,9 @@
-﻿using Firely;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Hl7.Fhir.Packages
@@ -32,13 +30,10 @@ namespace Hl7.Fhir.Packages
         public PackageClient(IPackageUrlProvider urlProvider, bool insecure = false)
         {
             this.urlProvider = urlProvider;
-            this.reporter = reporter;
-
             this.httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
         }
 
         readonly IPackageUrlProvider urlProvider;
-        readonly IReporter reporter; 
         readonly HttpClient httpClient;
 
         public async ValueTask<string> DownloadListingRawAsync(string pkgname)
