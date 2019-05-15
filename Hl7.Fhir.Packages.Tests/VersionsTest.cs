@@ -35,7 +35,7 @@ namespace Hl7.Fhir.Packages.Tests
             PackageReference result = target.Resolve(new PackageDependency("SomeName", "3.0.0"));
 
             Assert.IsFalse(result.Found);
-            Assert.IsTrue(result.IsEmpty);
+            Assert.IsTrue(result.NotFound);
         }
 
         [TestMethod]
@@ -46,7 +46,7 @@ namespace Hl7.Fhir.Packages.Tests
             PackageReference result = target.Resolve(new PackageDependency("SomeName", "3.x"));
 
             Assert.IsFalse(result.Found);
-            Assert.IsTrue(result.IsEmpty);
+            Assert.IsTrue(result.NotFound);
         }
     }
 }

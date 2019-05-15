@@ -51,7 +51,7 @@ namespace Hl7.Fhir.Packages
 
         public static PackageReference None => new PackageReference { Name = null, Version = null };
 
-        public bool NotFound => (Name is null || Version is null);
+        public bool NotFound => !Found;
 
         public bool Found => !(Name is null || Version is null);
 
