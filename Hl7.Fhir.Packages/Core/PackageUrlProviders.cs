@@ -48,7 +48,7 @@
         public static IPackageUrlProvider Simplifier => new FhirPackageUrlProvider("https://packages.simplifier.net");
         public static IPackageUrlProvider SimplifierNpm => new NodePackageUrlProvider("https://packages.simplifier.net");
         public static IPackageUrlProvider Staging => new NodePackageUrlProvider("https://packages-staging.simplifier.net");
-        public static IPackageUrlProvider Localhost => new NodePackageUrlProvider("https://packages.localhost:3000/");
+        public static IPackageUrlProvider Localhost => new FhirPackageUrlProvider("http://packages.simplifier.ro/");
 
     }
 

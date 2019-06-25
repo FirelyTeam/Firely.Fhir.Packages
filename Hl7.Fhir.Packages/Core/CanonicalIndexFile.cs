@@ -1,18 +1,34 @@
 ﻿using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace Hl7.Fhir.Packages
 {
     public static class CanonicalIndexFile
     {
-        public static void Write(CanonicalReferences references, string path)
+
+        public static CanonicalIndex GetIndexFromFolder(string folder)
         {
-            var content = Parser.WriteReferences(references);
-            File.WriteAllText(path, content);
+            if (!IndexExistsIn(folder)) return CreateIndexFile(folder);
+            return ReadFromFolder(folder);
         }
 
-        public static CanonicalReferences Read(string path)
+        public static CanonicalIndex CreateIndexFile(string folder)
+        {
+            var entries = GetIndexFromFolderContents(folder);
+            var index = new CanonicalIndex { Canonicals = entries, date = DateTimeOffset.Now };
+            WriteToFolder(index, folder);
+            return index;
+        }
+
+        public static CanonicalIndex ReadFromFolder(string folder)
+        {
+            var path = Path.Combine(folder, DiskNames.CanonicalIndexFile);
+            return Read(path);
+        }
+
+        public static CanonicalIndex Read(string path)
         {
             if (File.Exists(path))
             {
@@ -23,15 +39,21 @@ namespace Hl7.Fhir.Packages
             else return null;
         }
 
-        public static CanonicalReferences ReadFromFolder(string folder)
+        private static void Write(CanonicalIndex references, string path)
         {
-            var path = Path.Combine(folder, DiskNames.References);
-            return Read(path);
+            var content = Parser.WriteCanonicalIndex(references);
+            File.WriteAllText(path, content);
         }
 
-        public static void WriteToFolder(CanonicalReferences references, string folder)
+        private static bool IndexExistsIn(string folder)
         {
-            var path = Path.Combine(folder, DiskNames.References);
+            var path = Path.Combine(folder, DiskNames.CanonicalIndexFile);
+            return File.Exists(path);
+        }
+
+        private static void WriteToFolder(CanonicalIndex references, string folder)
+        {
+            var path = Path.Combine(folder, DiskNames.CanonicalIndexFile);
             Write(references, path);
         }
 
@@ -49,7 +71,7 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public static Dictionary<string, string> GetCanonicalsFromFiles(IEnumerable<string> filepaths)
+        private static Dictionary<string, string> GetCanonicalsFromFiles(IEnumerable<string> filepaths)
         {
             var dictionary = new Dictionary<string, string>();
             foreach (var filepath in filepaths)
@@ -64,7 +86,7 @@ namespace Hl7.Fhir.Packages
             return dictionary;
         }
 
-        public static Dictionary<string, string> GetIndexFromFolderContents(string folder)
+        private static Dictionary<string, string> GetIndexFromFolderContents(string folder)
         {
             var filenames = Directory.GetFiles(folder);
             return GetCanonicalsFromFiles(filenames);

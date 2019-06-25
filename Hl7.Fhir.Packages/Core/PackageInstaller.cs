@@ -100,7 +100,7 @@ namespace Hl7.Fhir.Packages
 
         public static async ValueTask<PackageManifest> InstallPackage(this IPackageInstaller installer, string pkgname, string pkgversion)
         {
-            var reference = await installer.ResolveDependency(pkgname, pkgversion);
+             var reference = await installer.ResolveDependency(pkgname, pkgversion);
             if (reference.Found)
             {
                 var manifest = await installer.InstallPackage(reference);

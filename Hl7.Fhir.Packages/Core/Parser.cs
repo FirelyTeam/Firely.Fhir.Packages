@@ -64,12 +64,12 @@ namespace Hl7.Fhir.Packages
             return JsonConvert.SerializeObject(dto, Formatting.Indented)+"\n";
         }
 
-        public static CanonicalReferences ReadReferences(string content)
+        public static CanonicalIndex ReadReferences(string content)
         {
-            return JsonConvert.DeserializeObject<CanonicalReferences>(content);
+            return JsonConvert.DeserializeObject<CanonicalIndex>(content);
         } 
 
-        public static string WriteReferences(CanonicalReferences references)
+        public static string WriteCanonicalIndex(CanonicalIndex references)
         {
             return JsonConvert.SerializeObject(references, Formatting.Indented);
         }

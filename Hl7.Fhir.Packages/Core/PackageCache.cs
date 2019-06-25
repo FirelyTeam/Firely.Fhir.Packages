@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -23,15 +24,13 @@ namespace Hl7.Fhir.Packages
         {
             var folder = PackageRootFolder(reference);
             Packaging.UnpackToFolder(buffer, folder);
-            IndexReferences(reference);
+            CreateIndexFile(reference);
         }
 
-        public void IndexReferences(PackageReference reference)
+        public void CreateIndexFile(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
-            var index = CanonicalIndexFile.GetIndexFromFolderContents(folder);
-            var references = new CanonicalReferences { Canonicals = index };
-            CanonicalIndexFile.WriteToFolder(references, folder);
+            CanonicalIndexFile.CreateIndexFile(folder);
         }
 
         public PackageManifest ReadManifest(PackageReference reference)
@@ -48,10 +47,10 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public CanonicalReferences ReadCanonicalReferences(PackageReference reference)
+        public CanonicalIndex GetCanonicalIndex(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
-            return CanonicalIndexFile.ReadFromFolder(folder);
+            return CanonicalIndexFile.GetIndexFromFolder(folder);
         }
 
         public string PackageRootFolder(PackageReference reference)
@@ -133,10 +132,10 @@ namespace Hl7.Fhir.Packages
             return cache.ReadManifest(reference);
         }
 
-        public static CanonicalReferences ReadCanonicalReferences(this PackageCache cache, string name, string version)
+        public static CanonicalIndex ReadCanonicalIndex(this PackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
-            return cache.ReadCanonicalReferences(reference);
+            return cache.GetCanonicalIndex(reference);
         }
 
         public static IEnumerable<PackageReference> WithName(this IEnumerable<PackageReference> refs, string name)

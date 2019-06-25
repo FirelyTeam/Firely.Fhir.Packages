@@ -4,13 +4,13 @@ using System.Linq;
 
 namespace Hl7.Fhir.Packages
 {
-    public class PackageIndex
+    public class PackageScopeIndex
     {
         readonly PackageCache cache;
         readonly Dependencies dependencies;
         readonly List<CanonicalFileReference> references; // canonical->filename
         
-        public PackageIndex(PackageCache cache, Dependencies dependencies)
+        public PackageScopeIndex(PackageCache cache, Dependencies dependencies)
         {
             this.cache = cache;
             this.dependencies = dependencies;
@@ -19,7 +19,7 @@ namespace Hl7.Fhir.Packages
             IndexPackages(); // lazy?
         }
 
-        public PackageIndex(PackageCache cache, string folder)
+        public PackageScopeIndex(PackageCache cache, string folder)
         {
             this.cache = cache;
             LockFile.ReadFromFolder(folder);
@@ -28,54 +28,49 @@ namespace Hl7.Fhir.Packages
         public void IndexPackages()
         {
             references.Clear();
-            foreach (var folder in GetPackageContentFolders())
+            foreach (var reference in dependencies.References)
             {
-                IndexPackage(folder);
+                AddPackageToIndex(reference);
             }
         }
 
-        public IEnumerable<string> GetPackageContentFolders()
+        public void AddPackageToIndex(PackageReference reference)
         {
-            return cache.GetPackageContentFolders(dependencies.References);
-        }
-
-        public void IndexPackage(string contentFolder)
-        {
-            var manifest = ManifestFile.ReadFromFolder(contentFolder);
+            var manifest = cache.ReadManifest(reference);
             if (manifest != null && manifest.Canonicals != null)
             {
-                IndexManifest(contentFolder, manifest);
+                IndexManifest(reference, manifest);
             }
             else
             {
-                var references = CanonicalIndexFile.ReadFromFolder(contentFolder);
-                var packref = manifest.GetPackageReference();
-                IndexReferences(contentFolder, packref, references);
+                var index = cache.GetCanonicalIndex(reference);
+                AppendCanonicalIndex(reference, index);
             }
             
         }
 
-        public void IndexManifest(string folder, PackageManifest manifest)
+        public void IndexManifest(PackageReference reference, PackageManifest manifest)
         {
+            string folder = cache.PackageContentFolder(reference);
             if (manifest.Canonicals != null)
             {
                 foreach (var item in manifest.Canonicals)
                 {
                     var path = Path.Combine(folder, item.Value);
-                    var reference = manifest.GetPackageReference();
                     references.Add(new CanonicalFileReference { Package = reference, Canonical = item.Key, FileName = path });
                 }
             }
         }
 
-        public void IndexReferences(string contentFolder, PackageReference packref, CanonicalReferences refs)
+        public void AppendCanonicalIndex(PackageReference reference, CanonicalIndex index)
         {
-            if (refs.Canonicals != null)
+            var folder = cache.PackageContentFolder(reference);
+            if (index.Canonicals != null)
             {
-                foreach (var item in refs.Canonicals)
+                foreach (var item in index.Canonicals)
                 {
-                    var path = Path.Combine(contentFolder, item.Value);
-                    references.Add(new CanonicalFileReference { Package = packref, Canonical = item.Key, FileName = path });
+                    var path = Path.Combine(folder, item.Value);
+                    references.Add(new CanonicalFileReference { Package = reference, Canonical = item.Key, FileName = path });
                 }
             }
         }

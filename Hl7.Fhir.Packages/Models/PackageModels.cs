@@ -72,8 +72,10 @@ namespace Hl7.Fhir.Packages
         public Dictionary<string, string> MissingDependencies;
     }
 
-    public class CanonicalReferences
+    public class CanonicalIndex
     {
+        public DateTimeOffset date;
+
         [JsonProperty(PropertyName = "canonicals")]
         public Dictionary<string, string> Canonicals;
     }

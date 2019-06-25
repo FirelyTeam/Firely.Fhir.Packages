@@ -13,7 +13,7 @@ namespace Hl7.Fhir.Packages
     {
         readonly string folder;
         public PackageCache Cache { get; }
-        public PackageIndex Index { get; }
+        public PackageScopeIndex Index { get; }
         public PackageClient Client { get; }
         public IPackageInstaller Installer { get; }
 
@@ -22,7 +22,7 @@ namespace Hl7.Fhir.Packages
             this.folder = folder;
 
             Cache = PackageFactory.GlobalPackageCache();
-            Index = new PackageIndex(Cache, folder);
+            Index = new PackageScopeIndex(Cache, folder);
             Client = PackageClient.Create();
             Installer = new PackageInstaller(Client, Cache, null);
         }
@@ -112,13 +112,12 @@ namespace Hl7.Fhir.Packages
 
     }
 
-
-    public static class ProjectExtensions
-    {
-        public static IEnumerable<string> PackageContenFolders(this Project project)
-        {
-            return project.Index.GetPackageContentFolders();
-        }
-    }
+    //public static class ProjectExtensions
+    //{
+    //    public static IEnumerable<string> PackageContenFolders(this Project project)
+    //    {
+    //        return project.Index.GetPackageContentFolders();
+    //    }
+    //}
 
 }

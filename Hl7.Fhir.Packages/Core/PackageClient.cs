@@ -17,14 +17,13 @@ namespace Hl7.Fhir.Packages
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
 
             return new PackageClient(urlprovider, insecure);
-
+            
         }
 
         public static PackageClient Create()
         {
-            var source = "https://packages.simplifier.net";
-            var urlprovider = new FhirPackageUrlProvider(source);
-            return new PackageClient(urlprovider);
+            var provider = PackageUrlProvider.Localhost;
+            return new PackageClient(provider);
         }
 
         public PackageClient(IPackageUrlProvider urlProvider, bool insecure = false)
