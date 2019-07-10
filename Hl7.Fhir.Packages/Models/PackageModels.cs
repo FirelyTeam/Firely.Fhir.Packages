@@ -37,6 +37,9 @@ namespace Hl7.Fhir.Packages
 
         [JsonProperty(PropertyName = "url")]
         public string Url;
+
+        [JsonProperty(PropertyName = "deprecated")]
+        public string Deprecated;
     }
 
     public class PackageManifest
