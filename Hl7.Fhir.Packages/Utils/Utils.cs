@@ -8,7 +8,7 @@ namespace Hl7.Fhir.Packages
 
     }
 
-    public static class Utils
+    public static class Helpers
     {
         // Missing in netstandard.
         public static string[] Split(this string s, string separator)
