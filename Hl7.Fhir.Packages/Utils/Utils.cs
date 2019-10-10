@@ -16,15 +16,6 @@ namespace Hl7.Fhir.Packages
             return s.Split(new string[] { separator }, StringSplitOptions.None);
         }
 
-        public static string Coalesce(this string s, params string[] values)
-        {
-            foreach(string value in values)
-            {
-                if (!(string.IsNullOrEmpty(value))) return value;
-            }
-            return null;
-        }
-
         public static (string left, string right) Splice(this string s, char separator)
         {
             var splice = s.Split(new char[] { separator }, count: 2);
@@ -43,8 +34,7 @@ namespace Hl7.Fhir.Packages
 
         public static bool IsValidUrl(string source)
         {
-            Uri uriResult;
-            return Uri.TryCreate(source, UriKind.Absolute, out uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+            return Uri.TryCreate(source, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
 
         public static bool IsUrl(string pattern)
