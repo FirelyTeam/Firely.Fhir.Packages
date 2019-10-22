@@ -35,6 +35,9 @@ namespace Hl7.Fhir.Packages
         [JsonProperty(PropertyName = "description")]
         public string Description;
 
+        [JsonProperty(PropertyName = "author")]
+        public string Author;
+
         [JsonProperty(PropertyName = "url")]
         public string Url;
 
@@ -52,6 +55,9 @@ namespace Hl7.Fhir.Packages
 
         [JsonProperty(PropertyName = "description")]
         public string Description;
+
+        [JsonProperty(PropertyName = "author")]
+        public string Author;
 
         [JsonProperty(PropertyName = "dependencies")]
         public Dictionary<string, string> Dependencies;
