@@ -39,5 +39,10 @@ namespace Hl7.Fhir.Packages
             return new PackageReference(dependency.Name, version.ToString());
         }
 
+        public static bool Has(this Versions versions, string version)
+        {
+            var v = new Version(version);
+            return versions.Has(v);
+        }
     }
 }

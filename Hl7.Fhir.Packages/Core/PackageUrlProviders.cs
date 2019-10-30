@@ -1,5 +1,13 @@
 ﻿namespace Hl7.Fhir.Packages
 { 
+
+    public enum PublishMode
+    {
+        New,
+        Existing,
+        Any
+    }
+
     public class NodePackageUrlProvider : IPackageUrlProvider
     {
         public string Root { get; private set; } 
@@ -22,6 +30,11 @@
                 : $"{Root}/@{reference.Scope}/{reference.Name}/-/{reference.Name}-{reference.Version}.tgz";
         }
 
+        public string GetPublishUrl(int fhirVersion, PackageReference reference, PublishMode mode)
+        { 
+            return $"{Root}/r{fhirVersion}/{reference.Name}";
+        }
+
         public override string ToString() => $"(NPM) {Root}";
         
     }
@@ -40,6 +53,11 @@
         public string GetPackageUrl(PackageReference reference) => $"{Root}/{reference.Name}/{reference.Version}";
 
         public override string ToString() => $"(FHIR) {Root}";
+
+        public string GetPublishUrl(int fhirVersion, PackageReference reference, PublishMode mode)
+        {
+            return $"{Root}/r{fhirVersion}?publishMode={mode}";
+        }
     }
 
     public static class PackageUrlProvider
@@ -47,7 +65,8 @@
         public static IPackageUrlProvider Npm => new NodePackageUrlProvider("https://registry.npmjs.org");
         public static IPackageUrlProvider Simplifier => new FhirPackageUrlProvider("https://packages.simplifier.net");
         public static IPackageUrlProvider SimplifierNpm => new NodePackageUrlProvider("https://packages.simplifier.net");
-        public static IPackageUrlProvider Staging => new NodePackageUrlProvider("https://packages-staging.simplifier.net");
+        public static IPackageUrlProvider Staging => new FhirPackageUrlProvider("https://packages-staging.simplifier.net");
+        public static IPackageUrlProvider StagingNpm => new NodePackageUrlProvider("https://packages-staging.simplifier.net");
         public static IPackageUrlProvider Localhost => new FhirPackageUrlProvider("http://packages.simplifier.ro/");
 
     }

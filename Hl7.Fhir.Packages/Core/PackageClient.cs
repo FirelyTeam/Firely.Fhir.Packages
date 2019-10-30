@@ -102,6 +102,15 @@ namespace Hl7.Fhir.Packages
             return await httpClient.GetByteArrayAsync(url);
         }
 
+        public async ValueTask<HttpStatusCode> Publish(PackageReference reference, byte[] buffer)
+        {
+            string url = urlProvider.GetPublishUrl(3, reference, PublishMode.Any);
+            var content = new ByteArrayContent(buffer);
+            var response = await httpClient.PostAsync(url, content);
+
+            return response.StatusCode;
+        }
+
         #region IDisposable
 
         bool disposed;
@@ -159,6 +168,6 @@ namespace Hl7.Fhir.Packages
             return result.Select(c => c.Name).ToList();
         }
 
-
+        
     }
 }
