@@ -53,6 +53,15 @@ namespace Hl7.Fhir.Packages
             return range.MaxSatisfying(list);
         }
 
+        public bool Has(Version version)
+        {
+            foreach(var item in list)
+            {
+                if (item == version) return true;
+            }
+            return false;
+        }
+
         public bool IsEmpty => list is null || list.Count == 0;
     }
 }
