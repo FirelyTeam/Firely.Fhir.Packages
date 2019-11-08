@@ -62,6 +62,9 @@ namespace Hl7.Fhir.Packages
         [JsonProperty(PropertyName = "dependencies")]
         public Dictionary<string, string> Dependencies;
 
+        [JsonProperty(PropertyName = "fhirVersions")]
+        public List<string> FhirVersions;
+
         [JsonProperty(PropertyName = "devDependencies")]
         public Dictionary<string, string> DevDependencies;
 

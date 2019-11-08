@@ -56,7 +56,8 @@
 
         public string GetPublishUrl(int fhirVersion, PackageReference reference, PublishMode mode)
         {
-            return $"{Root}/r{fhirVersion}?publishMode={mode}";
+            string url = $"{Root}/r{fhirVersion}?publishMode={mode}";
+            return url;
         }
     }
 
