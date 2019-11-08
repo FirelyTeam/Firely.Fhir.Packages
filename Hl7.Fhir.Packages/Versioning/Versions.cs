@@ -6,7 +6,7 @@ namespace Hl7.Fhir.Packages
 {
     public class Versions
     {
-        List<Version> list = new List<Version>();
+        readonly List<Version> list = new List<Version>();
 
         public IReadOnlyCollection<Version> Items => list;
 

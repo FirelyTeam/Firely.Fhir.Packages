@@ -15,21 +15,22 @@ namespace Hl7.Fhir.Packages
         public static PackageClient Create(string source, bool npm = false, bool insecure = false)
         {
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
+            var httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
 
-            return new PackageClient(urlprovider, insecure);
+            return new PackageClient(urlprovider, httpClient);
             
         }
 
         public static PackageClient Create()
         {
-            var provider = PackageUrlProvider.Localhost;
+            var provider = PackageUrlProvider.Simplifier;
             return new PackageClient(provider);
         }
 
-        public PackageClient(IPackageUrlProvider urlProvider, bool insecure = false)
+        public PackageClient(IPackageUrlProvider urlProvider, HttpClient client = null)
         {
             this.urlProvider = urlProvider;
-            this.httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
+            this.httpClient = client ?? new HttpClient();
         }
 
         readonly IPackageUrlProvider urlProvider;
@@ -102,9 +103,9 @@ namespace Hl7.Fhir.Packages
             return await httpClient.GetByteArrayAsync(url);
         }
 
-        public async ValueTask<HttpStatusCode> Publish(PackageReference reference, byte[] buffer)
+        public async ValueTask<HttpStatusCode> Publish(PackageReference reference, int fhirVersion, byte[] buffer)
         {
-            string url = urlProvider.GetPublishUrl(3, reference, PublishMode.Any);
+            string url = urlProvider.GetPublishUrl(fhirVersion, reference, PublishMode.Any);
             var content = new ByteArrayContent(buffer);
             var response = await httpClient.PostAsync(url, content);
 

@@ -30,6 +30,8 @@ namespace Hl7.Fhir.Packages
         public PackageManifest ReadManifest()
         {
             var manifest = ManifestFile.ReadFromFolder(folder);
+            // todo: we could add a check for the FhirVersion in the package.json here.
+            // Since Torinox (and other clients will usually be FHIRVersion specific.
             return manifest;
         }
 
@@ -44,7 +46,7 @@ namespace Hl7.Fhir.Packages
             await Installer.Restore(manifest);
         }
 
-        public void Init(string pkgname = null, string version = null)
+        public void Init(string pkgname, int fhirVersion)
         {
             var manifest = ReadManifest();
             if (manifest != null)
@@ -60,7 +62,7 @@ namespace Hl7.Fhir.Packages
                 throw new Exception($"Invalid package name {pkgname}");
             }
 
-            manifest = ManifestFile.Create(pkgname);
+            manifest = ManifestFile.Create(pkgname, fhirVersion);
             ManifestFile.WriteToFolder(manifest, folder);
         }
            
@@ -75,8 +77,8 @@ namespace Hl7.Fhir.Packages
 
         public void Remove(string package)
         {
-            var manifest = ManifestFile.ReadOrCreate(folder);
-            if (manifest.Dependencies.Keys.Contains(package))
+            var manifest = ManifestFile.ReadFromFolder(folder);
+            if (manifest is object && manifest.Dependencies.Keys.Contains(package))
             {
                 manifest.Dependencies.Remove(package);
                 ManifestFile.WriteToFolder(manifest, folder, merge: true);

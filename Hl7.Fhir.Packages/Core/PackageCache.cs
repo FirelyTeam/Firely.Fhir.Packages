@@ -117,7 +117,7 @@ namespace Hl7.Fhir.Packages
             foreach(var folder in folders)
             {
                 var entry = Disk.GetFolderName(folder);
-                var idx = entry.IndexOf('-');
+                var idx = entry.IndexOfAny(new[] { '-', '#' });
                 yield return new PackageReference { Name = entry.Substring(0, idx), Version = entry.Substring(idx + 1) };
             }
         }

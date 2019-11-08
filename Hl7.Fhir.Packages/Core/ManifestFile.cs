@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System;
 
 namespace Hl7.Fhir.Packages
 {
@@ -19,13 +20,13 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public static PackageManifest ReadOrCreate(string folder)
+        public static PackageManifest ReadOrCreate(string folder, string fhirVersion)
         {
             var manifest = ReadFromFolder(folder);
             if (manifest is null)
             {
                 var name = CleanPackageName(Disk.GetFolderName(folder));
-                manifest = Create(name);
+                manifest = Create(name, fhirVersion);
             }
             return manifest;
         }
@@ -51,15 +52,26 @@ namespace Hl7.Fhir.Packages
             return Read(path);
         }
 
-        public static PackageManifest Create(string name)
+        public static PackageManifest Create(string name, string fhirVersion)
         {
+            int version = FhirVersions.Parse(fhirVersion);
+            if (version <= 0) throw new ArgumentException($"Fhir Version is not valid: {fhirVersion}");
+            
             return new PackageManifest
             {
                 Name = name,
                 Description = "Put a description here",
                 Version = "0.1.0",
+                FhirVersions = new List<string> { FhirVersions.GetFhirSpecVersion(version) },
                 Dependencies = new Dictionary<string, string>()
             };
+
+        }
+
+        public static PackageManifest Create(string name, int version)
+        {
+            var fhirVersion = FhirVersions.GetFhirSpecVersion(version);
+            return Create(name, fhirVersion);
         }
 
         public static void WriteToFolder(PackageManifest manifest, string folder, bool merge = false)
