@@ -3,11 +3,6 @@ using System.Collections.Generic;
 
 namespace Hl7.Fhir.Packages
 {
-    public static class PackageUtils
-    {
-
-    }
-
     public static class Helpers
     {
         // Missing in netstandard.

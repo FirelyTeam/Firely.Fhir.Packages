@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hl7.Fhir.Packages
 {
@@ -69,7 +70,7 @@ namespace Hl7.Fhir.Packages
 
         public static string PackageFolderName(PackageReference reference)
         {
-            return reference.Name + "-" + reference.Version;
+            return reference.Name + "#" + reference.Version;
         }
 
         public IEnumerable<string> GetPackageRootFolders()
@@ -146,6 +147,14 @@ namespace Hl7.Fhir.Packages
         public static IEnumerable<PackageReference> GetInstalledVersions(this PackageCache cache, string pkgname)
         {
             return cache.GetPackageReferences().WithName(pkgname);
+        }
+
+        public async static ValueTask<bool> HasMatch(this PackageCache cache, PackageDependency dependency)
+        {
+            var references = cache.GetInstalledVersions(dependency.Name);
+            var versions = references.ToVersions();
+            var reference = versions.Resolve(dependency);
+            return await Task.FromResult(reference.Found);
         }
 
         public static PackageManifest InstallFromFile(this PackageCache cache, string path)

@@ -46,7 +46,6 @@ namespace Hl7.Fhir.Packages
         }
 
 
-
         private void Report(string message)
         {
             report?.Invoke(message);
@@ -84,6 +83,11 @@ namespace Hl7.Fhir.Packages
             {
                 Report($"Error: could not find manifest for: {reference.Name}-{reference.Version}. Skipped installing dependencies.");
             }
+        }
+
+        public async ValueTask<bool> IsInstalled(PackageDependency dependency)
+        {
+            return await cache.HasMatch(dependency);
         }
     }
 
