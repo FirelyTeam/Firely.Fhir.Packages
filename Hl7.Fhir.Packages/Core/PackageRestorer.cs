@@ -26,22 +26,26 @@ namespace Hl7.Fhir.Packages
         {
             var reference = await installer.ResolveDependency(dependency);
 
-            if (reference.NotFound)
+            if (reference.Found)
             {
-                dependencies.AddMissing(dependency);
-                return;
-                throw new Exception($"Package {reference} was not found.");
-            }
+                if (dependencies.Add(reference)) // conflicts are resolved by: highest = winner.
+                {
+                    var manifest = await installer.InstallPackage(reference);
 
-            if (dependencies.Add(reference)) // conflicts are resolved by: highest = winner.
+                    if (manifest != null)
+                        await installer.RestoreManifest(manifest, dependencies);
+                }
+
+            }
+            else 
             {
-                var manifest = await installer.InstallPackage(reference);
-
-                if (manifest != null)
-                    await installer.RestoreManifest(manifest, dependencies);
+                var cachematch = await installer.IsInstalled(dependency);
+                if (!cachematch)
+                {
+                    dependencies.AddMissing(dependency);
+                    
+                }
             }
-            
-            
         }
     }
 
