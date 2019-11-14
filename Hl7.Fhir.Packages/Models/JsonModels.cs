@@ -100,7 +100,7 @@ namespace Hl7.Fhir.Packages
     }
 
 
-    public static class PackageModelExtensions
+    public static class JsonModelExtensions
     {
         public static PackageReference GetPackageReference(this PackageManifest manifest)
         {
