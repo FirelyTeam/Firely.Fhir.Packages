@@ -114,12 +114,4 @@ namespace Hl7.Fhir.Packages
 
     }
 
-    //public static class ProjectExtensions
-    //{
-    //    public static IEnumerable<string> PackageContenFolders(this Project project)
-    //    {
-    //        return project.Index.GetPackageContentFolders();
-    //    }
-    //}
-
 }

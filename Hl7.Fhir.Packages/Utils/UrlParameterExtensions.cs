@@ -35,7 +35,6 @@ namespace Hl7.Fhir.Packages
 
             return builder.ToString();
         }
-
         
     }
 }

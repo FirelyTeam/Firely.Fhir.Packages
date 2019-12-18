@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Hl7.Fhir.Packages
 {
- 
+
     public class PackageClient : IDisposable
     {
         public static PackageClient Create(string source, bool npm = false, bool insecure = false)
@@ -22,7 +22,7 @@ namespace Hl7.Fhir.Packages
 
         public static PackageClient Create()
         {
-            var provider = PackageUrlProvider.Simplifier;
+            var provider = PackageUrlProviders.Simplifier;
             return new PackageClient(provider);
         }
 
@@ -138,36 +138,5 @@ namespace Hl7.Fhir.Packages
 
         public override string ToString() => urlProvider.ToString();
 
-    }
-
-
-    public static class PackageClientExtensions
-    {
-        public static async ValueTask<string> DownloadListingRawAsync(this PackageClient client, PackageReference reference)
-        {
-            if (reference.Version != null && reference.Version.StartsWith("git"))
-            {
-                throw new NotImplementedException("We cannot yet resolve git references");
-            }
-
-            return await client.DownloadListingRawAsync(reference.Name);
-        }
-
-
-        public static async ValueTask<IList<string>> FindPackageByName(this PackageClient client, string partial)
-        {
-            // backwards compatibility
-            var result = await client.CatalogPackagesAsync(pkgname: partial);
-            return result.Select(c => c.Name).ToList();
-        }
-
-        public static async ValueTask<IList<string>> FindPackagesByCanonical(this PackageClient client, string canonical)
-        {
-            // backwards compatibility
-            var result = await client.CatalogPackagesAsync(canonical: canonical);
-            return result.Select(c => c.Name).ToList();
-        }
-
-        
     }
 }

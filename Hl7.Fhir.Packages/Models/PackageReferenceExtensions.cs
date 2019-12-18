@@ -45,7 +45,6 @@ namespace Hl7.Fhir.Packages
             return list;
         }
 
-
         public static IEnumerable<PackageDependency> GetDependencies(this PackageManifest manifest)
         {
             if (manifest.Dependencies is null) yield break;

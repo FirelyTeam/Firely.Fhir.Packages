@@ -57,7 +57,6 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-
         public static void WriteToFolder(Dependencies dependencies, string folder)
         {
             var dto = dependencies.CreateLockFileDto();
