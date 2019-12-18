@@ -63,14 +63,24 @@ namespace Hl7.Fhir.Packages
 
         public string PackageContentFolder(PackageReference reference)
         {
-            var pkgfolder = PackageFolderName(reference);
-            var folder = Path.Combine(Root, pkgfolder, DiskNames.PackageFolder);
-            return folder;
+            // for backwards compatibility:
+            {
+                var pkgfolder = PackageFolderName(reference, '-');
+                var folder = Path.Combine(Root, pkgfolder, DiskNames.PackageFolder);
+                if (Directory.Exists(folder)) return folder;
+            }
+
+            // the new way:
+            {
+                var pkgfolder = PackageFolderName(reference, '#');
+                var folder = Path.Combine(Root, pkgfolder, DiskNames.PackageFolder);
+                return folder;
+            }
         }
 
-        public static string PackageFolderName(PackageReference reference)
+        public static string PackageFolderName(PackageReference reference, char glue = '#')
         {
-            return reference.Name + "#" + reference.Version;
+            return reference.Name + glue + reference.Version;
         }
 
         public IEnumerable<string> GetPackageRootFolders()
@@ -118,7 +128,7 @@ namespace Hl7.Fhir.Packages
             foreach(var folder in folders)
             {
                 var entry = Disk.GetFolderName(folder);
-                var idx = entry.IndexOfAny(new[] { '-', '#' });
+                var idx = entry.IndexOfAny(new[] { '-', '#' }); // backwards compatibility: also support '-'
                 yield return new PackageReference { Name = entry.Substring(0, idx), Version = entry.Substring(idx + 1) };
             }
         }

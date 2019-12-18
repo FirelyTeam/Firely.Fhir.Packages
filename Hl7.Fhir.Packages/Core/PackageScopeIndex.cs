@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,21 +9,21 @@ namespace Hl7.Fhir.Packages
     {
         readonly PackageCache cache;
         readonly Dependencies dependencies;
-        readonly List<CanonicalFileReference> references; // canonical->filename
+        readonly List<CanonicalFileReference> references = new List<CanonicalFileReference>(); // canonical->filename
         
         public PackageScopeIndex(PackageCache cache, Dependencies dependencies)
         {
             this.cache = cache;
             this.dependencies = dependencies;
-            references = new List<CanonicalFileReference>();
-            
-            IndexPackages(); // lazy?
+            IndexPackages(); 
         }
 
         public PackageScopeIndex(PackageCache cache, string folder)
         {
             this.cache = cache;
-            LockFile.ReadFromFolder(folder);
+            this.dependencies = LockFile.ReadFromFolder(folder);
+            if (dependencies is null) throw new ArgumentException("The folder does not contain a package lock file.");
+            IndexPackages();
         }
 
         public void IndexPackages()
@@ -37,7 +38,7 @@ namespace Hl7.Fhir.Packages
         public void AddPackageToIndex(PackageReference reference)
         {
             var manifest = cache.ReadManifest(reference);
-            if (manifest != null && manifest.Canonicals != null)
+            if (manifest is object && manifest.Canonicals is object)
             {
                 IndexManifest(reference, manifest);
             }
@@ -52,7 +53,7 @@ namespace Hl7.Fhir.Packages
         public void IndexManifest(PackageReference reference, PackageManifest manifest)
         {
             string folder = cache.PackageContentFolder(reference);
-            if (manifest.Canonicals != null)
+            if (manifest.Canonicals is object)
             {
                 foreach (var item in manifest.Canonicals)
                 {
@@ -65,7 +66,7 @@ namespace Hl7.Fhir.Packages
         public void AppendCanonicalIndex(PackageReference reference, CanonicalIndex index)
         {
             var folder = cache.PackageContentFolder(reference);
-            if (index.Canonicals != null)
+            if (index.Canonicals is object)
             {
                 foreach (var item in index.Canonicals)
                 {
@@ -77,8 +78,15 @@ namespace Hl7.Fhir.Packages
 
         public bool TryFindReference(string canonical, out CanonicalFileReference reference)
         {
+            if (references is null)
+            {
+                // the index was not initialized!
+                reference = null;
+                return false;
+            }
+
             reference = references.FirstOrDefault(r => r.Canonical == canonical);
-            return reference != null;
+            return reference is object;
         }
 
         public string GetFile(CanonicalFileReference reference)
