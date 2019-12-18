@@ -108,7 +108,7 @@ namespace Hl7.Fhir.Packages
             var content = new ByteArrayContent(buffer);
             var response = await httpClient.PostAsync(url, content);
 
-            return response.StatusCode;
+            return (response.StatusCode);
         }
 
         #region IDisposable

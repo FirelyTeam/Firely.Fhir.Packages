@@ -12,9 +12,9 @@
     {
         public string Root { get; private set; } 
 
-        public NodePackageUrlProvider(string root = null)
+        public NodePackageUrlProvider(string root)
         {
-            this.Root = root?.TrimEnd('/') ?? "https://registry.npmjs.org";
+            this.Root = root?.TrimEnd('/') ;
         }
 
         public string GetPackageListingUrl(string scope, string name) => $"{Root}/@{scope}%2F{name}";
