@@ -21,32 +21,25 @@ namespace Firely.Fhir.Packages
             else return null;
         }
 
-        public static void Write(LockFileDto json, string path)
-        {
-            json.Updated = DateTime.Now;
-            var content = Parser.WriteLockFileDto(json);
-            File.WriteAllText(path, content);
-        }
-
         public static bool IsOutdated(string folder)
         {
-            var man_path = Path.Combine(folder, DiskNames.Manifest);
+            var man_path = Path.Combine(folder, PackageConsts.Manifest);
             var man_time = File.GetLastWriteTimeUtc(man_path);
 
-            var asset_path = Path.Combine(folder, DiskNames.PackageLockFile);
+            var asset_path = Path.Combine(folder, PackageConsts.LockFile);
             var asset_time = File.GetLastWriteTimeUtc(asset_path);
             return asset_time < man_time;
         }
 
         public static Closure ReadFromFolder(string folder)
         {
-            var path = Path.Combine(folder, DiskNames.PackageLockFile);
+            var path = Path.Combine(folder, PackageConsts.LockFile);
             return Read(path);
         }
 
         public static Closure ReadFromFolderOrCreate(string folder)
         {
-            var path = Path.Combine(folder, DiskNames.PackageLockFile);
+            var path = Path.Combine(folder, PackageConsts.LockFile);
             if (File.Exists(path))
             {
                 return Read(path);
@@ -59,9 +52,25 @@ namespace Firely.Fhir.Packages
 
         public static void WriteToFolder(Closure closure, string folder)
         {
-            var dto = closure.CreateLockFileDto();
-            var path = Path.Combine(folder, DiskNames.PackageLockFile);
+            var dto = CreateLockFileJson(closure);
+            var path = Path.Combine(folder, PackageConsts.LockFile);
             Write(dto, path);
+        }
+
+        private static void Write(LockFileJson json, string path)
+        {
+            json.Updated = DateTime.Now;
+            var content = Parser.WriteLockFileDto(json);
+            File.WriteAllText(path, content);
+        }
+
+        private static LockFileJson CreateLockFileJson(Closure closure)
+        {
+            return new LockFileJson
+            {
+                PackageReferences = closure.References.ToDictionary(),
+                MissingDependencies = closure.Missing.ToDictionary()
+            };
         }
     }
 }

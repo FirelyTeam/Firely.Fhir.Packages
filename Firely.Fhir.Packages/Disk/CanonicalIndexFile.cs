@@ -24,7 +24,7 @@ namespace Firely.Fhir.Packages
 
         public static CanonicalIndex ReadFromFolder(string folder)
         {
-            var path = Path.Combine(folder, DiskNames.CanonicalIndexFile);
+            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
             return Read(path);
         }
 
@@ -47,13 +47,13 @@ namespace Firely.Fhir.Packages
 
         private static bool ExistsIn(string folder)
         {
-            var path = Path.Combine(folder, DiskNames.CanonicalIndexFile);
+            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
             return File.Exists(path);
         }
 
         private static void WriteToFolder(CanonicalIndex references, string folder)
         {
-            var path = Path.Combine(folder, DiskNames.CanonicalIndexFile);
+            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
             Write(references, path);
         }
 

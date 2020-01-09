@@ -48,7 +48,7 @@ namespace Firely.Fhir.Packages
 
         public static PackageManifest ReadFromFolder(string folder)
         {
-            var path = Path.Combine(folder, DiskNames.Manifest);
+            var path = Path.Combine(folder, PackageConsts.Manifest);
             return Read(path);
         }
 
@@ -76,7 +76,7 @@ namespace Firely.Fhir.Packages
 
         public static void WriteToFolder(PackageManifest manifest, string folder, bool merge = false)
         {
-            string path = Path.Combine(folder, DiskNames.Manifest);
+            string path = Path.Combine(folder, PackageConsts.Manifest);
             Write(manifest, path, merge);
         }
 

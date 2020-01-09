@@ -54,12 +54,12 @@ namespace Firely.Fhir.Packages
             return jcontent.ToString()+"\n";
         }
 
-        public static LockFileDto ReadLockFileJson(string content)
+        public static LockFileJson ReadLockFileJson(string content)
         {
-            return JsonConvert.DeserializeObject<LockFileDto>(content);
+            return JsonConvert.DeserializeObject<LockFileJson>(content);
         }
 
-        public static string WriteLockFileDto(LockFileDto dto)
+        public static string WriteLockFileDto(LockFileJson dto)
         {
             return JsonConvert.SerializeObject(dto, Formatting.Indented)+"\n";
         }

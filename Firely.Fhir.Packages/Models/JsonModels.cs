@@ -72,7 +72,7 @@ namespace Firely.Fhir.Packages
         public Dictionary<string, string> Canonicals;
     }
 
-    public class LockFileDto
+    public class LockFileJson
     {
         [JsonProperty(PropertyName = "updated")]
         public DateTime Updated;
@@ -108,7 +108,7 @@ namespace Firely.Fhir.Packages
             return reference;
         }
 
-        public static IEnumerable<PackageReference> GetPackageReferences(this LockFileDto dto)
+        public static IEnumerable<PackageReference> GetPackageReferences(this LockFileJson dto)
         {
             foreach (var item in dto.PackageReferences) yield return item; // implicit conversion
         }

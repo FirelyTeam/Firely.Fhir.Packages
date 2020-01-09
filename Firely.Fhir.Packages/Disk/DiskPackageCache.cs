@@ -61,14 +61,14 @@ namespace Firely.Fhir.Packages
             // for backwards compatibility:
             {
                 var pkgfolder = PackageFolderName(reference, '-');
-                var folder = Path.Combine(Root, pkgfolder, DiskNames.PackageFolder);
+                var folder = Path.Combine(Root, pkgfolder, PackageConsts.PackageFolder);
                 if (Directory.Exists(folder)) return folder;
             }
 
             // the new way:
             {
                 var pkgfolder = PackageFolderName(reference, '#');
-                var folder = Path.Combine(Root, pkgfolder, DiskNames.PackageFolder);
+                var folder = Path.Combine(Root, pkgfolder, PackageConsts.PackageFolder);
                 return folder;
             }
         }
@@ -105,7 +105,7 @@ namespace Firely.Fhir.Packages
 
         private IEnumerable<string> GetPackageContentFolders()
         {
-            return GetPackageRootFolders().Select(f => Path.Combine(f, DiskNames.PackageFolder));
+            return GetPackageRootFolders().Select(f => Path.Combine(f, PackageConsts.PackageFolder));
         }
 
         private IEnumerable<string> GetPackageContentFolders(IEnumerable<PackageReference> references)

@@ -63,15 +63,6 @@ namespace Firely.Fhir.Packages
         {
             if (!Missing.Contains(reference)) Missing.Add(reference);
         }
-        
-        public LockFileDto CreateLockFileDto()
-        {
-            return new LockFileDto
-            {
-                PackageReferences = References.ToDictionary(),
-                MissingDependencies = Missing.ToDictionary()
-            };
-        }
 
     }
 

@@ -16,7 +16,7 @@ namespace Firely.Fhir.Packages
 
         public static bool IsManifestFile(string filepath)
         {
-            return Path.GetFileName(filepath).ToLower() == DiskNames.Manifest;
+            return Path.GetFileName(filepath).ToLower() == PackageConsts.Manifest;
         }
 
         public static IEnumerable<string> FilesToPack(string folder)

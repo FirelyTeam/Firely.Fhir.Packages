@@ -13,7 +13,7 @@ namespace Firely.Fhir.Packages
 
         public static PackageManifest ExtractManifestFromPackageFile(string path)
         {
-            string file = Path.Combine(PACKAGE, DiskNames.Manifest);
+            string file = Path.Combine(PACKAGE, PackageConsts.Manifest);
             var entry = Tar.ExtractMatchingFiles(path, file).FirstOrDefault();
             return Parser.ReadManifest(entry.Buffer);
         }
@@ -26,7 +26,7 @@ namespace Firely.Fhir.Packages
 
         public static string PackFolder(string name, string folder)
         {
-            var manifest = FileEntries.ReadFileEntry(Path.Combine(folder, DiskNames.Manifest)).ChangeFolder(PACKAGE);
+            var manifest = FileEntries.ReadFileEntry(Path.Combine(folder, PackageConsts.Manifest)).ChangeFolder(PACKAGE);
             var entries = FileEntries.ReadFilesToPack(folder).ChangeFolder(PACKAGE);
 
             return Tar.PackToDisk(name, manifest, entries);
@@ -42,7 +42,7 @@ namespace Firely.Fhir.Packages
         {
             return new FileEntry
             {
-                FilePath = Path.Combine(PACKAGE, DiskNames.Manifest),
+                FilePath = Path.Combine(PACKAGE, PackageConsts.Manifest),
                 Buffer = manifest.ToByteArray()
             };
         }
@@ -73,7 +73,7 @@ namespace Firely.Fhir.Packages
             foreach (var entry in entries)
             {
                 var filename = Path.GetFileName(entry.FilePath);
-                if (filename == DiskNames.Manifest)
+                if (filename == PackageConsts.Manifest)
                 {
                     manifest = Parser.ReadManifest(entry.Buffer);
                 }
