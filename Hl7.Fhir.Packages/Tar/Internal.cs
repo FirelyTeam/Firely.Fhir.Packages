@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using ICSharpCode.SharpZipLib.GZip;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
     public static class Tar
     {

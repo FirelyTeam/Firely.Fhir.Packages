@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
     public static class ManifestFile
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
     public static class IPackageInstallerExtensions
     {

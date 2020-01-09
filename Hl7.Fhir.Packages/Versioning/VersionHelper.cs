@@ -2,7 +2,7 @@
 using System.Linq;
 using SemVer;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
 
     public static class VersionsExtensions

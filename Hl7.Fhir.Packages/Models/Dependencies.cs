@@ -1,7 +1,7 @@
 ﻿using SemVer;
 using System.Collections.Generic;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
     public class Dependencies
     {

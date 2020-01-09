@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Text;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
     public static class UrlParameterExtensions
     {

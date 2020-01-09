@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
 
     public class PackageClient : IDisposable

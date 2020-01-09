@@ -2,7 +2,7 @@
 using Hl7.Fhir.Serialization;
 using System.IO;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
     public static class ElementNavigation
     {

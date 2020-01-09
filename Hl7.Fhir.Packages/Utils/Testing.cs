@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
 
 

@@ -1,4 +1,4 @@
-﻿namespace Hl7.Fhir.Packages
+﻿namespace Firely.Fhir.Packages
 {
 
     public enum PublishMode

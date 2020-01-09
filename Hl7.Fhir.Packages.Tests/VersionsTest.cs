@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Hl7.Fhir.Packages.Tests
+namespace Firely.Fhir.Packages.Tests
 {
     [TestClass]
     public class VersionsTest

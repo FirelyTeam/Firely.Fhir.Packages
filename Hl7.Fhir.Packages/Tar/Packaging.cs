@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
 
     public static partial class Packaging

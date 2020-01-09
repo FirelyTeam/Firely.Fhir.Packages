@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
     public class FileEntry
     {

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Hl7.Fhir.Packages
+namespace Firely.Fhir.Packages
 {
     /// <summary>
     /// Memory stream that handles custom disposing. We should be able to do without.
