@@ -8,15 +8,15 @@ namespace Firely.Fhir.Packages
     public static class CanonicalIndexFile
     {
 
-        public static CanonicalIndex GetIndexFromFolder(string folder)
+        public static CanonicalIndex GetFromFolder(string folder)
         {
-            if (!IndexExistsIn(folder)) return CreateIndexFile(folder);
+            if (!ExistsIn(folder)) return Create(folder);
             return ReadFromFolder(folder);
         }
 
-        public static CanonicalIndex CreateIndexFile(string folder)
+        public static CanonicalIndex Create(string folder)
         {
-            var entries = GetIndexFromFolderContents(folder);
+            var entries = BuildIndexFromFolder(folder);
             var index = new CanonicalIndex { Canonicals = entries, date = DateTimeOffset.Now };
             WriteToFolder(index, folder);
             return index;
@@ -45,7 +45,7 @@ namespace Firely.Fhir.Packages
             File.WriteAllText(path, content);
         }
 
-        private static bool IndexExistsIn(string folder)
+        private static bool ExistsIn(string folder)
         {
             var path = Path.Combine(folder, DiskNames.CanonicalIndexFile);
             return File.Exists(path);
@@ -57,7 +57,7 @@ namespace Firely.Fhir.Packages
             Write(references, path);
         }
 
-        public static string GetCanonicalFromFile(string filepath)
+        private static string GetCanonicalFromResourceFile(string filepath)
         {
             try
             {
@@ -71,12 +71,12 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private static Dictionary<string, string> GetCanonicalsFromFiles(IEnumerable<string> filepaths)
+        private static Dictionary<string, string> GetCanonicalsFromResourceFiles(IEnumerable<string> filepaths)
         {
             var dictionary = new Dictionary<string, string>();
             foreach (var filepath in filepaths)
             {
-                var canonical = GetCanonicalFromFile(filepath);
+                var canonical = GetCanonicalFromResourceFile(filepath);
                 if (canonical != null)
                 {
                     var filename = Path.GetFileName(filepath);
@@ -86,10 +86,10 @@ namespace Firely.Fhir.Packages
             return dictionary;
         }
 
-        private static Dictionary<string, string> GetIndexFromFolderContents(string folder)
+        private static Dictionary<string, string> BuildIndexFromFolder(string folder)
         {
             var filenames = Directory.GetFiles(folder);
-            return GetCanonicalsFromFiles(filenames);
+            return GetCanonicalsFromResourceFiles(filenames);
         }
     }
 }

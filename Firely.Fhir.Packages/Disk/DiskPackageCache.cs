@@ -52,7 +52,7 @@ namespace Firely.Fhir.Packages
         public CanonicalIndex GetCanonicalIndex(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
-            return CanonicalIndexFile.GetIndexFromFolder(folder);
+            return CanonicalIndexFile.GetFromFolder(folder);
         }
 
 
@@ -83,7 +83,7 @@ namespace Firely.Fhir.Packages
         private void CreateIndexFile(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
-            CanonicalIndexFile.CreateIndexFile(folder);
+            CanonicalIndexFile.Create(folder);
         }
 
         private static string PackageFolderName(PackageReference reference, char glue = '#')
