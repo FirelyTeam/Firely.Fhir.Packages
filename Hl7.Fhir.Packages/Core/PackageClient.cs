@@ -102,13 +102,13 @@ namespace Hl7.Fhir.Packages
             return await httpClient.GetByteArrayAsync(url);
         }
 
-        public async ValueTask<HttpStatusCode> Publish(PackageReference reference, int fhirVersion, byte[] buffer)
+        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, int fhirVersion, byte[] buffer)
         {
             string url = urlProvider.GetPublishUrl(fhirVersion, reference, PublishMode.Any);
             var content = new ByteArrayContent(buffer);
             var response = await httpClient.PostAsync(url, content);
 
-            return (response.StatusCode);
+            return response;
         }
 
         #region IDisposable
