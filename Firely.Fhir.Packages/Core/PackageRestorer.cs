@@ -18,11 +18,11 @@ namespace Firely.Fhir.Packages
         {
             foreach(PackageDependency reference in manifest.GetDependencies())
             {
-                await RestoreReference(installer, reference, closure);
+                await RestoreDependency(installer, reference, closure);
             }
         }
 
-        private static async Task RestoreReference(this PackageInstaller installer, PackageDependency dependency, Closure closure)
+        private static async Task RestoreDependency(this PackageInstaller installer, PackageDependency dependency, Closure closure)
         {
             var reference = await installer.ResolveDependency(dependency);
 
@@ -32,15 +32,15 @@ namespace Firely.Fhir.Packages
                 {
                     var manifest = await installer.InstallPackage(reference);
 
-                    if (manifest != null)
+                    if (manifest is object)
                         await installer.RestoreManifest(manifest, closure);
                 }
 
             }
             else 
             {
-                var cachematch = await installer.IsInstalled(dependency);
-                if (!cachematch)
+                var installed = await installer.IsInstalled(dependency);
+                if (!installed)
                 {
                     closure.AddMissing(dependency);
                     
