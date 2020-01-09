@@ -24,6 +24,7 @@
 
         public string GetPublishUrl(int fhirVersion, PackageReference reference, PublishMode mode)
         { 
+            // this is not yet made NPM compliant. 
             return $"{Root}/r{fhirVersion}/{reference.Name}";
         }
 

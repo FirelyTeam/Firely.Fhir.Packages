@@ -4,7 +4,7 @@ namespace Firely.Fhir.Packages
 {
     public static class IPackageInstallerExtensions
     {
-        public static async ValueTask<PackageReference> ResolveDependency(this IPackageInstaller installer, string pkgname, string range)
+        public static async ValueTask<PackageReference> ResolveDependency(this PackageInstaller installer, string pkgname, string range)
         {
             //this could be faster by caching --mh
             var dependency = new PackageDependency(pkgname, range);
@@ -12,7 +12,7 @@ namespace Firely.Fhir.Packages
 
         }
 
-        public static async ValueTask<PackageManifest> InstallPackage(this IPackageInstaller installer, string pkgname, string pkgversion)
+        public static async ValueTask<PackageManifest> InstallPackage(this PackageInstaller installer, string pkgname, string pkgversion)
         {
              var reference = await installer.ResolveDependency(pkgname, pkgversion);
             if (reference.Found)

@@ -2,8 +2,10 @@
 
 namespace Firely.Fhir.Packages
 {
-
-
+    /// <summary>
+    /// A package reference is a reference to a very specific version of a package. When you want to define a a range of versions that may quality, like 3.x, use PackageDependency
+    /// A PackageReference is used in a Scope or Closure while a PackageDependency is used in a Manifest.
+    /// </summary>
     public struct PackageReference
     {
         public string Scope;

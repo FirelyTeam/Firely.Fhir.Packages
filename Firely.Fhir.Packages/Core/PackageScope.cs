@@ -5,43 +5,43 @@ using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
-    public class PackageScopeIndex
+    public class PackageScope
     {
         readonly IPackageCache cache;
-        readonly Dependencies dependencies;
+        readonly Closure closure;
         readonly List<CanonicalFileReference> references = new List<CanonicalFileReference>(); // canonical->filename
         
-        public PackageScopeIndex(IPackageCache cache, Dependencies dependencies)
+        public PackageScope(IPackageCache cache, Closure dependencies)
         {
             this.cache = cache;
-            this.dependencies = dependencies;
+            this.closure = dependencies;
             IndexPackages(); 
         }
 
-        public PackageScopeIndex(IPackageCache cache, string folder)
+        public PackageScope(IPackageCache cache, string folder)
         {
             this.cache = cache;
-            this.dependencies = LockFile.ReadFromFolder(folder);
-            if (dependencies is null) throw new ArgumentException("The folder does not contain a package lock file.");
+            this.closure = LockFile.ReadFromFolder(folder);
+            if (closure is null) throw new ArgumentException("The folder does not contain a package lock file.");
             IndexPackages();
         }
 
-        public void IndexPackages()
+        private void IndexPackages()
         {
             references.Clear();
-            foreach (var reference in dependencies.References)
+            foreach (var reference in closure.References)
             {
                 AddPackageToIndex(reference);
             }
         }
 
-        public void AddPackageToIndex(PackageReference reference)
+        private void AddPackageToIndex(PackageReference reference)
         {
             var index = cache.GetCanonicalIndex(reference);
             AppendCanonicalIndex(reference, index);
         }
 
-        public void AppendCanonicalIndex(PackageReference reference, CanonicalIndex index)
+        private void AppendCanonicalIndex(PackageReference reference, CanonicalIndex index)
         {
             //var folder = cache.PackageContentFolder(reference);
             if (index.Canonicals is object)

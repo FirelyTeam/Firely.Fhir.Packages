@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Firely.Fhir.Packages
 {
 
-    public class PackageInstaller : IPackageInstaller
+    public class PackageInstaller
     {
         readonly PackageClient client;
         readonly IPackageCache cache;
@@ -51,7 +51,25 @@ namespace Firely.Fhir.Packages
             report?.Invoke(message);
         }
 
-        private async ValueTask InstallDependencies(IEnumerable<PackageDependency> dependencies)
+        public async ValueTask<bool> IsInstalled(PackageDependency dependency)
+        {
+            return await cache.HasMatch(dependency);
+        }
+
+        public async ValueTask InstallPackageAndDependencies(PackageReference reference)
+        {
+            var manifest = await InstallPackage(reference);
+            if (manifest is object)
+            {
+                await InstallDependencies(manifest);
+            }
+            else
+            {
+                Report($"Error: could not find manifest for: {reference.Name}-{reference.Version}. Skipped installing dependencies.");
+            }
+        }
+
+        public async ValueTask InstallDependencies(IEnumerable<PackageDependency> dependencies)
         {
             foreach (var dependency in dependencies)
             {
@@ -63,34 +81,17 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private async ValueTask InstallDependencies(PackageManifest manifest)
+        public async ValueTask InstallDependencies(PackageManifest manifest)
         {
-            
             // Report($"Installing Dependencies for: {manifest.Name} {manifest.Version}: ");
             var dependencies = manifest.GetDependencies();
             await InstallDependencies(dependencies);
 
         }
-        
-        private async ValueTask InstallPackageAndDependencies(PackageReference reference)
-        {
-            var manifest = await InstallPackage(reference);
-            if (manifest != null)
-            {
-                await InstallDependencies(manifest);
-            }
-            else
-            {
-                Report($"Error: could not find manifest for: {reference.Name}-{reference.Version}. Skipped installing dependencies.");
-            }
-        }
 
-        public async ValueTask<bool> IsInstalled(PackageDependency dependency)
-        {
-            return await cache.HasMatch(dependency);
-        }
     }
 
-   
+
+
 
 }

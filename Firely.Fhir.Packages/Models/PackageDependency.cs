@@ -2,6 +2,10 @@
 
 namespace Firely.Fhir.Packages
 {
+    /// <summary>
+    /// A packageDependency defines a version range for a specific package. If you want to target a very specific package version, use PackageReference
+    /// A PackageDependency is used in a Manifest, while the PackageReference is used in a Scope or Closure.
+    /// </summary>
     public struct PackageDependency
     {
         public string Name;

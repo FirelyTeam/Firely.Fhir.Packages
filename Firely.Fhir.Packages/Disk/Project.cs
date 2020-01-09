@@ -13,19 +13,20 @@ namespace Firely.Fhir.Packages
     {
         readonly string folder;
         public IPackageCache Cache { get; }
-        public PackageScopeIndex Index { get; }
+        public PackageScope Index { get; }
         public PackageClient Client { get; }
-        public IPackageInstaller Installer { get; }
+        public PackageInstaller Installer { get; }
 
-        public Project(string folder)
+        public Project(string folder, IPackageCache cache)
         {
             this.folder = folder;
-
-            Cache = new DiskPackageCache();
-            Index = new PackageScopeIndex(Cache, folder);
+            Cache = cache;
+            Index = new PackageScope(Cache, folder);
             Client = PackageClient.Create();
             Installer = new PackageInstaller(Client, Cache, null);
         }
+
+        public Project(string folder) : this(folder, new DiskPackageCache()) { }
 
         public PackageManifest ReadManifest()
         {

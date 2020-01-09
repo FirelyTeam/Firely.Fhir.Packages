@@ -5,13 +5,13 @@ namespace Firely.Fhir.Packages
 {
     public static class LockFile
     { 
-        public static Dependencies Read(string path)
+        public static Closure Read(string path)
         {
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
                 var dto = Parser.ReadLockFileJson(content);
-                return new Dependencies
+                return new Closure
                 {
                     References = dto.PackageReferences.ToPackageReferences(),
                     Missing = dto.MissingDependencies.ToPackageDependencies()
@@ -38,13 +38,13 @@ namespace Firely.Fhir.Packages
             return asset_time < man_time;
         }
 
-        public static Dependencies ReadFromFolder(string folder)
+        public static Closure ReadFromFolder(string folder)
         {
             var path = Path.Combine(folder, DiskNames.PackageLockFile);
             return Read(path);
         }
 
-        public static Dependencies ReadFromFolderOrCreate(string folder)
+        public static Closure ReadFromFolderOrCreate(string folder)
         {
             var path = Path.Combine(folder, DiskNames.PackageLockFile);
             if (File.Exists(path))
@@ -53,13 +53,13 @@ namespace Firely.Fhir.Packages
             }
             else
             {
-                return new Dependencies();
+                return new Closure();
             }
         }
 
-        public static void WriteToFolder(Dependencies dependencies, string folder)
+        public static void WriteToFolder(Closure closure, string folder)
         {
-            var dto = dependencies.CreateLockFileDto();
+            var dto = closure.CreateLockFileDto();
             var path = Path.Combine(folder, DiskNames.PackageLockFile);
             Write(dto, path);
         }
