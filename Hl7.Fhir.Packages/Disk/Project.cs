@@ -21,7 +21,7 @@ namespace Firely.Fhir.Packages
         {
             this.folder = folder;
 
-            Cache = PackageFactory.GlobalPackageCache();
+            Cache = new DiskPackageCache();
             Index = new PackageScopeIndex(Cache, folder);
             Client = PackageClient.Create();
             Installer = new PackageInstaller(Client, Cache, null);

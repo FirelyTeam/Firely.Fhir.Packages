@@ -16,6 +16,11 @@ namespace Firely.Fhir.Packages
             this.Root = root;
         }
 
+        public DiskPackageCache() 
+        {
+            this.Root = Platform.GetFhirPackageRoot();
+        }
+
         public bool IsInstalled(PackageReference reference)
         {
             string target = PackageContentFolder(reference);

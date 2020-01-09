@@ -66,7 +66,7 @@ namespace Firely.Fhir.Packages
             return reference is object;
         }
 
-        private string GetFile(CanonicalFileReference reference)
+        public string GetFile(CanonicalFileReference reference)
         {
             return cache.GetFileContent(reference.Package, reference.FileName);
 
