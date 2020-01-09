@@ -13,7 +13,7 @@ namespace Firely.Fhir.Packages
     {
         readonly string folder;
         public IPackageCache Cache { get; }
-        public PackageScope Index { get; }
+        public PackageScope Scope { get; }
         public PackageClient Client { get; }
         public PackageInstaller Installer { get; }
 
@@ -21,7 +21,7 @@ namespace Firely.Fhir.Packages
         {
             this.folder = folder;
             Cache = cache;
-            Index = new PackageScope(Cache, folder);
+            Scope = new PackageScope(Cache, folder);
             Client = PackageClient.Create();
             Installer = new PackageInstaller(Client, Cache, null);
         }
@@ -92,7 +92,7 @@ namespace Firely.Fhir.Packages
 
         public CanonicalFileReference Resolve(string canonical)
         { 
-            if (Index.TryFindReference(canonical, out CanonicalFileReference reference))
+            if (Scope.TryFindReference(canonical, out CanonicalFileReference reference))
             {
                 return reference;
             }
