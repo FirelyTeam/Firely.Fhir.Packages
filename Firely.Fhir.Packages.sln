@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.181
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Firely.Fhir.Packages", "Firely.Fhir.Packages\Firely.Fhir.Packages.csproj", "{564A7663-3CF5-42EC-BEE1-4F6725A3710A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Firely.Fhir.Packages.Tests", "Firely.Fhir.Packages.Tests\Firely.Fhir.Packages.Tests.csproj", "{943E9AAD-E48E-49D8-AF90-5492767A8B48}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{564A7663-3CF5-42EC-BEE1-4F6725A3710A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{564A7663-3CF5-42EC-BEE1-4F6725A3710A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{564A7663-3CF5-42EC-BEE1-4F6725A3710A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{564A7663-3CF5-42EC-BEE1-4F6725A3710A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{943E9AAD-E48E-49D8-AF90-5492767A8B48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{943E9AAD-E48E-49D8-AF90-5492767A8B48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{943E9AAD-E48E-49D8-AF90-5492767A8B48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{943E9AAD-E48E-49D8-AF90-5492767A8B48}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {70117D2C-CF8B-42F6-97A4-8993A2226C40}
+	EndGlobalSection
+EndGlobal

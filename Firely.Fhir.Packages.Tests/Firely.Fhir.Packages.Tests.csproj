@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hl7.Fhir.Packages\Hl7.Fhir.Packages.csproj" />
+    <ProjectReference Include="..\Firely.Fhir.Packages\Firely.Fhir.Packages.csproj" />
   </ItemGroup>
 
 </Project>
