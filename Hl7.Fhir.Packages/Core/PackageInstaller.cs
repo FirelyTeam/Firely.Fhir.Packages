@@ -8,10 +8,10 @@ namespace Hl7.Fhir.Packages
     public class PackageInstaller : IPackageInstaller
     {
         readonly PackageClient client;
-        readonly PackageCache cache;
+        readonly IPackageCache cache;
         readonly Action<string> report;
 
-        public PackageInstaller(PackageClient client, PackageCache cache, Action<string> report)
+        public PackageInstaller(PackageClient client, IPackageCache cache, Action<string> report)
         {
             this.client = client;
             this.cache = cache;

@@ -7,13 +7,13 @@ namespace Hl7.Fhir.Packages
 {
     public static class PackageCacheExtensions
     {
-        public static PackageManifest ReadManifest(this PackageCache cache, string name, string version)
+        public static PackageManifest ReadManifest(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
             return cache.ReadManifest(reference);
         }
 
-        public static CanonicalIndex ReadCanonicalIndex(this PackageCache cache, string name, string version)
+        public static CanonicalIndex ReadCanonicalIndex(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
             return cache.GetCanonicalIndex(reference);
@@ -24,12 +24,12 @@ namespace Hl7.Fhir.Packages
             return refs.Where(r => string.Compare(r.Name, name, ignoreCase: true) == 0);
         }
 
-        public static IEnumerable<PackageReference> GetInstalledVersions(this PackageCache cache, string pkgname)
+        public static IEnumerable<PackageReference> GetInstalledVersions(this IPackageCache cache, string pkgname)
         {
             return cache.GetPackageReferences().WithName(pkgname);
         }
 
-        public async static ValueTask<bool> HasMatch(this PackageCache cache, PackageDependency dependency)
+        public async static ValueTask<bool> HasMatch(this IPackageCache cache, PackageDependency dependency)
         {
             var references = cache.GetInstalledVersions(dependency.Name);
             var versions = references.ToVersions();
@@ -37,7 +37,7 @@ namespace Hl7.Fhir.Packages
             return await Task.FromResult(reference.Found);
         }
 
-        public static PackageManifest InstallFromFile(this PackageCache cache, string path)
+        public static PackageManifest InstallFromFile(this IPackageCache cache, string path)
         {
             var manifest = Packaging.ExtractManifestFromPackageFile(path);
             var reference = manifest.GetPackageReference();

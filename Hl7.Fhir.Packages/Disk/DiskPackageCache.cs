@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace Hl7.Fhir.Packages
 {
-    public class PackageCache
+
+    public class DiskPackageCache : IPackageCache
     {
         public readonly string Root;
 
-        public PackageCache(string root)
+        public DiskPackageCache(string root)
         {
             this.Root = root;
         }
@@ -28,11 +29,6 @@ namespace Hl7.Fhir.Packages
             CreateIndexFile(reference);
         }
 
-        public void CreateIndexFile(PackageReference reference)
-        {
-            var folder = PackageContentFolder(reference);
-            CanonicalIndexFile.CreateIndexFile(folder);
-        }
 
         public PackageManifest ReadManifest(PackageReference reference)
         {
@@ -54,12 +50,6 @@ namespace Hl7.Fhir.Packages
             return CanonicalIndexFile.GetIndexFromFolder(folder);
         }
 
-        public string PackageRootFolder(PackageReference reference)
-        {
-            var pkgfolder = PackageFolderName(reference);
-            string target = Path.Combine(Root, pkgfolder);
-            return target;
-        }
 
         public string PackageContentFolder(PackageReference reference)
         {
@@ -78,12 +68,25 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public static string PackageFolderName(PackageReference reference, char glue = '#')
+        private string PackageRootFolder(PackageReference reference)
+        {
+            var pkgfolder = PackageFolderName(reference);
+            string target = Path.Combine(Root, pkgfolder);
+            return target;
+        }
+
+        private void CreateIndexFile(PackageReference reference)
+        {
+            var folder = PackageContentFolder(reference);
+            CanonicalIndexFile.CreateIndexFile(folder);
+        }
+
+        private static string PackageFolderName(PackageReference reference, char glue = '#')
         {
             return reference.Name + glue + reference.Version;
         }
 
-        public IEnumerable<string> GetPackageRootFolders()
+        private IEnumerable<string> GetPackageRootFolders()
         {
             if (Directory.Exists(Root))
             {
@@ -95,12 +98,12 @@ namespace Hl7.Fhir.Packages
             }
         }
 
-        public IEnumerable<string> GetPackageContentFolders()
+        private IEnumerable<string> GetPackageContentFolders()
         {
             return GetPackageRootFolders().Select(f => Path.Combine(f, DiskNames.PackageFolder));
         }
 
-        public IEnumerable<string> GetPackageContentFolders(IEnumerable<PackageReference> references)
+        private IEnumerable<string> GetPackageContentFolders(IEnumerable<PackageReference> references)
         {
             foreach(var refx in references)
             {
@@ -131,6 +134,13 @@ namespace Hl7.Fhir.Packages
                 var idx = entry.IndexOfAny(new[] { '-', '#' }); // backwards compatibility: also support '-'
                 yield return new PackageReference { Name = entry.Substring(0, idx), Version = entry.Substring(idx + 1) };
             }
+        }
+
+        public string GetFileContent(PackageReference reference, string filename)
+        {
+            var folder = PackageContentFolder(reference);
+            string path = Path.Combine(folder, filename);
+            return File.ReadAllText(path);
         }
     }
 

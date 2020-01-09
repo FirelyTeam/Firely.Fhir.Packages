@@ -12,7 +12,7 @@ namespace Hl7.Fhir.Packages
     public class Project
     {
         readonly string folder;
-        public PackageCache Cache { get; }
+        public IPackageCache Cache { get; }
         public PackageScopeIndex Index { get; }
         public PackageClient Client { get; }
         public IPackageInstaller Installer { get; }

@@ -89,7 +89,7 @@ namespace Hl7.Fhir.Packages
         public DateTimeOffset date;
 
         [JsonProperty(PropertyName = "canonicals")]
-        public Dictionary<string, string> Canonicals;
+        public Dictionary<string, string> Canonicals; // canonical -> file
     }
 
     public class PackageCatalogEntry

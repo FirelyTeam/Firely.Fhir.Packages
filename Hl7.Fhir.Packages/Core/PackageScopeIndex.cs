@@ -7,18 +7,18 @@ namespace Hl7.Fhir.Packages
 {
     public class PackageScopeIndex
     {
-        readonly PackageCache cache;
+        readonly IPackageCache cache;
         readonly Dependencies dependencies;
         readonly List<CanonicalFileReference> references = new List<CanonicalFileReference>(); // canonical->filename
         
-        public PackageScopeIndex(PackageCache cache, Dependencies dependencies)
+        public PackageScopeIndex(IPackageCache cache, Dependencies dependencies)
         {
             this.cache = cache;
             this.dependencies = dependencies;
             IndexPackages(); 
         }
 
-        public PackageScopeIndex(PackageCache cache, string folder)
+        public PackageScopeIndex(IPackageCache cache, string folder)
         {
             this.cache = cache;
             this.dependencies = LockFile.ReadFromFolder(folder);
@@ -37,41 +37,18 @@ namespace Hl7.Fhir.Packages
 
         public void AddPackageToIndex(PackageReference reference)
         {
-            var manifest = cache.ReadManifest(reference);
-            if (manifest is object && manifest.Canonicals is object)
-            {
-                IndexManifest(reference, manifest);
-            }
-            else
-            {
-                var index = cache.GetCanonicalIndex(reference);
-                AppendCanonicalIndex(reference, index);
-            }
-            
-        }
-
-        public void IndexManifest(PackageReference reference, PackageManifest manifest)
-        {
-            string folder = cache.PackageContentFolder(reference);
-            if (manifest.Canonicals is object)
-            {
-                foreach (var item in manifest.Canonicals)
-                {
-                    var path = Path.Combine(folder, item.Value);
-                    references.Add(new CanonicalFileReference { Package = reference, Canonical = item.Key, FileName = path });
-                }
-            }
+            var index = cache.GetCanonicalIndex(reference);
+            AppendCanonicalIndex(reference, index);
         }
 
         public void AppendCanonicalIndex(PackageReference reference, CanonicalIndex index)
         {
-            var folder = cache.PackageContentFolder(reference);
+            //var folder = cache.PackageContentFolder(reference);
             if (index.Canonicals is object)
             {
                 foreach (var item in index.Canonicals)
                 {
-                    var path = Path.Combine(folder, item.Value);
-                    references.Add(new CanonicalFileReference { Package = reference, Canonical = item.Key, FileName = path });
+                    references.Add(new CanonicalFileReference { Package = reference, Canonical = item.Key, FileName = item.Value });
                 }
             }
         }
@@ -89,9 +66,9 @@ namespace Hl7.Fhir.Packages
             return reference is object;
         }
 
-        public string GetFile(CanonicalFileReference reference)
+        private string GetFile(CanonicalFileReference reference)
         {
-            return File.ReadAllText(reference.FileName);
+            return cache.GetFileContent(reference.Package, reference.FileName);
 
         }
 
