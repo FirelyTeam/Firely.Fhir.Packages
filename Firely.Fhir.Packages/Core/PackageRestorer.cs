@@ -7,14 +7,14 @@ namespace Firely.Fhir.Packages
     public static class PackageRestorer
     {
 
-        public static async Task<Closure> Restore(this PackageInstaller installer, PackageManifest manifest)
+        public static async Task<PackageClosure> Restore(this PackageInstaller installer, PackageManifest manifest)
         {
-            var closure = new Closure();
+            var closure = new PackageClosure();
             await installer.RestoreManifest(manifest, closure);
             return closure; 
         }
 
-        private static async Task RestoreManifest(this PackageInstaller installer, PackageManifest manifest, Closure closure)
+        private static async Task RestoreManifest(this PackageInstaller installer, PackageManifest manifest, PackageClosure closure)
         {
             foreach(PackageDependency reference in manifest.GetDependencies())
             {
@@ -22,7 +22,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private static async Task RestoreDependency(this PackageInstaller installer, PackageDependency dependency, Closure closure)
+        private static async Task RestoreDependency(this PackageInstaller installer, PackageDependency dependency, PackageClosure closure)
         {
             var reference = await installer.ResolveDependency(dependency);
 

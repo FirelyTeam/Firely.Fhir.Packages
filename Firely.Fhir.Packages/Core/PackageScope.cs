@@ -8,10 +8,10 @@ namespace Firely.Fhir.Packages
     public class PackageScope
     {
         readonly IPackageCache cache;
-        readonly Closure closure;
+        readonly PackageClosure closure;
         readonly List<CanonicalFileReference> references = new List<CanonicalFileReference>(); // canonical->filename
         
-        public PackageScope(IPackageCache cache, Closure closure)
+        public PackageScope(IPackageCache cache, PackageClosure closure)
         {
             this.cache = cache;
             this.closure = closure;

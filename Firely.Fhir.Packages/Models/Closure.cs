@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
 {
-    public class Closure
+    public class PackageClosure
     {
         public bool Complete => Missing.Count == 0;
 

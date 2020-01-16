@@ -5,13 +5,13 @@ namespace Firely.Fhir.Packages
 {
     public static class LockFile
     { 
-        public static Closure Read(string path)
+        public static PackageClosure Read(string path)
         {
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
                 var dto = Parser.ReadLockFileJson(content);
-                return new Closure
+                return new PackageClosure
                 {
                     References = dto.PackageReferences.ToPackageReferences(),
                     Missing = dto.MissingDependencies.ToPackageDependencies()
@@ -31,13 +31,13 @@ namespace Firely.Fhir.Packages
             return asset_time < man_time;
         }
 
-        public static Closure ReadFromFolder(string folder)
+        public static PackageClosure ReadFromFolder(string folder)
         {
             var path = Path.Combine(folder, PackageConsts.LockFile);
             return Read(path);
         }
 
-        public static Closure ReadFromFolderOrCreate(string folder)
+        public static PackageClosure ReadFromFolderOrCreate(string folder)
         {
             var path = Path.Combine(folder, PackageConsts.LockFile);
             if (File.Exists(path))
@@ -46,11 +46,11 @@ namespace Firely.Fhir.Packages
             }
             else
             {
-                return new Closure();
+                return new PackageClosure();
             }
         }
 
-        public static void WriteToFolder(Closure closure, string folder)
+        public static void WriteToFolder(PackageClosure closure, string folder)
         {
             var dto = CreateLockFileJson(closure);
             var path = Path.Combine(folder, PackageConsts.LockFile);
@@ -64,7 +64,7 @@ namespace Firely.Fhir.Packages
             File.WriteAllText(path, content);
         }
 
-        private static LockFileJson CreateLockFileJson(Closure closure)
+        private static LockFileJson CreateLockFileJson(PackageClosure closure)
         {
             return new LockFileJson
             {
