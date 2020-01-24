@@ -2,9 +2,8 @@
 
   <!-- Solution-wide properties for NuGet packaging -->
   <PropertyGroup>
-    <Version>1.2.1</Version>
     <LangVersion>latest</LangVersion>
-    <VersionPrefix>1.2.1</VersionPrefix>
+    <VersionPrefix>1.2.2</VersionPrefix>
     <VersionSuffix>alpha</VersionSuffix>
     <Authors>Firely</Authors>
     <Company>Firely (https://fire.ly)</Company>
