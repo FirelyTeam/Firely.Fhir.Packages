@@ -29,28 +29,13 @@ stages:
   jobs:
   - template: build.yml@templates  # Template reference
     parameters:
-      restoreDependencies: true
-      nuGetServiceConnections: VonkPackageCredentials
-      nuGetSources: --source https://www.myget.org/F/vonk/api/v3/index.json 
       packageArtifacts: true
-      pool:
-        name: 'Private pool'
-           
-  - template: publish-plugin.yml@templates  # Template reference
-    parameters:
       pool:
         name: 'Private pool'
 
 - stage: deploy
   dependsOn: build
   jobs:
-  - template: deploy-plugin.yml@templates
-    parameters:
-      pool:
-        name: 'Private pool'
-      packageName: vonk.plugin.binarywrapper
-      packageDescription: 'Vonk Plugin BinaryWrapper'
-      
   - template: deploy-plugin-package.yml@templates
     parameters:
       pool:
