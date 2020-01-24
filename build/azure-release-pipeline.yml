@@ -1,4 +1,4 @@
-# Repo: FirelyTeam/Vonk.Plugin.BinaryWrapper
+# Repo: FirelyTeam/Firely.Fhir.Packages
 # File: build/azure-release-pipeline.yml
 name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:-r)
 
