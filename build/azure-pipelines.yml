@@ -32,12 +32,3 @@ stages:
       packageArtifacts: true
       pool:
         name: 'Private pool'
-
-- stage: deploy
-  dependsOn: build
-  jobs:
-  - template: deploy-plugin-package.yml@templates
-    parameters:
-      pool:
-        name: 'Private pool'
-      nugetcredentials: MyGet
