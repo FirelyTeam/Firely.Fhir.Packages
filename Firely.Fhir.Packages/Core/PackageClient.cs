@@ -55,9 +55,8 @@ namespace Firely.Fhir.Packages
                     return null;
                 }
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine(e);
                 return null;
             }
         }
@@ -90,8 +89,9 @@ namespace Firely.Fhir.Packages
                 var result = Parser.Deserialize<List<PackageCatalogEntry>>(body);
                 return result;
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 return null;
             }
         }
