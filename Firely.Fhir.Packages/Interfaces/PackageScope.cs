@@ -12,7 +12,7 @@ namespace Firely.Fhir.Packages
         public readonly IPackageIndex Server;
         public readonly IProject Project;
         internal readonly PackageClient Client;
-        internal readonly PackageClosure closure;
+        internal PackageClosure closure;
         
         internal FileIndex Index => _index ??= BuildIndex();
       
@@ -25,17 +25,16 @@ namespace Firely.Fhir.Packages
             this.Client = client;
         }
 
-        public PackageClosure LoadClosure()
+        private void LoadClosure()
         {
-            Project.ReadClosure();
+            closure = Project.ReadClosure();
             if (closure is null) throw new ArgumentException("The folder does not contain a package lock file.");
-            return closure;
         }
 
-        private FileIndex BuildIndex()
+        public FileIndex BuildIndex()
         {
             var index = new FileIndex();
-            var closure = Project.ReadClosure();
+            LoadClosure();
             Index.Index(Project);
             Index.Index(Cache, closure);
             return index;
@@ -87,6 +86,7 @@ namespace Firely.Fhir.Packages
             //var reference = scope.Project.ResolveCanonical(uri);
             return scope.Index.ResolveCanonical(canonical);
         }
+
         public static string GetFileContent(this PackageScope scope, PackageFileReference reference)
         {
             if (!reference.Package.Found) // this is a hack, because we cannot reference the project itself with a PackageReference
