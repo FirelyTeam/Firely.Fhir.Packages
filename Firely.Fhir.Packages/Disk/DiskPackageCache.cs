@@ -9,16 +9,13 @@ namespace Firely.Fhir.Packages
 
     public class DiskPackageCache : IPackageCache
     {
+        private readonly PackageClient client;
         public readonly string Root;
 
-        public DiskPackageCache(string root)
+        public DiskPackageCache(PackageClient client, string root = null)
         {
-            this.Root = root;
-        }
-
-        public DiskPackageCache() 
-        {
-            this.Root = Platform.GetFhirPackageRoot();
+            this.client = client;
+            this.Root = root ?? Platform.GetFhirPackageRoot();
         }
 
         public bool IsInstalled(PackageReference reference)
@@ -27,13 +24,21 @@ namespace Firely.Fhir.Packages
             return Directory.Exists(target);
         }
 
-        public void Install(PackageReference reference, byte[] buffer)
+        public async ValueTask Install(PackageReference reference, byte[] buffer)
         {
             var folder = PackageRootFolder(reference);
-            Packaging.UnpackToFolder(buffer, folder);
+            await Packaging.UnpackToFolder(buffer, folder);
             CreateIndexFile(reference);
         }
 
+        public async ValueTask<bool> Install(PackageReference reference)
+        {
+            var buffer = await client.DownloadPackage(reference);
+            if (buffer is null) return false;
+            
+            await Install(reference, buffer);
+            return true;
+        }
 
         public PackageManifest ReadManifest(PackageReference reference)
         {
@@ -141,14 +146,24 @@ namespace Firely.Fhir.Packages
             }
         }
 
+
+
         public string GetFileContent(PackageReference reference, string filename)
         {
             var folder = PackageContentFolder(reference);
             string path = Path.Combine(folder, filename);
             return File.ReadAllText(path);
         }
+
+        public ValueTask<Versions> GetVersionsAsync(string name)
+        {
+            var references = GetPackageReferences();
+            var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
+            var versions = new Versions(vlist);
+            return new ValueTask<Versions>(versions);
+        }
     }
 
-
+    
 }
 

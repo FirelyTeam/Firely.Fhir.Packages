@@ -7,44 +7,39 @@ namespace Firely.Fhir.Packages
     public static class PackageRestorer
     {
 
-        public static async Task<PackageClosure> Restore(this PackageInstaller installer, PackageManifest manifest)
+        public static async Task<PackageClosure> Restore(this PackageScope scope)
         {
             var closure = new PackageClosure();
-            await installer.RestoreManifest(manifest, closure);
+            var manifest = scope.Project.ReadManifest();
+            await RestoreManifest(scope.Cache, manifest, closure);
+            scope.Project.WriteClosure(closure);
             return closure; 
         }
-
-        private static async Task RestoreManifest(this PackageInstaller installer, PackageManifest manifest, PackageClosure closure)
+ 
+        private static async Task RestoreManifest(IPackageCache cache, PackageManifest manifest, PackageClosure closure)
         {
-            foreach(PackageDependency reference in manifest.GetDependencies())
+            foreach(PackageDependency dependency in manifest.GetDependencies())
             {
-                await RestoreDependency(installer, reference, closure);
+                await RestoreDependency(cache, dependency, closure);
             }
         }
 
-        private static async Task RestoreDependency(this PackageInstaller installer, PackageDependency dependency, PackageClosure closure)
+        private static async Task RestoreDependency(this IPackageCache cache, PackageDependency dependency, PackageClosure closure)
         {
-            var reference = await installer.ResolveDependency(dependency);
+            var reference = await cache.Install(dependency);
 
             if (reference.Found)
             {
                 if (closure.Add(reference)) // conflicts are resolved by: highest = winner.
                 {
-                    var manifest = await installer.InstallPackage(reference);
-
+                    var manifest = cache.ReadManifest(reference);
                     if (manifest is object)
-                        await installer.RestoreManifest(manifest, closure);
+                        await RestoreManifest(cache, manifest, closure);
                 }
-
             }
             else 
             {
-                var installed = await installer.IsInstalled(dependency);
-                if (!installed)
-                {
-                    closure.AddMissing(dependency);
-                    
-                }
+                closure.AddMissing(dependency);
             }
         }
     }

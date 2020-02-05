@@ -3,6 +3,7 @@ using ICSharpCode.SharpZipLib.Tar;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
@@ -60,10 +61,13 @@ namespace Firely.Fhir.Packages
             return Tar.Pack(entries);
         }
 
-        public static void UnpackToFolder(byte[] buffer, string folder) //
+        public static async Task UnpackToFolder(byte[] buffer, string folder) 
         {
-            var tarball = Tar.Unzip(buffer);
-            Tar.ExtractTarballToToDisk(tarball, folder);
+            await Task.Run(() =>
+            {
+                var tarball = Tar.Unzip(buffer);
+                Tar.ExtractTarballToToDisk(tarball, folder);
+            });
         }
 
         public static (PackageManifest manifest, IEnumerable<string> files) GetPackageSummary(this IEnumerable<FileEntry> entries)

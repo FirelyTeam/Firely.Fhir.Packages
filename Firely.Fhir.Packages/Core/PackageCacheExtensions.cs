@@ -24,15 +24,14 @@ namespace Firely.Fhir.Packages
             return refs.Where(r => string.Compare(r.Name, name, ignoreCase: true) == 0);
         }
 
-        public static IEnumerable<PackageReference> GetInstalledVersions(this IPackageCache cache, string pkgname)
-        {
-            return cache.GetPackageReferences().WithName(pkgname);
-        }
+        //public static IEnumerable<PackageReference> GetInstalledVersions(this IPackageCache cache, string pkgname)
+        //{
+        //    return cache.GetPackageReferences().WithName(pkgname);
+        //}
 
         public async static ValueTask<bool> HasMatch(this IPackageCache cache, PackageDependency dependency)
         {
-            var references = cache.GetInstalledVersions(dependency.Name);
-            var versions = references.ToVersions();
+            var versions = await cache.GetVersionsAsync(dependency.Name);
             var reference = versions.Resolve(dependency);
             return await Task.FromResult(reference.Found);
         }
@@ -44,6 +43,25 @@ namespace Firely.Fhir.Packages
             var buffer = File.ReadAllBytes(path);
             cache.Install(reference, buffer);
             return manifest;
+        }
+
+        public static async ValueTask<PackageReference> Install(this IPackageCache cache, PackageDependency dependency)
+        {
+            var reference = await cache.Resolve(dependency);
+            if (reference.Found)
+            {
+                return reference;
+            }
+            else
+            {
+                var ok = await cache.Install(reference);
+                return ok ? reference : PackageReference.None;
+            }
+        }
+
+        public static string GetFileContent(this IPackageCache cache, PackageFileReference reference)
+        {
+            return cache.GetFileContent(reference.Package, reference.FileName);
         }
     }
 

@@ -1,16 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-    public interface IPackageCache
+
+    public interface IPackageCache : IPackageIndex
     {
-        bool IsInstalled(PackageReference reference);
-        void Install(PackageReference reference, byte[] buffer);
-        PackageManifest ReadManifest(PackageReference reference);
-        CanonicalIndex GetCanonicalIndex(PackageReference reference);
-        public IEnumerable<PackageReference> GetPackageReferences();
-        string GetFileContent(PackageReference reference, string filename);
+        ValueTask<bool> Install(PackageReference package);
+        ValueTask Install(PackageReference package, byte[] buffer);
+        PackageManifest ReadManifest(PackageReference package);
+        CanonicalIndex GetCanonicalIndex(PackageReference package);
+        string GetFileContent(PackageReference package, string filename);
     }
+
+
+   
 
 
 }

@@ -1,9 +1,9 @@
 ﻿namespace Firely.Fhir.Packages
 {
-    public class CanonicalFileReference
+    public class PackageFileReference
     {
-        public PackageReference Package; 
         public string Canonical;
+        public PackageReference Package; 
         public string FileName;
     }
 

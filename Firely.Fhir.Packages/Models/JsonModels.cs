@@ -92,6 +92,8 @@ namespace Firely.Fhir.Packages
         public Dictionary<string, string> Canonicals; // canonical -> file
     }
 
+
+
     public class PackageCatalogEntry
     {
         public string Name;
@@ -124,6 +126,11 @@ namespace Firely.Fhir.Packages
             {
                 manifest.Dependencies[name] = version;
             }
+        }
+
+        public static void AddDependency(this PackageManifest manifest, PackageDependency dependency)
+        {
+            manifest.AddDependency(dependency.Name, dependency.Range);
         }
 
         public static void AddDependency(this PackageManifest manifest, PackageManifest dependency)

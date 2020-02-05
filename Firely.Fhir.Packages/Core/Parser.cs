@@ -64,7 +64,7 @@ namespace Firely.Fhir.Packages
             return JsonConvert.SerializeObject(dto, Formatting.Indented)+"\n";
         }
 
-        public static CanonicalIndex ReadReferences(string content)
+        public static CanonicalIndex ReadCanonicalIndex(string content)
         {
             return JsonConvert.DeserializeObject<CanonicalIndex>(content);
         } 

@@ -16,7 +16,7 @@ namespace Firely.Fhir.Packages
 
         public static CanonicalIndex Create(string folder)
         {
-            var entries = BuildIndexFromFolder(folder);
+            var entries = CanonicalIndexer.IndexFolder(folder);
             var index = new CanonicalIndex { Canonicals = entries, date = DateTimeOffset.Now };
             WriteToFolder(index, folder);
             return index;
@@ -33,15 +33,15 @@ namespace Firely.Fhir.Packages
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                return Parser.ReadReferences(content);
+                return Parser.ReadCanonicalIndex(content);
 
             }
             else return null;
         }
 
-        private static void Write(CanonicalIndex references, string path)
+        private static void Write(CanonicalIndex index, string path)
         {
-            var content = Parser.WriteCanonicalIndex(references);
+            var content = Parser.WriteCanonicalIndex(index);
             File.WriteAllText(path, content);
         }
 
@@ -51,46 +51,16 @@ namespace Firely.Fhir.Packages
             return File.Exists(path);
         }
 
-        private static void WriteToFolder(CanonicalIndex references, string folder)
+        private static void WriteToFolder(CanonicalIndex index, string folder)
         {
             var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
-            Write(references, path);
+            Write(index, path);
         }
 
-        private static string GetCanonicalFromResourceFile(string filepath)
-        {
-            try
-            {
-                var node = ElementNavigation.ParseToSourceNode(filepath);
-                var canonical = (string)node.Children("url").FirstOrDefault().Text;
-                return canonical;
-            }
-            catch
-            {
-                return null;
-            }
-        }
+     
 
-        private static Dictionary<string, string> GetCanonicalsFromResourceFiles(IEnumerable<string> filepaths)
-        {
-            var dictionary = new Dictionary<string, string>();
-            foreach (var filepath in filepaths)
-            {
-                var canonical = GetCanonicalFromResourceFile(filepath);
-                if (canonical != null)
-                {
-                    var filename = Path.GetFileName(filepath);
-                    dictionary[canonical] = filename;
-                }
-            }
-            return dictionary;
-        }
-
-        private static Dictionary<string, string> BuildIndexFromFolder(string folder)
-        {
-            var filenames = Directory.GetFiles(folder);
-            return GetCanonicalsFromResourceFiles(filenames);
-        }
+      
+       
     }
 }
 
