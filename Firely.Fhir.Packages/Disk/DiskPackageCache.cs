@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 namespace Firely.Fhir.Packages
 {
 
+
     public class DiskPackageCache : IPackageCache
     {
-        private readonly PackageClient client;
         public readonly string Root;
 
         public DiskPackageCache(PackageClient client, string root = null)
         {
-            this.client = client;
             this.Root = root ?? Platform.GetFhirPackageRoot();
         }
 
@@ -24,20 +23,11 @@ namespace Firely.Fhir.Packages
             return Directory.Exists(target);
         }
 
-        public async ValueTask Install(PackageReference reference, byte[] buffer)
+        public async Task Install(PackageReference reference, byte[] buffer)
         {
             var folder = PackageRootFolder(reference);
             await Packaging.UnpackToFolder(buffer, folder);
             CreateIndexFile(reference);
-        }
-
-        public async ValueTask<bool> Install(PackageReference reference)
-        {
-            var buffer = await client.DownloadPackage(reference);
-            if (buffer is null) return false;
-            
-            await Install(reference, buffer);
-            return true;
         }
 
         public PackageManifest ReadManifest(PackageReference reference)
@@ -59,7 +49,6 @@ namespace Firely.Fhir.Packages
             var folder = PackageContentFolder(reference);
             return CanonicalIndexFile.GetFromFolder(folder);
         }
-
 
         public string PackageContentFolder(PackageReference reference)
         {
@@ -146,8 +135,6 @@ namespace Firely.Fhir.Packages
             }
         }
 
-
-
         public string GetFileContent(PackageReference reference, string filename)
         {
             var folder = PackageContentFolder(reference);
@@ -155,12 +142,18 @@ namespace Firely.Fhir.Packages
             return File.ReadAllText(path);
         }
 
-        public ValueTask<Versions> GetVersionsAsync(string name)
+        public Task<Versions> GetVersionsAsync(string name)
         {
             var references = GetPackageReferences();
             var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
             var versions = new Versions(vlist);
-            return new ValueTask<Versions>(versions);
+            return Task.FromResult(versions);
+        }
+
+        [Obsolete("Not implemented yet")]
+        public Task<byte[]> GetPackageAsync(PackageReference reference)
+        {
+            throw new NotImplementedException();
         }
     }
 

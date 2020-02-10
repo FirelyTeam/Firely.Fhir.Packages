@@ -9,20 +9,19 @@ namespace Firely.Fhir.Packages
     public class PackageScope 
     {
         public readonly IPackageCache Cache;
-        public readonly IPackageIndex Server;
         public readonly IProject Project;
-        internal readonly PackageClient Client;
+        public readonly IPackageServer Server;
         internal PackageClosure closure;
-        
-        internal FileIndex Index => _index ??= BuildIndex();
-      
+        internal readonly Action<string> Report;
 
-        public PackageScope(IPackageCache cache, IProject project, PackageClient client = null)
+        internal FileIndex Index => _index ??= BuildIndex();
+
+        public PackageScope(IPackageCache cache, IProject project, IPackageServer server, Action<string> report = null)
         {
             this.Cache = cache;
-            this.Server = cache; // for now
             this.Project = project;
-            this.Client = client;
+            this.Server = server;
+            this.Report = report;
         }
 
         private void LoadClosure()
@@ -44,8 +43,6 @@ namespace Firely.Fhir.Packages
     }
 
 
-
-
     public static class PackageScopeExtensions
     {
         public static bool TryResolveCanonical(this PackageScope scope, string uri, out string content)
@@ -63,22 +60,10 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public static async Task<PackageReference> InstallPackage(this PackageScope scope, PackageDependency dependency)
+        public static async Task<PackageReference> Install(this PackageScope scope, string name, string range)
         {
-            var reference = await scope.Cache.Install(dependency);
-            
-            if (reference.Found)
-            {
-                scope.Project.Install(dependency);
-            }
-            
-            return reference;
-        }
-
-        public static async Task<PackageReference> InstallPackage(this PackageScope scope, string name, string range)
-        {
-            var dep = new PackageDependency(name, range);
-            return await scope.InstallPackage(dep);
+            var dependency = new PackageDependency(name, range);
+            return await scope.Install(dependency);
         }
 
         public static PackageFileReference ResolveCanonical(this PackageScope scope, string canonical)

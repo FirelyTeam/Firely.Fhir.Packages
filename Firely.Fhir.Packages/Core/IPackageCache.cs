@@ -4,17 +4,22 @@ using System.Threading.Tasks;
 namespace Firely.Fhir.Packages
 {
 
-    public interface IPackageCache : IPackageIndex
+    public interface IPackageServer 
     {
-        ValueTask<bool> Install(PackageReference package);
-        ValueTask Install(PackageReference package, byte[] buffer);
-        PackageManifest ReadManifest(PackageReference package);
-        CanonicalIndex GetCanonicalIndex(PackageReference package);
-        string GetFileContent(PackageReference package, string filename);
+        Task<Versions> GetVersionsAsync(string name);
+        Task<byte[]> GetPackageAsync(PackageReference reference);
     }
 
+    public interface IPackageCache : IPackageServer
+    {
+        bool IsInstalled(PackageReference reference);
+        public IEnumerable<PackageReference> GetPackageReferences();
 
-   
+        Task Install(PackageReference reference, byte[] buffer);
+        PackageManifest ReadManifest(PackageReference reference);
+        CanonicalIndex GetCanonicalIndex(PackageReference reference);
+        string GetFileContent(PackageReference reference, string filename);
+    }
 
 
 }

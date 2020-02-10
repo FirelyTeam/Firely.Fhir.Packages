@@ -29,34 +29,15 @@ namespace Firely.Fhir.Packages
         //    return cache.GetPackageReferences().WithName(pkgname);
         //}
 
-        public async static ValueTask<bool> HasMatch(this IPackageCache cache, PackageDependency dependency)
-        {
-            var versions = await cache.GetVersionsAsync(dependency.Name);
-            var reference = versions.Resolve(dependency);
-            return await Task.FromResult(reference.Found);
-        }
+        
 
-        public static PackageManifest InstallFromFile(this IPackageCache cache, string path)
+        public static PackageReference InstallFromFile(this IPackageCache cache, string path)
         {
             var manifest = Packaging.ExtractManifestFromPackageFile(path);
             var reference = manifest.GetPackageReference();
             var buffer = File.ReadAllBytes(path);
             cache.Install(reference, buffer);
-            return manifest;
-        }
-
-        public static async ValueTask<PackageReference> Install(this IPackageCache cache, PackageDependency dependency)
-        {
-            var reference = await cache.Resolve(dependency);
-            if (reference.Found)
-            {
-                return reference;
-            }
-            else
-            {
-                var ok = await cache.Install(reference);
-                return ok ? reference : PackageReference.None;
-            }
+            return reference; 
         }
 
         public static string GetFileContent(this IPackageCache cache, PackageFileReference reference)

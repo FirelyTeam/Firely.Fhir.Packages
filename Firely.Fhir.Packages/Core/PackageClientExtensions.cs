@@ -31,7 +31,6 @@ namespace Firely.Fhir.Packages
             var result = await client.CatalogPackagesAsync(canonical: canonical);
             return result.Select(c => c.Name).ToList();
         }
-
         
     }
 }

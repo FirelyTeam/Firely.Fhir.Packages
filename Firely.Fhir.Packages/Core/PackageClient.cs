@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Firely.Fhir.Packages
 {
 
-    public class PackageClient : IDisposable
+    public class PackageClient : IPackageServer, IDisposable
     {
         public static PackageClient Create(string source, bool npm = false, bool insecure = false)
         {
@@ -138,5 +138,15 @@ namespace Firely.Fhir.Packages
 
         public override string ToString() => urlProvider.ToString();
 
+        public async Task<Versions> GetVersionsAsync(string name)
+        {
+            var listing = await DownloadListingAsync(name);
+            return listing.ToVersions();
+        }
+
+        public async Task<byte[]> GetPackageAsync(PackageReference reference)
+        {
+            return await DownloadPackage(reference);
+        }
     }
 }

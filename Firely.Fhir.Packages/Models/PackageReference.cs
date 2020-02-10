@@ -31,7 +31,9 @@ namespace Firely.Fhir.Packages
 
         public override string ToString()
         {
-            return $"{Name} {Version}";
+            string s = $"{Name} {Version}";
+            if (!Found) s += " NOT FOUND";
+            return s;
         }
 
         public static PackageReference None => new PackageReference { Name = null, Version = null };
@@ -77,5 +79,7 @@ namespace Firely.Fhir.Packages
         {
             return (Name, Version).GetHashCode();
         }
+
+
     }
 }

@@ -21,5 +21,10 @@ namespace Firely.Fhir.Packages
         {
             return new PackageDependency(pair.Key, pair.Value);
         }
+
+        public override string ToString()
+        {
+            return $"{Name} {Range}";
+        }
     }
 }
