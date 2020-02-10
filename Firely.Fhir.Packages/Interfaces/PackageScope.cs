@@ -22,18 +22,19 @@ namespace Firely.Fhir.Packages
             this.Report = report;
         }
 
-        private void LoadClosure()
+        private PackageClosure ReadClosure()
         {
             closure = Project.ReadClosure();
             if (closure is null) throw new ArgumentException("The folder does not contain a package lock file.");
+            return closure;
         }
 
         public FileIndex BuildIndex()
         {
             var index = new FileIndex();
-            LoadClosure();
-            Index.Index(Project);
-            Index.Index(Cache, closure);
+            this.closure = ReadClosure();
+            index.Index(Project);
+            index.Index(Cache, closure);
             return index;
         }
 
@@ -66,7 +67,6 @@ namespace Firely.Fhir.Packages
 
         public static PackageFileReference ResolveCanonical(this PackageScope scope, string canonical)
         {
-            //var reference = scope.Project.ResolveCanonical(uri);
             return scope.Index.ResolveCanonical(canonical);
         }
 

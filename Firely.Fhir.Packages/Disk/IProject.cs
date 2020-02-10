@@ -26,11 +26,17 @@ namespace Firely.Fhir.Packages
             project.WriteManifest(manifest);
         }
 
-        public static void Remove(this IProject project, PackageReference dependency)
+        public static bool Remove(this IProject project, PackageReference dependency)
+        {
+            return project.Remove(dependency.Name);
+        }
+
+        public static bool Remove(this IProject project, string name)
         {
             var manifest = project.ReadManifest();
-            manifest.RemoveDependency(dependency.Name);
+            var result = manifest.RemoveDependency(name);
             project.WriteManifest(manifest);
+            return result;
         }
 
         public static void Init(this IProject project, string pkgname, string version, string fhirVersion)
