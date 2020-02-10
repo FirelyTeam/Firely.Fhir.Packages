@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Firely.Fhir.Packages
+﻿namespace Firely.Fhir.Packages
 {
 
     // The package installer no longer needs multiple implementations, because we now have an IPackageCache 
@@ -12,6 +10,6 @@ namespace Firely.Fhir.Packages
     //    ValueTask<bool> IsInstalled(PackageDependency dependency);
     //}
 
-   
+
 
 }

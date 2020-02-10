@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Firely.Fhir.Packages 
+namespace Firely.Fhir.Packages
 {
     public static class Platform
     {
