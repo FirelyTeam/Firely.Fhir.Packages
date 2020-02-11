@@ -2,11 +2,6 @@
 
 namespace Firely.Fhir.Packages
 {
-    /// <summary>
-    /// An offline package server?
-    /// </summary>
-
-
     public static class PackageServerExtensions
     {
         public static async ValueTask<Versions> GetVersionsAsync(this IPackageServer server, PackageDependency dependency)
@@ -36,8 +31,5 @@ namespace Firely.Fhir.Packages
             return await Task.FromResult(reference.Found);
         }
     }
-
-
-
 }
 

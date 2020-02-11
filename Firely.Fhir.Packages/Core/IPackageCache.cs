@@ -3,13 +3,6 @@ using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-
-    public interface IPackageServer 
-    {
-        Task<Versions> GetVersionsAsync(string name);
-        Task<byte[]> GetPackageAsync(PackageReference reference);
-    }
-
     public interface IPackageCache : IPackageServer
     {
         bool IsInstalled(PackageReference reference);
@@ -20,7 +13,5 @@ namespace Firely.Fhir.Packages
         CanonicalIndex GetCanonicalIndex(PackageReference reference);
         string GetFileContent(PackageReference reference, string filename);
     }
-
-
 }
 

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
-    public static class PackageCacheExtensions
+    public static class IPackageCacheExtensions
     {
         public static PackageManifest ReadManifest(this IPackageCache cache, string name, string version)
         {
@@ -28,8 +28,6 @@ namespace Firely.Fhir.Packages
         //    return cache.GetPackageReferences().WithName(pkgname);
         //}
 
-        
-
         public static PackageReference InstallFromFile(this IPackageCache cache, string path)
         {
             var manifest = Packaging.ExtractManifestFromPackageFile(path);
@@ -44,7 +42,5 @@ namespace Firely.Fhir.Packages
             return cache.GetFileContent(reference.Package, reference.FileName);
         }
     }
-
-
 }
 
