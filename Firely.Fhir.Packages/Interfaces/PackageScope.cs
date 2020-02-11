@@ -12,7 +12,7 @@ namespace Firely.Fhir.Packages
         internal PackageClosure closure;
         internal readonly Action<string> Report;
 
-        internal FileIndex Index => _index ??= BuildIndex();
+        public FileIndex Index => _index ??= BuildIndex();
 
         public PackageScope(IPackageCache cache, IProject project, IPackageServer server, Action<string> report = null)
         {

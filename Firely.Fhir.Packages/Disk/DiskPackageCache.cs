@@ -12,7 +12,7 @@ namespace Firely.Fhir.Packages
     {
         public readonly string Root;
 
-        public DiskPackageCache(PackageClient client, string root = null)
+        public DiskPackageCache(string root = null)
         {
             this.Root = root ?? Platform.GetFhirPackageRoot();
         }

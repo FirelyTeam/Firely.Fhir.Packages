@@ -117,6 +117,7 @@ namespace Firely.Fhir.Packages
 
         public static void AddDependency(this PackageManifest manifest, string name, string version)
         {
+            if (version is null) version = "latest";
             if (manifest.Dependencies is null) manifest.Dependencies = new Dictionary<string, string>();
             if (!manifest.Dependencies.ContainsKey(name))
             {
