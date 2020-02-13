@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-
-
     public class DiskPackageCache : IPackageCache
     {
         public readonly string Root;
@@ -17,26 +15,26 @@ namespace Firely.Fhir.Packages
             this.Root = root ?? Platform.GetFhirPackageRoot();
         }
 
-        public bool IsInstalled(PackageReference reference)
+        public Task<bool> IsInstalledAsync(PackageReference reference)
         {
             string target = PackageContentFolder(reference);
-            return Directory.Exists(target);
+            return Task.FromResult(Directory.Exists(target));
         }
 
-        public async Task Install(PackageReference reference, byte[] buffer)
+        public async Task InstallAsync(PackageReference reference, byte[] buffer)
         {
             var folder = PackageRootFolder(reference);
             await Packaging.UnpackToFolder(buffer, folder);
             CreateIndexFile(reference);
         }
 
-        public PackageManifest ReadManifest(PackageReference reference)
+        public Task<PackageManifest> ReadManifestAsync(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
 
             if (Directory.Exists(folder))
             {
-                return ManifestFile.ReadFromFolder(folder);
+                return Task.FromResult(ManifestFile.ReadFromFolder(folder));
             }
             else
             {
@@ -44,10 +42,10 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public CanonicalIndex GetCanonicalIndex(PackageReference reference)
+        public Task<CanonicalIndex> GetCanonicalIndexAsync(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
-            return CanonicalIndexFile.GetFromFolder(folder);
+            return Task.FromResult(CanonicalIndexFile.GetFromFolder(folder));
         }
 
         public string PackageContentFolder(PackageReference reference)
@@ -124,30 +122,40 @@ namespace Firely.Fhir.Packages
         //    }
         //}
 
-        public IEnumerable<PackageReference> GetPackageReferences()
+        public Task<IEnumerable<PackageReference>> GetPackageReferencesAsync()
         {
             var folders = GetPackageRootFolders();
+            var references = new List<PackageReference>(folders.Count());
+
             foreach(var folder in folders)
             {
                 var entry = Disk.GetFolderName(folder);
                 var idx = entry.IndexOfAny(new[] { '-', '#' }); // backwards compatibility: also support '-'
-                yield return new PackageReference { Name = entry.Substring(0, idx), Version = entry.Substring(idx + 1) };
+                
+                references.Add(new PackageReference
+                {
+                    Name = entry.Substring(0, idx),
+                    Version = entry.Substring(idx + 1)
+                });
             }
+
+            return Task.FromResult(references.AsEnumerable());
         }
 
-        public string GetFileContent(PackageReference reference, string filename)
+        public Task<string> GetFileContentAsync(PackageReference reference, string filename)
         {
             var folder = PackageContentFolder(reference);
             string path = Path.Combine(folder, filename);
-            return File.ReadAllText(path);
+            return Task.FromResult(File.ReadAllText(path));
         }
 
-        public Task<Versions> GetVersionsAsync(string name)
+        public async Task<Versions> GetVersionsAsync(string name)
         {
-            var references = GetPackageReferences();
+            var references = await GetPackageReferencesAsync();
             var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
             var versions = new Versions(vlist);
-            return Task.FromResult(versions);
+
+            return versions;
         }
 
         [Obsolete("Not implemented yet")]

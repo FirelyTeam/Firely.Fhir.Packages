@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
@@ -12,37 +13,41 @@ namespace Firely.Fhir.Packages
             this.folder = folder;
         }
 
-        public Dictionary<string, string> GetCanonicalIndex()
+        public Task<Dictionary<string, string>> GetCanonicalIndexAsync()
         {
             // this should be cached, but we need to bust it on changes.
-            return CanonicalIndexer.IndexFolder(folder);
+            return Task.FromResult(CanonicalIndexer.IndexFolder(folder));
         }
 
-        public string GetFileContent(string filename)
+        public Task<string> GetFileContentAsync(string filename)
         {
             var path = Path.Combine(folder, filename);
-            return File.ReadAllText(path);
+            return Task.FromResult(File.ReadAllText(path));
         }
 
-        public PackageClosure ReadClosure()
+        public Task<PackageClosure> ReadClosureAsync()
         {
             var closure = LockFile.ReadFromFolder(folder);
-            return closure;
+            return Task.FromResult(closure);
         }
 
-        public PackageManifest ReadManifest()
+        public Task<PackageManifest> ReadManifestAsync()
         {
-            return ManifestFile.ReadFromFolder(folder);
+            return Task.FromResult(ManifestFile.ReadFromFolder(folder));
         }
 
-        public void WriteClosure(PackageClosure closure)
+        public Task WriteClosureAsync(PackageClosure closure)
         {
             LockFile.WriteToFolder(closure, folder);
+
+            return Task.FromResult(0); //because in net45 there is no Task.CompletedTask (Paul)
         }
 
-        public void WriteManifest(PackageManifest manifest)
+        public Task WriteManifestAsync(PackageManifest manifest)
         {
             ManifestFile.WriteToFolder(manifest, folder, merge: true);
+
+            return Task.FromResult(0); //because in net45 there is no Task.CompletedTask (Paul)
         }
     }
 

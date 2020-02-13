@@ -9,7 +9,7 @@ namespace Firely.Fhir.Packages
             return await server.GetVersionsAsync(dependency.Name);
         }
 
-        public static async ValueTask<PackageReference> Resolve(this IPackageServer server, PackageDependency dependency)
+        public static async ValueTask<PackageReference> ResolveAsync(this IPackageServer server, PackageDependency dependency)
         {
             var versions = await server.GetVersionsAsync(dependency.Name);
             var version = versions.Resolve(dependency.Range)?.ToString(); //null => NotFound
@@ -18,16 +18,16 @@ namespace Firely.Fhir.Packages
             return new PackageReference(dependency.Name, version);
         }
 
-        public static async ValueTask<PackageReference> GetLatest(this IPackageServer server, string name)
+        public static async ValueTask<PackageReference> GetLatestAsync(this IPackageServer server, string name)
         {
             var versions = await server.GetVersionsAsync(name);
             var version = versions.Latest()?.ToString();
             return new PackageReference(name, version);
         }
 
-        public async static ValueTask<bool> HasMatch(this IPackageServer server, PackageDependency dependency)
+        public async static ValueTask<bool> HasMatchAsync(this IPackageServer server, PackageDependency dependency)
         {
-            var reference = await server.Resolve(dependency);
+            var reference = await server.ResolveAsync(dependency);
             return await Task.FromResult(reference.Found);
         }
     }

@@ -5,13 +5,13 @@ namespace Firely.Fhir.Packages
 {
     public interface IPackageCache : IPackageServer
     {
-        bool IsInstalled(PackageReference reference);
-        public IEnumerable<PackageReference> GetPackageReferences();
+        Task<bool> IsInstalledAsync(PackageReference reference);
+        public Task<IEnumerable<PackageReference>> GetPackageReferencesAsync();
 
-        Task Install(PackageReference reference, byte[] buffer);
-        PackageManifest ReadManifest(PackageReference reference);
-        CanonicalIndex GetCanonicalIndex(PackageReference reference);
-        string GetFileContent(PackageReference reference, string filename);
+        Task InstallAsync(PackageReference reference, byte[] buffer);
+        Task<PackageManifest> ReadManifestAsync(PackageReference reference);
+        Task<CanonicalIndex> GetCanonicalIndexAsync(PackageReference reference);
+        Task<string> GetFileContentAsync(PackageReference reference, string filename);
     }
 }
 

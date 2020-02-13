@@ -1,21 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
     public static class IPackageCacheExtensions
     {
-        public static PackageManifest ReadManifest(this IPackageCache cache, string name, string version)
+        public static async Task<PackageManifest> ReadManifestAsync(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
-            return cache.ReadManifest(reference);
+            return await cache.ReadManifestAsync(reference);
         }
 
-        public static CanonicalIndex ReadCanonicalIndex(this IPackageCache cache, string name, string version)
+        public static async Task<CanonicalIndex> ReadCanonicalIndexAsync(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
-            return cache.GetCanonicalIndex(reference);
+            return await cache.GetCanonicalIndexAsync(reference);
         }
 
         public static IEnumerable<PackageReference> WithName(this IEnumerable<PackageReference> refs, string name)
@@ -28,18 +29,20 @@ namespace Firely.Fhir.Packages
         //    return cache.GetPackageReferences().WithName(pkgname);
         //}
 
-        public static PackageReference InstallFromFile(this IPackageCache cache, string path)
+        public static async Task<PackageReference> InstallFromFileAsync(this IPackageCache cache, string path)
         {
             var manifest = Packaging.ExtractManifestFromPackageFile(path);
             var reference = manifest.GetPackageReference();
             var buffer = File.ReadAllBytes(path);
-            cache.Install(reference, buffer);
+            
+            await cache.InstallAsync(reference, buffer);
+
             return reference; 
         }
 
-        public static string GetFileContent(this IPackageCache cache, PackageFileReference reference)
+        public static async Task<string> GetFileContentAsync(this IPackageCache cache, PackageFileReference reference)
         {
-            return cache.GetFileContent(reference.Package, reference.FileName);
+            return await cache.GetFileContentAsync(reference.Package, reference.FileName);
         }
     }
 }

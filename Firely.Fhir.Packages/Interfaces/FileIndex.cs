@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-
     public class FileIndex : List<PackageFileReference>
     {
 
@@ -20,24 +20,22 @@ namespace Firely.Fhir.Packages
         {
             this.Add(new PackageFileReference { Canonical = canonical, Package = package, FileName = filename });
         }
-
     }
 
     public static class FileIndexExtensions
     {
-
-        internal static void Index(this FileIndex index, IPackageCache cache, PackageClosure closure)
+        internal static async Task IndexAsync(this FileIndex index, IPackageCache cache, PackageClosure closure)
         {
-
             foreach (var reference in closure.References)
             {
-                index.Index(cache, reference);
+                await index.IndexAsync(cache, reference);
             }
         }
 
-        internal static void Index(this FileIndex index, IPackageCache cache, PackageReference reference)
+        internal static async Task IndexAsync(this FileIndex index, IPackageCache cache, PackageReference reference)
         {
-            var idx = cache.GetCanonicalIndex(reference);
+            var idx = await cache.GetCanonicalIndexAsync(reference);
+
             index.Add(reference, idx);
         }
 
@@ -57,9 +55,10 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        internal static void Index(this FileIndex index, IProject project)
+        internal static async Task IndexAsync(this FileIndex index, IProject project)
         {
-            var dict = project.GetCanonicalIndex();
+            var dict = await project.GetCanonicalIndexAsync();
+
             index.Add(PackageReference.None, dict);
         }
     }
