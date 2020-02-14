@@ -137,13 +137,13 @@ namespace Firely.Fhir.Packages
 
         public override string ToString() => urlProvider.ToString();
 
-        public async Task<Versions> GetVersionsAsync(string name)
+        public async Task<Versions> GetVersions(string name)
         {
             var listing = await DownloadListingAsync(name);
             return listing.ToVersions();
         }
 
-        public async Task<byte[]> GetPackageAsync(PackageReference reference)
+        public async Task<byte[]> GetPackage(PackageReference reference)
         {
             return await DownloadPackage(reference);
         }

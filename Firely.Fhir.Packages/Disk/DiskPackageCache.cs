@@ -15,20 +15,20 @@ namespace Firely.Fhir.Packages
             this.Root = root ?? Platform.GetFhirPackageRoot();
         }
 
-        public Task<bool> IsInstalledAsync(PackageReference reference)
+        public Task<bool> IsInstalled(PackageReference reference)
         {
             string target = PackageContentFolder(reference);
             return Task.FromResult(Directory.Exists(target));
         }
 
-        public async Task InstallAsync(PackageReference reference, byte[] buffer)
+        public async Task Install(PackageReference reference, byte[] buffer)
         {
             var folder = PackageRootFolder(reference);
             await Packaging.UnpackToFolder(buffer, folder);
             CreateIndexFile(reference);
         }
 
-        public Task<PackageManifest> ReadManifestAsync(PackageReference reference)
+        public Task<PackageManifest> ReadManifest(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
 
@@ -42,7 +42,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public Task<CanonicalIndex> GetCanonicalIndexAsync(PackageReference reference)
+        public Task<CanonicalIndex> GetCanonicalIndex(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
             return Task.FromResult(CanonicalIndexFile.GetFromFolder(folder));
@@ -122,7 +122,7 @@ namespace Firely.Fhir.Packages
         //    }
         //}
 
-        public Task<IEnumerable<PackageReference>> GetPackageReferencesAsync()
+        public Task<IEnumerable<PackageReference>> GetPackageReferences()
         {
             var folders = GetPackageRootFolders();
             var references = new List<PackageReference>(folders.Count());
@@ -142,16 +142,16 @@ namespace Firely.Fhir.Packages
             return Task.FromResult(references.AsEnumerable());
         }
 
-        public Task<string> GetFileContentAsync(PackageReference reference, string filename)
+        public Task<string> GetFileContent(PackageReference reference, string filename)
         {
             var folder = PackageContentFolder(reference);
             string path = Path.Combine(folder, filename);
             return Task.FromResult(File.ReadAllText(path));
         }
 
-        public async Task<Versions> GetVersionsAsync(string name)
+        public async Task<Versions> GetVersions(string name)
         {
-            var references = await GetPackageReferencesAsync();
+            var references = await GetPackageReferences();
             var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
             var versions = new Versions(vlist);
 
@@ -159,7 +159,7 @@ namespace Firely.Fhir.Packages
         }
 
         [Obsolete("Not implemented yet")]
-        public Task<byte[]> GetPackageAsync(PackageReference reference)
+        public Task<byte[]> GetPackage(PackageReference reference)
         {
             throw new NotImplementedException();
         }

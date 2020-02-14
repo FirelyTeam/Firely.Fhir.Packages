@@ -12,7 +12,7 @@ namespace Firely.Fhir.Packages
         internal PackageClosure closure;
         internal readonly Action<string> Report;
 
-        public FileIndex Index => _index ??= BuildIndexAsync().Result; // You cannot have async getters in C#, maybe not make this a property ?! (Paul)
+        public FileIndex Index => _index ??= BuildIndex().Result; // You cannot have async getters in C#, maybe not make this a property ?! (Paul)
 
         public PackageScope(IPackageCache cache, IProject project, IPackageServer server, Action<string> report = null)
         {
@@ -22,20 +22,20 @@ namespace Firely.Fhir.Packages
             this.Report = report;
         }
 
-        private async Task<PackageClosure> ReadClosureAsync()
+        private async Task<PackageClosure> ReadClosure()
         {
-            closure = await Project.ReadClosureAsync();
+            closure = await Project.ReadClosure();
             if (closure is null) throw new ArgumentException("The folder does not contain a package lock file.");
             return closure;
         }
 
-        public async Task<FileIndex> BuildIndexAsync()
+        public async Task<FileIndex> BuildIndex()
         {
-            this.closure = await ReadClosureAsync();
+            this.closure = await ReadClosure();
 
             var index = new FileIndex();
-            await index.IndexAsync(Project);
-            await index.IndexAsync(Cache, closure);
+            await index.Index(Project);
+            await index.Index(Cache, closure);
 
             return index;
         }
@@ -51,7 +51,7 @@ namespace Firely.Fhir.Packages
 
             if (reference is object)
             {
-                return await scope.GetFileContentAsync(reference);               
+                return await scope.GetFileContent(reference);               
             }
             else
             {
@@ -59,11 +59,11 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public static async Task<PackageReference> InstallAsync(this PackageScope scope, string name, string range)
+        public static async Task<PackageReference> Install(this PackageScope scope, string name, string range)
         {
             var dependency = new PackageDependency(name, range);
 
-            return await scope.InstallAsync(dependency);
+            return await scope.Install(dependency);
         }
 
         public static PackageFileReference GetFileReferenceByCanonical(this PackageScope scope, string canonical)
@@ -71,15 +71,15 @@ namespace Firely.Fhir.Packages
             return scope.Index.ResolveCanonical(canonical);
         }
 
-        public static async Task<string> GetFileContentAsync(this PackageScope scope, PackageFileReference reference)
+        public static async Task<string> GetFileContent(this PackageScope scope, PackageFileReference reference)
         {
             if (!reference.Package.Found) // this is a hack, because we cannot reference the project itself with a PackageReference
             {
-                return await scope.Project.GetFileContentAsync(reference.FileName);
+                return await scope.Project.GetFileContent(reference.FileName);
             }
             else
             {
-                return await scope.Cache.GetFileContentAsync(reference);
+                return await scope.Cache.GetFileContent(reference);
 
             }
         }

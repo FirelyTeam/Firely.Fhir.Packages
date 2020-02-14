@@ -24,17 +24,17 @@ namespace Firely.Fhir.Packages
 
     public static class FileIndexExtensions
     {
-        internal static async Task IndexAsync(this FileIndex index, IPackageCache cache, PackageClosure closure)
+        internal static async Task Index(this FileIndex index, IPackageCache cache, PackageClosure closure)
         {
             foreach (var reference in closure.References)
             {
-                await index.IndexAsync(cache, reference);
+                await index.Index(cache, reference);
             }
         }
 
-        internal static async Task IndexAsync(this FileIndex index, IPackageCache cache, PackageReference reference)
+        internal static async Task Index(this FileIndex index, IPackageCache cache, PackageReference reference)
         {
-            var idx = await cache.GetCanonicalIndexAsync(reference);
+            var idx = await cache.GetCanonicalIndex(reference);
 
             index.Add(reference, idx);
         }
@@ -55,9 +55,9 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        internal static async Task IndexAsync(this FileIndex index, IProject project)
+        internal static async Task Index(this FileIndex index, IProject project)
         {
-            var dict = await project.GetCanonicalIndexAsync();
+            var dict = await project.GetCanonicalIndex();
 
             index.Add(PackageReference.None, dict);
         }

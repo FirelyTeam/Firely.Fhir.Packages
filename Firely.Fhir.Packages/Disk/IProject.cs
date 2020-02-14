@@ -9,41 +9,41 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public interface IProject 
     {
-        Task<PackageManifest> ReadManifestAsync();
-        Task WriteManifestAsync(PackageManifest manifest);
-        Task<PackageClosure> ReadClosureAsync();
-        Task WriteClosureAsync(PackageClosure closure);
+        Task<PackageManifest> ReadManifest();
+        Task WriteManifest(PackageManifest manifest);
+        Task<PackageClosure> ReadClosure();
+        Task WriteClosure(PackageClosure closure);
 
-        public Task<string> GetFileContentAsync(string filename);
-        public Task<Dictionary<string, string>> GetCanonicalIndexAsync();
+        public Task<string> GetFileContent(string filename);
+        public Task<Dictionary<string, string>> GetCanonicalIndex();
     }
 
     public static class IProjectExtensions
     {
-        public static async Task InstallAsync(this IProject project, PackageDependency dependency)
+        public static async Task Install(this IProject project, PackageDependency dependency)
         {
-            var manifest = await project.ReadManifestAsync();
+            var manifest = await project.ReadManifest();
             manifest.AddDependency(dependency);
-            await project.WriteManifestAsync(manifest);
+            await project.WriteManifest(manifest);
         }
 
-        public static async Task<bool> RemoveAsync(this IProject project, PackageReference dependency)
+        public static async Task<bool> Remove(this IProject project, PackageReference dependency)
         {
-            return await project.RemoveAsync(dependency.Name);
+            return await project.Remove(dependency.Name);
         }
 
-        public static async Task<bool> RemoveAsync(this IProject project, string name)
+        public static async Task<bool> Remove(this IProject project, string name)
         {
-            var manifest = await project.ReadManifestAsync();
+            var manifest = await project.ReadManifest();
             var result = manifest.RemoveDependency(name);
-            await project.WriteManifestAsync(manifest);
+            await project.WriteManifest(manifest);
 
             return result;
         }
 
         public static async Task Init(this IProject project, string pkgname, string version, string fhirVersion)
         {
-            var manifest = await project.ReadManifestAsync();
+            var manifest = await project.ReadManifest();
 
             if (manifest != null)
                 throw new Exception($"A Package manifests already exists in this folder.");
@@ -53,7 +53,7 @@ namespace Firely.Fhir.Packages
 
             manifest = ManifestFile.Create(pkgname, fhirVersion);
 
-            await project.WriteManifestAsync(manifest);
+            await project.WriteManifest(manifest);
         }
     }
 }

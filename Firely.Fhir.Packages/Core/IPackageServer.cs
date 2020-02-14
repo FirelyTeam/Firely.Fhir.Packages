@@ -4,7 +4,7 @@ namespace Firely.Fhir.Packages
 {
     public interface IPackageServer
     {
-        Task<Versions> GetVersionsAsync(string name);
-        Task<byte[]> GetPackageAsync(PackageReference reference);
+        Task<Versions> GetVersions(string name);
+        Task<byte[]> GetPackage(PackageReference reference);
     }
 }
