@@ -41,8 +41,8 @@ namespace Firely.Fhir.Packages
         [JsonProperty(PropertyName = "url")]
         public string Url;
 
-        [JsonProperty(PropertyName = "deprecated")]
-        public string Deprecated;
+        [JsonProperty(PropertyName = "unlisted")]
+        public string Unlisted;
     }
 
     public class PackageManifest
