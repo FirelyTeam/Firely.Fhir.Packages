@@ -32,41 +32,51 @@ namespace Firely.Fhir.Packages
 
         public static async Task<PackageClosure> Restore(this PackageScope scope)
         {
-            var closure = new PackageClosure();
+            scope.Closure = new PackageClosure(); // reset
             var manifest = await scope.Project.ReadManifest();
-            await RestoreManifest(scope, manifest, closure);
-            await scope.Project.WriteClosure(closure);
 
-            return closure; 
+            await scope.RestoreManifest(manifest);
+            return await scope.SaveClosure();
         }
- 
-        private static async Task RestoreManifest(PackageScope scope, PackageManifest manifest, PackageClosure closure)
+
+
+        public static async Task<PackageClosure> SaveClosure(this PackageScope scope)
+        {
+            await scope.Project.WriteClosure(scope.Closure);
+            return scope.Closure;
+        }
+
+        private static async Task RestoreManifest(this PackageScope scope, PackageManifest manifest)
         {
             foreach(PackageDependency dependency in manifest.GetDependencies())
             { 
-                await RestoreDependency(scope, dependency, closure);
+                await scope.RestoreDependency(dependency);
             }
         }
 
-        private static async Task RestoreDependency(this PackageScope scope, PackageDependency dependency, PackageClosure closure)
+        private static async Task RestoreDependency(this PackageScope scope, PackageDependency dependency)
         {
             var reference = await scope.Install(dependency);
-
             if (reference.Found)
             {
-                if (closure.Add(reference)) // conflicts are resolved by: highest = winner.
-                {
-                    var manifest = await scope.Cache.ReadManifest(reference);
-
-                    if (manifest is object)
-                        await RestoreManifest(scope, manifest, closure);
-                }
+                scope.Closure.Add(reference);
+                await scope.RestoreReference(reference);
             }
-            else 
+            else
             {
-                closure.AddMissing(dependency);
+                scope.Closure.AddMissing(dependency);
             }
         }
+
+        private static async Task RestoreReference(this PackageScope scope, PackageReference reference)
+        {
+            var manifest = await scope.Cache.ReadManifest(reference);
+            if (manifest is object)
+            {
+                await scope.RestoreManifest(manifest);
+            }
+        }
+
     }
 
 }

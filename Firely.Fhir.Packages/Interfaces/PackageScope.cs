@@ -9,7 +9,7 @@ namespace Firely.Fhir.Packages
         public readonly IPackageCache Cache;
         public readonly IProject Project;
         public readonly IPackageServer Server;
-        internal PackageClosure closure;
+        internal PackageClosure Closure;
         internal readonly Action<string> Report;
 
         public FileIndex Index => _index ??= BuildIndex().Result; // You cannot have async getters in C#, maybe not make this a property ?! (Paul)
@@ -24,18 +24,18 @@ namespace Firely.Fhir.Packages
 
         private async Task<PackageClosure> ReadClosure()
         {
-            closure = await Project.ReadClosure();
-            if (closure is null) throw new ArgumentException("The folder does not contain a package lock file.");
-            return closure;
+            Closure = await Project.ReadClosure();
+            if (Closure is null) throw new ArgumentException("The folder does not contain a package lock file.");
+            return Closure;
         }
 
         public async Task<FileIndex> BuildIndex()
         {
-            this.closure = await ReadClosure();
+            this.Closure = await ReadClosure();
 
             var index = new FileIndex();
             await index.Index(Project);
-            await index.Index(Cache, closure);
+            await index.Index(Cache, Closure);
 
             return index;
         }
@@ -83,5 +83,6 @@ namespace Firely.Fhir.Packages
 
             }
         }
+
     }
 }
