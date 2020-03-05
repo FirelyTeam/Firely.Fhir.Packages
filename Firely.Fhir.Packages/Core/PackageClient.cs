@@ -140,6 +140,8 @@ namespace Firely.Fhir.Packages
         public async Task<Versions> GetVersions(string name)
         {
             var listing = await DownloadListingAsync(name);
+            if (listing is null) return new Versions();
+            
             return listing.ToVersions();
         }
 

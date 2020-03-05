@@ -10,6 +10,8 @@ namespace Firely.Fhir.Packages
 
         public IReadOnlyCollection<Version> Items => list;
 
+        public Versions() { }
+
         public Versions(IEnumerable<string> versions)
         {
             Append(versions);
