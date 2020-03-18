@@ -38,6 +38,9 @@ namespace Firely.Fhir.Packages
         [JsonProperty(PropertyName = "author")]
         public string Author;
 
+        [JsonProperty(PropertyName = "fhirVersion")]
+        public string fhirVersion;
+
         [JsonProperty(PropertyName = "url")]
         public string Url;
 
