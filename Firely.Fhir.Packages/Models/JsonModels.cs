@@ -39,7 +39,7 @@ namespace Firely.Fhir.Packages
         public string Author;
 
         [JsonProperty(PropertyName = "fhirVersion")]
-        public string fhirVersion;
+        public string FhirVersion;
 
         [JsonProperty(PropertyName = "url")]
         public string Url;
