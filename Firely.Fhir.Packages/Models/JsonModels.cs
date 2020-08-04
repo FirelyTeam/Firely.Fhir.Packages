@@ -90,9 +90,9 @@ namespace Firely.Fhir.Packages
     public class CanonicalIndex
     {
         public DateTimeOffset date;
-
-        [JsonProperty(PropertyName = "canonicals")]
-        public Dictionary<string, string> Canonicals; // canonical -> file
+        public int version; 
+        [JsonProperty(PropertyName = "entries")]
+        public List<ResourceMetadata> Entries; // canonical -> file
     }
 
 

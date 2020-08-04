@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Hl7.Fhir.ElementModel;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -83,6 +85,26 @@ namespace Firely.Fhir.Packages
 
             }
         }
+
+        public static IEnumerable<string> ReadAllFiles(this PackageScope scope)
+        {
+            foreach (var reference in scope.Index)
+            {
+                var content = scope.GetFileContent(reference).Result;
+                yield return content;
+            }
+        }
+
+        public static IEnumerable<string> GetContentsForRange(this PackageScope scope, IEnumerable<PackageFileReference> references)
+        {
+            foreach(var item in references)
+            {
+                var content = scope.GetFileContent(item).Result;
+                yield return content;
+            }
+        }
+
+
 
     }
 }

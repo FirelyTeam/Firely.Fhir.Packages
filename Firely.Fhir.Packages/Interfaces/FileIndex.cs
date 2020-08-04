@@ -16,9 +16,16 @@ namespace Firely.Fhir.Packages
             return this.FirstOrDefault(r => r.Canonical == canonical);
         }
 
-        public void Add(PackageReference package, string canonical, string filename)
+        public void Add(PackageReference package, ResourceMetadata metadata)
         {
-            this.Add(new PackageFileReference { Canonical = canonical, Package = package, FileName = filename });
+            var reference = new PackageFileReference
+            {
+                Package = package,
+                Canonical = metadata.Canonical,
+                FileName = metadata.FileName,
+                ResourceType = metadata.ResourceType
+            };
+            this.Add(reference);
         }
     }
 
@@ -39,27 +46,27 @@ namespace Firely.Fhir.Packages
             index.Add(reference, idx);
         }
 
-        internal static void Add(this FileIndex index, PackageReference reference, Dictionary<string, string> cindex)
+        internal static void Add(this FileIndex index, PackageReference reference, IEnumerable<ResourceMetadata> cindex)
         {
             foreach (var item in cindex)
             {
-                index.Add(reference, item.Key, item.Value);
+                index.Add(reference, item);
             }
         }
 
         internal static void Add(this FileIndex index, PackageReference reference, CanonicalIndex cindex)
         {
-            if (cindex.Canonicals is object)
+            if (cindex.Entries is object)
             {
-                index.Add(reference, cindex.Canonicals);
+                index.Add(reference, cindex.Entries);
             }
         }
 
         internal static async Task Index(this FileIndex index, IProject project)
         {
-            var dict = await project.GetCanonicalIndex();
+            var entries = await project.GetIndex();
 
-            index.Add(PackageReference.None, dict);
+            index.Add(PackageReference.None, entries);
         }
     }
 }

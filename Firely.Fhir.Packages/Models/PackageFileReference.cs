@@ -1,10 +1,8 @@
 ﻿namespace Firely.Fhir.Packages
 {
-    public class PackageFileReference
+    public class PackageFileReference : ResourceMetadata
     {
-        public string Canonical;
         public PackageReference Package; 
-        public string FileName;
     }
 
 }

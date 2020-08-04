@@ -1,41 +1,50 @@
 ﻿using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace Firely.Fhir.Packages
 {
+    public class ResourceMetadata
+    {
+        public string FileName;
+        public string? Canonical;
+        public string ResourceType;
+    }
+
     public static class CanonicalIndexer
     {
-        public static Dictionary<string, string> IndexFolder(string folder)
+        public static List<ResourceMetadata> IndexFolder(string folder)
         {
             var filenames = Directory.GetFiles(folder);
-            return GetCanonicalsFromResourceFiles(filenames);
+            return EnumerateMetadata(filenames).ToList();
         }
 
-        private static Dictionary<string, string> GetCanonicalsFromResourceFiles(IEnumerable<string> filepaths)
+        private static IEnumerable<ResourceMetadata> EnumerateMetadata(IEnumerable<string> filepaths)
         {
-            var dictionary = new Dictionary<string, string>();
             foreach (var filepath in filepaths)
             {
-                var canonical = GetCanonicalFromResourceFile(filepath);
-                if (canonical != null)
-                {
-                    var filename = Path.GetFileName(filepath);
-                    dictionary[canonical] = filename;
-                }
+                var meta = GetFileMetadata(filepath);
+                if (meta is object)
+                    yield return meta;
             }
-            return dictionary;
         }
 
-        public static string GetCanonicalFromResourceFile(string filepath)
+        public static ResourceMetadata GetFileMetadata(string filepath)
         {
             try
             {
                 var node = ElementNavigation.ParseToSourceNode(filepath);
-                var canonical = (string)node.Children("url").FirstOrDefault().Text;
-                return canonical;
+                string? canonical = node.Children("url").FirstOrDefault()?.Text;
+
+                return new ResourceMetadata
+                {
+                    Canonical = canonical,
+                    FileName = Path.GetFileName(filepath),
+                    ResourceType = node.Name
+                };
             }
-            catch
+            catch (Exception e)
             {
                 return null;
             }

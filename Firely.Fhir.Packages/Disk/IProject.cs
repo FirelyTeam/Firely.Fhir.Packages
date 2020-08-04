@@ -15,7 +15,7 @@ namespace Firely.Fhir.Packages
         Task WriteClosure(PackageClosure closure);
 
         public Task<string> GetFileContent(string filename);
-        public Task<Dictionary<string, string>> GetCanonicalIndex();
+        public Task<List<ResourceMetadata>> GetIndex();
     }
 
     public static class IProjectExtensions
