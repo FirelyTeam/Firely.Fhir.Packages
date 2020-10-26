@@ -15,8 +15,9 @@ namespace Firely.Fhir.Packages
         internal readonly Action<string> Report;
 
         public FileIndex Index => _index ??= BuildIndex().Result; // You cannot have async getters in C#, maybe not make this a property ?! (Paul)
+        private FileIndex? _index;
 
-        public PackageScope(IPackageCache cache, IProject project, IPackageServer server, Action<string> report = null)
+        public PackageScope(IPackageCache cache, IProject project, IPackageServer server, Action<string>? report = null)
         {
             this.Cache = cache;
             this.Project = project;
@@ -42,7 +43,7 @@ namespace Firely.Fhir.Packages
             return index;
         }
 
-        private FileIndex _index;
+        
     }
 
     public static class PackageScopeExtensions

@@ -6,7 +6,7 @@ namespace Firely.Fhir.Packages
 {
     public static class UrlParameterExtensions
     {
-        public static void AddWhenValued(this NameValueCollection collection, string name, string value)
+        public static void AddWhenValued(this NameValueCollection collection, string name, string? value)
         {
             if (!string.IsNullOrEmpty(value))
                 collection.Add(name, value);

@@ -7,7 +7,7 @@ namespace Firely.Fhir.Packages
 {
     public static class PackageClientExtensions
     {
-        public static async ValueTask<string> DownloadListingRawAsync(this PackageClient client, PackageReference reference)
+        public static async ValueTask<string?> DownloadListingRawAsync(this PackageClient client, PackageReference reference)
         {
             if (reference.Version != null && reference.Version.StartsWith("git"))
             {

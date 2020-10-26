@@ -7,9 +7,9 @@ namespace Firely.Fhir.Packages
 
     public static class VersionsExtensions
     {
-        public static Versions ToVersions(this PackageListing? listing)
+        public static Versions ToVersions(this PackageListing listing)
         {
-            var versions = new Versions(listing?.Versions?.Keys);
+            var versions = new Versions(listing.Versions.Keys);
             return versions;
         }
 

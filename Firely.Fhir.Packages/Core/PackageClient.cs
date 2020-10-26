@@ -25,7 +25,7 @@ namespace Firely.Fhir.Packages
             return new PackageClient(provider);
         }
 
-        public PackageClient(IPackageUrlProvider urlProvider, HttpClient client = null)
+        public PackageClient(IPackageUrlProvider urlProvider, HttpClient? client = null)
         {
             this.urlProvider = urlProvider;
             this.httpClient = client ?? new HttpClient();
@@ -34,7 +34,7 @@ namespace Firely.Fhir.Packages
         readonly IPackageUrlProvider urlProvider;
         readonly HttpClient httpClient;
 
-        public async ValueTask<string> DownloadListingRawAsync(string pkgname)
+        public async ValueTask<string?> DownloadListingRawAsync(string pkgname)
         {
            
             var url = urlProvider.GetPackageListingUrl(pkgname);
@@ -60,17 +60,17 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public async ValueTask<PackageListing> DownloadListingAsync(string pkgname)
+        public async ValueTask<PackageListing?> DownloadListingAsync(string pkgname)
         {
             var body = await DownloadListingRawAsync(pkgname);
             if (body is null) return null;
             return Parser.Deserialize<PackageListing>(body);
         }
 
-        public async ValueTask<List<PackageCatalogEntry>> CatalogPackagesAsync(
-            string pkgname = null, 
-            string canonical = null, 
-            string fhirversion = null,
+        public async ValueTask<List<PackageCatalogEntry>?> CatalogPackagesAsync(
+            string? pkgname = null, 
+            string? canonical = null, 
+            string? fhirversion = null,
             bool preview = false)
         { 
             var parameters = new NameValueCollection();

@@ -6,7 +6,7 @@
 
         public NodePackageUrlProvider(string root)
         {
-            this.Root = root?.TrimEnd('/') ;
+            this.Root = root.TrimEnd('/') ;
         }
 
         public string GetPackageListingUrl(string scope, string name) => $"{Root}/@{scope}%2F{name}";

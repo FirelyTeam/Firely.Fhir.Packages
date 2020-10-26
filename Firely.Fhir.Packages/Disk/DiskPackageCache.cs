@@ -10,7 +10,7 @@ namespace Firely.Fhir.Packages
     {
         public readonly string Root;
 
-        public DiskPackageCache(string root = null)
+        public DiskPackageCache(string? root = null)
         {
             this.Root = root ?? Platform.GetFhirPackageRoot();
         }
@@ -28,7 +28,7 @@ namespace Firely.Fhir.Packages
             CreateIndexFile(reference);
         }
 
-        public Task<PackageManifest> ReadManifest(PackageReference reference)
+        public Task<PackageManifest?> ReadManifest(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
 

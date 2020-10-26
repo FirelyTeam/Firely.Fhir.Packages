@@ -8,11 +8,11 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public struct PackageReference
     {
-        public string Scope;
-        public string Name;
-        public string Version;
+        public string? Scope;
+        public string? Name; // null means empty reference
+        public string? Version;
 
-        public PackageReference(string name, string version = null)
+        public PackageReference(string name, string? version = null)
         {
             if (name.StartsWith("@"))
             {

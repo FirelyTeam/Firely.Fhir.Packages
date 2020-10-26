@@ -30,7 +30,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public static ResourceMetadata GetFileMetadata(string filepath)
+        public static ResourceMetadata? GetFileMetadata(string filepath)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace Firely.Fhir.Packages
                     ResourceType = node.Name
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }

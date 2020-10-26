@@ -9,43 +9,43 @@ namespace Firely.Fhir.Packages
     public class PackageListing
     {
         [JsonProperty(PropertyName = "_id")]
-        public string Id;
+        public string? Id;
 
         [JsonProperty(PropertyName = "name")]
-        public string Name;
+        public string? Name;
 
         [JsonProperty(PropertyName = "description")]
-        public string Description;
+        public string? Description;
 
         [JsonProperty(PropertyName = "dist-tags")]
-        public Dictionary<string, string> DistTags;
+        public Dictionary<string, string>? DistTags;
 
         [JsonProperty(PropertyName = "versions")]
-        public Dictionary<string, PackageRelease> Versions;
+        public Dictionary<string, PackageRelease>? Versions;
     }
 
     public class PackageRelease
     {
         [JsonProperty(PropertyName = "name")]
-        public string Name;
+        public string? Name;
 
         [JsonProperty(PropertyName = "version")]
-        public string Version;
+        public string? Version;
          
         [JsonProperty(PropertyName = "description")]
-        public string Description;
+        public string? Description;
 
         [JsonProperty(PropertyName = "author")]
-        public string Author;
+        public string? Author;
 
         [JsonProperty(PropertyName = "fhirVersion")]
-        public string FhirVersion;
+        public string? FhirVersion;
 
         [JsonProperty(PropertyName = "url")]
-        public string Url;
+        public string? Url;
 
         [JsonProperty(PropertyName = "unlisted")]
-        public string Unlisted;
+        public string? Unlisted;
     }
 
     public class PackageManifest
@@ -57,22 +57,22 @@ namespace Firely.Fhir.Packages
         public string Version;
 
         [JsonProperty(PropertyName = "description")]
-        public string Description;
+        public string? Description;
 
         [JsonProperty(PropertyName = "author")]
-        public string Author;
+        public string? Author;
 
         [JsonProperty(PropertyName = "dependencies")]
-        public Dictionary<string, string> Dependencies;
+        public Dictionary<string, string>? Dependencies;
 
         [JsonProperty(PropertyName = "fhirVersions")]
-        public List<string> FhirVersions;
+        public List<string>? FhirVersions;
 
         [JsonProperty(PropertyName = "devDependencies")]
-        public Dictionary<string, string> DevDependencies;
+        public Dictionary<string, string>? DevDependencies;
 
         [JsonProperty(PropertyName = "canonicals")]
-        public Dictionary<string, string> Canonicals;
+        public Dictionary<string, string>? Canonicals;
     }
 
     public class LockFileJson
@@ -92,7 +92,7 @@ namespace Firely.Fhir.Packages
         public DateTimeOffset date;
         public int version; 
         [JsonProperty(PropertyName = "entries")]
-        public List<ResourceMetadata> Entries; // canonical -> file
+        public List<ResourceMetadata>? Entries; // canonical -> file
     }
 
 
