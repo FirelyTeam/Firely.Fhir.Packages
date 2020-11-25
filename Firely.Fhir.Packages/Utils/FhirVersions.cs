@@ -36,6 +36,7 @@ namespace Firely.Fhir.Packages
                 "3.6.0" => 4,
                 "4.0.0" => 4,
                 "4.0.1" => 4,
+                "4.5.0" => 5,
                 _ => -1
             };
         }
@@ -48,6 +49,7 @@ namespace Firely.Fhir.Packages
                 2 => "1.0.2",
                 3 => "3.0.1",
                 4 => "4.0.0",
+                5 => "4.5.0",
                 _ => throw new Exception($"Unknown FHIR version {version}")
             };
         }

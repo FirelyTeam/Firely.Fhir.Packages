@@ -56,9 +56,9 @@ namespace Firely.Fhir.Packages
 
         internal static void Add(this FileIndex index, PackageReference reference, CanonicalIndex cindex)
         {
-            if (cindex.Entries is object)
+            if (cindex.Files is object)
             {
-                index.Add(reference, cindex.Entries);
+                index.Add(reference, cindex.Files);
             }
         }
 

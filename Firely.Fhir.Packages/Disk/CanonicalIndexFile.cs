@@ -12,7 +12,7 @@ namespace Firely.Fhir.Packages
             if (ExistsIn(folder))
             {
                 var index = ReadFromFolder(folder);
-                if (index.version == VERSION) return index;
+                if (index.Version == VERSION) return index;
             }
             // otherwise:
             return Create(folder);
@@ -21,7 +21,7 @@ namespace Firely.Fhir.Packages
         public static CanonicalIndex Create(string folder)
         {
             var entries = CanonicalIndexer.IndexFolder(folder);
-            var index = new CanonicalIndex { Entries = entries, version = VERSION, date = DateTimeOffset.Now };
+            var index = new CanonicalIndex { Files = entries, Version = VERSION, date = DateTimeOffset.Now };
             WriteToFolder(index, folder);
             return index;
         }

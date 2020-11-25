@@ -29,10 +29,11 @@ namespace Firely.Fhir.Packages
             this.Version = version;
         }
 
+        public string Moniker => $"{Name}@{Version}";
         public override string ToString()
         {
-            string s = $"{Name} {Version}";
-            if (!Found) s += " NOT FOUND";
+            string s = $"{Name}@{Version}";
+            if (!Found) s += " (NOT FOUND)";
             return s;
         }
 

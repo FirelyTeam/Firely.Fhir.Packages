@@ -35,6 +35,8 @@ namespace Firely.Fhir.Packages
         public static async Task<bool> Remove(this IProject project, string name)
         {
             var manifest = await project.ReadManifest();
+            if (manifest is null) return false;
+
             var result = manifest.RemoveDependency(name);
             await project.WriteManifest(manifest);
 

@@ -1,5 +1,4 @@
-﻿using Hl7.Fhir.ElementModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

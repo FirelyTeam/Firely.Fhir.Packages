@@ -29,7 +29,7 @@ namespace Firely.Fhir.Packages
             list.Sort();
         }
 
-        public Version Latest()
+        public Version Latest(bool previews = false)
         {
             return list.LastOrDefault();
         }
@@ -52,6 +52,7 @@ namespace Firely.Fhir.Packages
 
         public Version Resolve(Range range)
         {
+           
             return range.MaxSatisfying(list);
         }
 

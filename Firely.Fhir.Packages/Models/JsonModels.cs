@@ -87,15 +87,43 @@ namespace Firely.Fhir.Packages
         public Dictionary<string, string> MissingDependencies;
     }
 
+
+
+
     public class CanonicalIndex
     {
         public DateTimeOffset date;
-        public int version; 
-        [JsonProperty(PropertyName = "entries")]
-        public List<ResourceMetadata>? Entries; // canonical -> file
+
+        [JsonProperty(PropertyName = "index-version")]
+        public int Version; 
+
+        [JsonProperty(PropertyName = "files")]
+        public List<ResourceMetadata>? Files; // canonical -> file
     }
 
+    public class ResourceMetadata
+    {
+        [JsonProperty("filename")]
+        public string FileName;
 
+        [JsonProperty("resourceType")]
+        public string ResourceType;
+
+        [JsonProperty("id")]
+        public string Id;
+
+        [JsonProperty("url")]
+        public string? Canonical;
+
+        [JsonProperty("version")]
+        public string? Version;
+
+        [JsonProperty("kind")]
+        public string? Kind;
+
+        [JsonProperty("type")]
+        public string? Type;
+    }
 
     public class PackageCatalogEntry
     {

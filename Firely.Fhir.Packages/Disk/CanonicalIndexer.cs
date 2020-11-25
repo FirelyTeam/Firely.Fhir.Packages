@@ -2,15 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Hl7.Fhir.ElementModel;
 
 namespace Firely.Fhir.Packages
 {
-    public class ResourceMetadata
-    {
-        public string FileName;
-        public string? Canonical;
-        public string ResourceType;
-    }
 
     public static class CanonicalIndexer
     {
@@ -35,13 +30,17 @@ namespace Firely.Fhir.Packages
             try
             {
                 var node = ElementNavigation.ParseToSourceNode(filepath);
-                string? canonical = node.Children("url").FirstOrDefault()?.Text;
+                string? canonical = node.GetString("url"); // node.Children("url").FirstOrDefault()?.Text;
 
                 return new ResourceMetadata
                 {
-                    Canonical = canonical,
                     FileName = Path.GetFileName(filepath),
-                    ResourceType = node.Name
+                    ResourceType = node.Name,
+                    Id = node.GetString("id"),
+                    Canonical = node.GetString("url"),
+                    Version = node.GetString("version"),
+                    Kind = node.GetString("kind"),
+                    Type = node.GetString("type")
                 };
             }
             catch (Exception)
@@ -50,6 +49,18 @@ namespace Firely.Fhir.Packages
             }
         }
 
+
+        public static string GetString(this ISourceNode node, string expression)
+        {
+            var parts = expression.Split('.');
+            
+            foreach (var part in parts)
+            {
+                node = node.Children(part).FirstOrDefault();
+                if (node is null) return null;
+            }
+            return node.Text;
+        }
     }
 }
 
