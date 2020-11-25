@@ -6,7 +6,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
 		<Nullable>annotations</Nullable>
-		<Version>2.0.0-beta1</Version>
+		<Version>2.0.0-beta2</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
