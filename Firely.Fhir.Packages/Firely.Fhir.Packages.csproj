@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 
 	<Import Project="..\Firely.Fhir.Packages.props" />
@@ -6,7 +6,8 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
 		<Nullable>annotations</Nullable>
-		<Version>2.0.0-beta2</Version>
+		<Version>2.0.1</Version>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,8 +28,8 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="Hl7.FhirPath" Version="2.0.0-beta2" />
-		<PackageReference Include="Hl7.Fhir.Support" Version="2.0.0-beta2" />
-		<PackageReference Include="Hl7.Fhir.Serialization" Version="2.0.0-beta2" />
+		<PackageReference Include="Hl7.FhirPath" Version="2.0.1" />
+		<PackageReference Include="Hl7.Fhir.Support" Version="2.0.1" />
+		<PackageReference Include="Hl7.Fhir.Serialization" Version="2.0.1" />
 	</ItemGroup>
 </Project>
