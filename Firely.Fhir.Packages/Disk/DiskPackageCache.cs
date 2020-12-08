@@ -144,10 +144,22 @@ namespace Firely.Fhir.Packages
 
         public Task<string> GetFileContent(PackageReference reference, string filename)
         {
+            
             var folder = PackageContentFolder(reference);
             string path = Path.Combine(folder, filename);
-            return Task.FromResult(File.ReadAllText(path));
+            string content;
+            try
+            {
+                content = File.ReadAllText(path);
+                return Task.FromResult(content);
+            }
+            catch
+            {
+                throw new Exception($"The file {filename} could not be found in package {reference}. You might have to do a restore.");
+            }
         }
+
+        
 
         public async Task<Versions> GetVersions(string name)
         {
