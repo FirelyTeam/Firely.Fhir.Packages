@@ -1,50 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-
-    public class PackageScope
-    {
-        public readonly IPackageCache Cache;
-        public readonly IProject Project;
-        public readonly IPackageServer Server;
-        internal PackageClosure Closure;
-        internal readonly Action<string> Report;
-
-        public FileIndex Index => _index ??= BuildIndex().Result; // You cannot have async getters in C#, maybe not make this a property ?! (Paul)
-        private FileIndex? _index;
-
-        public PackageScope(IPackageCache cache, IProject project, IPackageServer server, Action<string>? report = null)
-        {
-            this.Cache = cache;
-            this.Project = project;
-            this.Server = server;
-            this.Report = report;
-        }
-
-        private async Task<PackageClosure> ReadClosure()
-        {
-            Closure = await Project.ReadClosure();
-            if (Closure is null) throw new ArgumentException("The folder does not contain a package lock file.");
-            return Closure;
-        }
-
-        public async Task<FileIndex> BuildIndex()
-        {
-            this.Closure = await ReadClosure();
-
-            var index = new FileIndex();
-            await index.Index(Project);
-            await index.Index(Cache, Closure);
-
-            return index;
-        }
-
-        
-    }
-
     public static class PackageScopeExtensions
     {
         public static async Task<string> GetFileContentByCanonical(this PackageScope scope, string uri)
@@ -65,7 +25,7 @@ namespace Firely.Fhir.Packages
         {
             var dependency = new PackageDependency(name, range);
 
-            return await scope.Install(dependency);
+            return await scope.CacheInstall(dependency);
         }
 
         public static PackageFileReference GetFileReferenceByCanonical(this PackageScope scope, string canonical)
@@ -82,7 +42,6 @@ namespace Firely.Fhir.Packages
             else
             {
                 return await scope.Cache.GetFileContent(reference);
-
             }
         }
 
@@ -104,7 +63,39 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        public static async Task EnsureManifest(this PackageScope scope, string name, string fhirVersion)
+        {
+            var manifest = await scope.Project.ReadManifest();
+            manifest ??= ManifestFile.Create(name, fhirVersion);
+            await scope.Project.WriteManifest(manifest);
+        }
 
+        public static async Task EnsureManifest(this PackageScope scope, string name, int fhirRelease)
+        {
+            var fhirversion = FhirVersions.GetFhirSpecVersion(fhirRelease);
+            var manifest = await scope.Project.ReadManifest();
+            manifest ??= ManifestFile.Create(name, fhirversion);
+            await scope.Project.WriteManifest(manifest);
+        }
+      
+        
+        public static async Task<PackageClosure> Install(this PackageScope scope, PackageDependency dependency)
+        {
+            var reference = await scope.CacheInstall(dependency);
+            if (reference.NotFound) throw new Exception($"Package '{dependency}' was not found.");
+
+            var manifest = scope.Project.ReadManifest();
+            if (manifest is null)
+            {
+                var fhirVersion = await scope.Cache.ReadPackageFhirVersion(reference);
+                await scope.EnsureManifest("project", fhirVersion);
+            }
+
+            await scope.Project.Install(dependency);
+
+            var closure = await scope.Restore();
+            return closure;
+        }
 
     }
 }

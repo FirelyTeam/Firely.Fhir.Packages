@@ -1,23 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-    /// <summary>
-    /// Only used to get access to the project I/O, this is not about scope
-    /// </summary>
-    public interface IProject 
-    {
-        Task<PackageManifest> ReadManifest();
-        Task WriteManifest(PackageManifest manifest);
-        Task<PackageClosure> ReadClosure();
-        Task WriteClosure(PackageClosure closure);
-
-        public Task<string> GetFileContent(string filename);
-        public Task<List<ResourceMetadata>> GetIndex();
-    }
-
     public static class IProjectExtensions
     {
         public static async Task Install(this IProject project, PackageDependency dependency)
@@ -57,5 +42,18 @@ namespace Firely.Fhir.Packages
 
             await project.WriteManifest(manifest);
         }
+
+        public static async Task<bool> HasManifest(this IProject project)
+        {
+            var manifest = await project.ReadManifest();
+            return manifest is object;
+        }
+
+        public static async Task<bool> HasClosure(this IProject project)
+        {
+            var closure = await project.ReadClosure();
+            return closure is object;
+        }
+
     }
 }

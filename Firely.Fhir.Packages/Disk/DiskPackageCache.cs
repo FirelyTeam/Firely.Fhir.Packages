@@ -72,6 +72,58 @@ namespace Firely.Fhir.Packages
             return target;
         }
 
+        public Task<IEnumerable<PackageReference>> GetPackageReferences()
+        {
+            var folders = GetPackageRootFolders();
+            var references = new List<PackageReference>(folders.Count());
+
+            foreach (var folder in folders)
+            {
+                var entry = Disk.GetFolderName(folder);
+                var idx = entry.IndexOfAny(new[] { '-', '#' }); // backwards compatibility: also support '-'
+
+                references.Add(new PackageReference
+                {
+                    Name = entry.Substring(0, idx),
+                    Version = entry.Substring(idx + 1)
+                });
+            }
+
+            return Task.FromResult(references.AsEnumerable());
+        }
+
+        public Task<string> GetFileContent(PackageReference reference, string filename)
+        {
+
+            var folder = PackageContentFolder(reference);
+            string path = Path.Combine(folder, filename);
+            string content;
+            try
+            {
+                content = File.ReadAllText(path);
+                return Task.FromResult(content);
+            }
+            catch
+            {
+                throw new Exception($"The file {filename} could not be found in package {reference}. You might have to do a restore.");
+            }
+        }
+
+        public async Task<Versions> GetVersions(string name)
+        {
+            var references = await GetPackageReferences();
+            var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
+            var versions = new Versions(vlist);
+
+            return versions;
+        }
+
+        [Obsolete("Not implemented yet")]
+        public Task<byte[]> GetPackage(PackageReference reference)
+        {
+            throw new NotImplementedException();
+        }
+
         private void CreateIndexFile(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
@@ -95,86 +147,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private IEnumerable<string> GetPackageContentFolders()
-        {
-            return GetPackageRootFolders().Select(f => Path.Combine(f, PackageConsts.PackageFolder));
-        }
-
-        private IEnumerable<string> GetPackageContentFolders(IEnumerable<PackageReference> references)
-        {
-            foreach(var refx in references)
-            {
-                var folder = PackageContentFolder(refx);
-                if (Directory.Exists(folder))
-                {
-                    yield return folder;
-                }
-            }
-        }
-
-        //public IEnumerable<PackageManifest> GetManifests()
-        //{
-        //    foreach (var folder in GetPackageRootFolders())
-        //    {
-        //        var manifestpath = Path.Combine(folder, "package");
-        //        var manifest = ManifestFile.ReadFromFolder(manifestpath);
-        //        yield return manifest;
-        //    }
-        //}
-
-        public Task<IEnumerable<PackageReference>> GetPackageReferences()
-        {
-            var folders = GetPackageRootFolders();
-            var references = new List<PackageReference>(folders.Count());
-
-            foreach(var folder in folders)
-            {
-                var entry = Disk.GetFolderName(folder);
-                var idx = entry.IndexOfAny(new[] { '-', '#' }); // backwards compatibility: also support '-'
-                
-                references.Add(new PackageReference
-                {
-                    Name = entry.Substring(0, idx),
-                    Version = entry.Substring(idx + 1)
-                });
-            }
-
-            return Task.FromResult(references.AsEnumerable());
-        }
-
-        public Task<string> GetFileContent(PackageReference reference, string filename)
-        {
-            
-            var folder = PackageContentFolder(reference);
-            string path = Path.Combine(folder, filename);
-            string content;
-            try
-            {
-                content = File.ReadAllText(path);
-                return Task.FromResult(content);
-            }
-            catch
-            {
-                throw new Exception($"The file {filename} could not be found in package {reference}. You might have to do a restore.");
-            }
-        }
-
-        
-
-        public async Task<Versions> GetVersions(string name)
-        {
-            var references = await GetPackageReferences();
-            var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
-            var versions = new Versions(vlist);
-
-            return versions;
-        }
-
-        [Obsolete("Not implemented yet")]
-        public Task<byte[]> GetPackage(PackageReference reference)
-        {
-            throw new NotImplementedException();
-        }
+      
     }
 
     

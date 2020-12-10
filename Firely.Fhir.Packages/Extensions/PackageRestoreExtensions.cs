@@ -3,9 +3,9 @@
 namespace Firely.Fhir.Packages
 {
 
-    public static class PackageRestorer
+    public static class PackageRestoreExtensions
     {
-        public static async Task<PackageReference> Install(this PackageScope scope, PackageDependency dependency)
+        public static async Task<PackageReference> CacheInstall(this PackageScope scope, PackageDependency dependency)
         {
             PackageReference reference;
 
@@ -39,7 +39,6 @@ namespace Firely.Fhir.Packages
             return await scope.SaveClosure();
         }
 
-
         public static async Task<PackageClosure> SaveClosure(this PackageScope scope)
         {
             await scope.Project.WriteClosure(scope.Closure);
@@ -56,7 +55,7 @@ namespace Firely.Fhir.Packages
 
         private static async Task RestoreDependency(this PackageScope scope, PackageDependency dependency)
         {
-            var reference = await scope.Install(dependency);
+            var reference = await scope.CacheInstall(dependency);
             if (reference.Found)
             {
                 scope.Closure.Add(reference);

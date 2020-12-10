@@ -44,6 +44,14 @@ namespace Firely.Fhir.Packages
         {
             return await cache.GetFileContent(reference.Package, reference.FileName);
         }
+
+        public static async Task<string> ReadPackageFhirVersion(this IPackageCache cache, PackageReference reference)
+        {
+            var m = await cache.ReadManifest(reference);
+            var fhirVersion = m.FhirVersions.FirstOrDefault();
+            return fhirVersion;
+        } 
+
     }
 }
 
