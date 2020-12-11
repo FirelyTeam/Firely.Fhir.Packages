@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
 
-    public class PackageScope
+    public class PackageContext
     {
         public readonly IPackageCache Cache;
         public readonly IProject Project;
@@ -17,7 +15,7 @@ namespace Firely.Fhir.Packages
         public FileIndex Index => _index ??= BuildIndex().Result; // You cannot have async getters in C#, maybe not make this a property ?! (Paul)
         private FileIndex? _index;
 
-        public PackageScope(IPackageCache cache, IProject project, IPackageServer server, Action<string>? report = null)
+        public PackageContext(IPackageCache cache, IProject project, IPackageServer server, Action<string>? report = null)
         {
             this.Cache = cache;
             this.Project = project;

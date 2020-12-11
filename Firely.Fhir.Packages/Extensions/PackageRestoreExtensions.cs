@@ -5,7 +5,7 @@ namespace Firely.Fhir.Packages
 
     public static class PackageRestoreExtensions
     {
-        public static async Task<PackageReference> CacheInstall(this PackageScope scope, PackageDependency dependency)
+        public static async Task<PackageReference> CacheInstall(this PackageContext scope, PackageDependency dependency)
         {
             PackageReference reference;
 
@@ -30,7 +30,7 @@ namespace Firely.Fhir.Packages
             return reference;
         }
 
-        public static async Task<PackageClosure> Restore(this PackageScope scope)
+        public static async Task<PackageClosure> Restore(this PackageContext scope)
         {
             scope.Closure = new PackageClosure(); // reset
             var manifest = await scope.Project.ReadManifest();
@@ -39,13 +39,13 @@ namespace Firely.Fhir.Packages
             return await scope.SaveClosure();
         }
 
-        public static async Task<PackageClosure> SaveClosure(this PackageScope scope)
+        public static async Task<PackageClosure> SaveClosure(this PackageContext scope)
         {
             await scope.Project.WriteClosure(scope.Closure);
             return scope.Closure;
         }
 
-        private static async Task RestoreManifest(this PackageScope scope, PackageManifest manifest)
+        private static async Task RestoreManifest(this PackageContext scope, PackageManifest manifest)
         {
             foreach(PackageDependency dependency in manifest.GetDependencies())
             { 
@@ -53,7 +53,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private static async Task RestoreDependency(this PackageScope scope, PackageDependency dependency)
+        private static async Task RestoreDependency(this PackageContext scope, PackageDependency dependency)
         {
             var reference = await scope.CacheInstall(dependency);
             if (reference.Found)
@@ -67,7 +67,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private static async Task RestoreReference(this PackageScope scope, PackageReference reference)
+        private static async Task RestoreReference(this PackageContext scope, PackageReference reference)
         {
             var manifest = await scope.Cache.ReadManifest(reference);
             if (manifest is object)

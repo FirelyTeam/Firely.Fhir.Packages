@@ -4,7 +4,7 @@
 	<Import Project="..\Firely.Fhir.Packages.props" />
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0</TargetFrameworks>
 		<Nullable>annotations</Nullable>
 		<Version>2.1.0-alpha1</Version>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
