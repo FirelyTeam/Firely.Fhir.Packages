@@ -72,7 +72,7 @@ namespace Firely.Fhir.Packages
 
         public static async Task EnsureManifest(this PackageScope scope, string name, int fhirRelease)
         {
-            var fhirversion = FhirVersions.GetFhirSpecVersion(fhirRelease);
+            var fhirversion = FhirVersions.GetFhirVersion(fhirRelease);
             var manifest = await scope.Project.ReadManifest();
             manifest ??= ManifestFile.Create(name, fhirversion);
             await scope.Project.WriteManifest(manifest);
@@ -91,7 +91,7 @@ namespace Firely.Fhir.Packages
                 await scope.EnsureManifest("project", fhirVersion);
             }
 
-            await scope.Project.Install(dependency);
+            await scope.Project.AddDependency(dependency);
 
             var closure = await scope.Restore();
             return closure;

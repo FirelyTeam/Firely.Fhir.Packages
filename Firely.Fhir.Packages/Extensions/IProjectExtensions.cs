@@ -5,19 +5,19 @@ namespace Firely.Fhir.Packages
 {
     public static class IProjectExtensions
     {
-        public static async Task Install(this IProject project, PackageDependency dependency)
+        public static async Task AddDependency(this IProject project, PackageDependency dependency)
         {
             var manifest = await project.ReadManifest();
             manifest.AddDependency(dependency);
             await project.WriteManifest(manifest);
         }
 
-        public static async Task<bool> Remove(this IProject project, PackageReference dependency)
+        public static async Task<bool> RemoveDependency(this IProject project, PackageReference dependency)
         {
-            return await project.Remove(dependency.Name);
+            return await project.RemoveDependency(dependency.Name);
         }
 
-        public static async Task<bool> Remove(this IProject project, string name)
+        public static async Task<bool> RemoveDependency(this IProject project, string name)
         {
             var manifest = await project.ReadManifest();
             if (manifest is null) return false;

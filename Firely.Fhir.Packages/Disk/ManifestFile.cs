@@ -62,15 +62,15 @@ namespace Firely.Fhir.Packages
                 Name = name,
                 Description = "Put a description here",
                 Version = "0.1.0",
-                FhirVersions = new List<string> { FhirVersions.GetFhirSpecVersion(version) },
+                FhirVersions = new List<string> { FhirVersions.GetFhirVersion(version) },
                 Dependencies = new Dictionary<string, string>()
             };
 
         }
 
-        public static PackageManifest Create(string name, int version)
+        public static PackageManifest Create(string name, int fhirRelease)
         {
-            var fhirVersion = FhirVersions.GetFhirSpecVersion(version);
+            var fhirVersion = FhirVersions.GetFhirVersion(fhirRelease);
             return Create(name, fhirVersion);
         }
 
