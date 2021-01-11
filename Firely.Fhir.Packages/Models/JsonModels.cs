@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 
 namespace Firely.Fhir.Packages
 {
@@ -48,7 +49,7 @@ namespace Firely.Fhir.Packages
         public string? Unlisted;
     }
 
-    public class PackageManifest
+    public class PackageManifest : DynamicDictionary
     {
         [JsonProperty(PropertyName = "name")]
         public string Name;
@@ -86,9 +87,6 @@ namespace Firely.Fhir.Packages
         [JsonProperty(PropertyName = "missing")]
         public Dictionary<string, string> MissingDependencies;
     }
-
-
-
 
     public class CanonicalIndex
     {
