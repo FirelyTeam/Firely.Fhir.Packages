@@ -67,16 +67,6 @@ namespace Firely.Fhir.Packages.Tests
 
             CollectionAssert.AreEqual(t.Single(), dyn.maintainers[0]);
         }
-
-        [TestMethod]
-        public void ArrayOfStringAndDictConvenienceConversions()
-        {
-            var json = JsonConvert.SerializeObject(new { a = 4, c = "h", d = new[] { "e" }, e = new { g = 7.5 } });
-
-            var restored = JsonConvert.DeserializeObject<PackageManifest>(json);
-
-
-        }
     }   
 }
 
