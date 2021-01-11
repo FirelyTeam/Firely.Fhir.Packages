@@ -31,7 +31,8 @@ namespace Firely.Fhir.Packages
 
         public static string WriteManifest(PackageManifest manifest)
         {
-            return JsonConvert.SerializeObject(manifest, Formatting.Indented)+"\n";
+            return JsonConvert.SerializeObject(manifest, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore } )+"\n";
+            //return JsonConvert.SerializeObject(manifest, Formatting.Indented )+"\n";
         }
 
         //public static string JsonMerge(object thing, string contents)
