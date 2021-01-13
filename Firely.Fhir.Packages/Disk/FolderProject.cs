@@ -6,46 +6,59 @@ namespace Firely.Fhir.Packages
 {
     public class FolderProject : IProject
     {
-        string folder;
+        public string Folder { get; private set; }
 
         public FolderProject(string folder)
         {
-            this.folder = folder;
+            this.Folder = folder;
         }
 
         public Task<List<ResourceMetadata>> GetIndex()
         {
             // this should be cached, but we need to bust it on changes.
-            return Task.FromResult(CanonicalIndexer.IndexFolder(folder));
+            return Task.FromResult(CanonicalIndexer.IndexFolder(Folder));
         }
 
+        /// <summary>
+        /// Reads the raw contents of the given file.
+        /// </summary>
+        /// <param name="filename">The name of a file within the given <see cref="Folder"/>.</param>
+        /// <returns></returns>
         public Task<string> GetFileContent(string filename)
         {
-            var path = Path.Combine(folder, filename);
+            var path = Path.Combine(Folder, filename);
             return Task.FromResult(File.ReadAllText(path));
         }
 
+        /// <summary>
+        /// Reads and parses a <see cref="PackageClosure"/> from the <see cref="Folder"/>.
+        /// </summary>
+        /// <returns></returns>
         public Task<PackageClosure> ReadClosure()
         {
-            var closure = LockFile.ReadFromFolder(folder);
+            var closure = LockFile.ReadFromFolder(Folder);
             return Task.FromResult(closure);
         }
 
+        /// <summary>
+        /// Reads and parses a <see cref="PackageManifest"/> from the <see cref="Folder"/>.
+        /// </summary>
+        /// <returns></returns>
         public Task<PackageManifest> ReadManifest()
         {
-            return Task.FromResult(ManifestFile.ReadFromFolder(folder));
+            return Task.FromResult(ManifestFile.ReadFromFolder(Folder));
         }
 
         public Task WriteClosure(PackageClosure closure)
         {
-            LockFile.WriteToFolder(closure, folder);
+            LockFile.WriteToFolder(closure, Folder);
 
             return Task.FromResult(0); //because in net45 there is no Task.CompletedTask (Paul)
         }
 
         public Task WriteManifest(PackageManifest manifest)
         {
-            ManifestFile.WriteToFolder(manifest, folder, merge: true);
+            ManifestFile.WriteToFolder(manifest, Folder, merge: true);
 
             return Task.FromResult(0); //because in net45 there is no Task.CompletedTask (Paul)
         }

@@ -10,7 +10,7 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void DoesNotWriteNulls()
         {
-            PackageManifest manif = ManifestFile.Create("a-b-c", 4);
+            PackageManifest manif = ManifestFile.Create("a-b-c", "4.0.1");
 
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(tempDir);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -13,7 +12,7 @@ namespace Firely.Fhir.Packages
 
             if (reference is object)
             {
-                return await scope.GetFileContent(reference);               
+                return await scope.GetFileContent(reference);
             }
             else
             {
@@ -56,7 +55,7 @@ namespace Firely.Fhir.Packages
 
         public static IEnumerable<string> GetContentsForRange(this PackageContext scope, IEnumerable<PackageFileReference> references)
         {
-            foreach(var item in references)
+            foreach (var item in references)
             {
                 var content = scope.GetFileContent(item).Result;
                 yield return content;
@@ -70,6 +69,7 @@ namespace Firely.Fhir.Packages
             await scope.Project.WriteManifest(manifest);
         }
 
+        [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
         public static async Task EnsureManifest(this PackageContext scope, string name, int fhirRelease)
         {
             var fhirversion = FhirVersions.GetFhirVersion(fhirRelease);
@@ -77,8 +77,8 @@ namespace Firely.Fhir.Packages
             manifest ??= ManifestFile.Create(name, fhirversion);
             await scope.Project.WriteManifest(manifest);
         }
-      
-        
+
+
         public static async Task<PackageClosure> Install(this PackageContext scope, PackageDependency dependency)
         {
             var reference = await scope.CacheInstall(dependency);
