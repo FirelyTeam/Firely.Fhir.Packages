@@ -39,6 +39,7 @@ namespace Firely.Fhir.Packages
                 throw new Exception($"Invalid package name {pkgname}");
 
             manifest = ManifestFile.Create(pkgname, fhirVersion);
+            manifest.Version = version;
 
             await project.WriteManifest(manifest);
         }
