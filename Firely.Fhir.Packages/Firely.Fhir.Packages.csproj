@@ -17,8 +17,7 @@
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Hl7.Fhir.Support.Poco" Version="2.0.1" />
+  <ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
 		<PackageReference Include="SharpZipLib" Version="1.1.0" />
 		<PackageReference Include="SemanticVersioning" Version="1.2.0" />
@@ -36,8 +35,9 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="Hl7.FhirPath" Version="2.0.1" />
-		<PackageReference Include="Hl7.Fhir.Support" Version="2.0.1" />
-		<PackageReference Include="Hl7.Fhir.Serialization" Version="2.0.1" />
+    <PackageReference Include="Hl7.Fhir.Support.Poco" Version="$(FhirNetSdkVersion)" />
+    <PackageReference Include="Hl7.FhirPath" Version="$(FhirNetSdkVersion)" />
+		<PackageReference Include="Hl7.Fhir.Support" Version="$(FhirNetSdkVersion)" />
+		<PackageReference Include="Hl7.Fhir.Serialization" Version="$(FhirNetSdkVersion)" />
 	</ItemGroup>
 </Project>
