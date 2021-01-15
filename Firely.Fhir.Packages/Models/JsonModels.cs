@@ -128,6 +128,12 @@ namespace Firely.Fhir.Packages
         }
 
         /// <summary>
+        /// Title for the package.
+        /// </summary>
+        [JsonProperty(PropertyName = "title")]
+        public string? Title;
+
+        /// <summary>
         /// Versions of the FHIR standard used in artifacts within this package.
         /// </summary>
         /// <remarks>Largely obsolete, and replaced by actual dependencies on the

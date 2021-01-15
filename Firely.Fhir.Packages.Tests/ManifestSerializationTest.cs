@@ -23,6 +23,7 @@ namespace Firely.Fhir.Packages.Tests
                 License = "No license",
                 Homepage = "http://nu.nl",
                 Directories = new() { [PackageManifest.DirectoryKeys.DIRECTORY_KEY_LIB] = "package" },
+                Title = "Package with tests",
                 FhirVersions = new() { "3.0.2", "4.0.1" },
                 FhirVersionList = new() { "3.0.1", "4.0.2" },
                 Maintainers = new()
