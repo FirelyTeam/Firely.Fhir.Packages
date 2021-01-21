@@ -13,7 +13,6 @@
 
 	<PropertyGroup>
 		<Nullable>annotations</Nullable>
-		<Version>2.1.0-alpha1</Version>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 	</PropertyGroup>
 
