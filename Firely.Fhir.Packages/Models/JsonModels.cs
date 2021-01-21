@@ -31,7 +31,7 @@ namespace Firely.Fhir.Packages
 
         [JsonProperty(PropertyName = "version")]
         public string? Version;
-         
+
         [JsonProperty(PropertyName = "description")]
         public string? Description;
 
@@ -50,29 +50,138 @@ namespace Firely.Fhir.Packages
 
     public class PackageManifest
     {
+        /// <summary>
+        /// The globally unique name for the package.
+        /// </summary>
         [JsonProperty(PropertyName = "name")]
         public string Name;
 
+        /// <summary>
+        /// Semver-based version for the package
+        /// </summary>
         [JsonProperty(PropertyName = "version")]
         public string Version;
 
+        /// <summary>
+        /// Description of the package.
+        /// </summary>
         [JsonProperty(PropertyName = "description")]
         public string? Description;
 
+        /// <summary>
+        /// Author of the package.
+        /// </summary>
         [JsonProperty(PropertyName = "author")]
         public string? Author;
 
+        /// <summary>
+        /// Other packages that the contents of this packages depend on.
+        /// </summary>
         [JsonProperty(PropertyName = "dependencies")]
         public Dictionary<string, string>? Dependencies;
 
-        [JsonProperty(PropertyName = "fhirVersions")]
-        public List<string>? FhirVersions;
-
+        /// <summary>
+        /// Other packages necessary during development of this package.
+        /// </summary>
         [JsonProperty(PropertyName = "devDependencies")]
         public Dictionary<string, string>? DevDependencies;
 
-        [JsonProperty(PropertyName = "canonicals")]
-        public Dictionary<string, string>? Canonicals;
+        /// <summary>
+        /// List of keywords to help with discovery.
+        /// </summary>
+        [JsonProperty(PropertyName = "keywords")]
+        public List<string>? Keywords;
+
+        /// <summary>
+        /// List of keywords to help with discovery.
+        /// </summary>
+        [JsonProperty(PropertyName = "license")]
+        public string? License;
+
+        /// <summary>
+        /// The url to the project homepage.
+        /// </summary>
+        [JsonProperty(PropertyName = "homepage")]
+        public string? Homepage;
+
+        /// <summary>
+        /// Describes the structure of the package.
+        /// </summary>
+        /// <remarks>Some of the common keys used are defined in <see cref="DirectoryKeys"/>.</remarks>
+        [JsonProperty(PropertyName = "directories")]
+        public Dictionary<string, string> Directories;
+
+        /// <summary>
+        /// String-based keys used in the <see cref="Directories"/> dictionary.
+        /// </summary>
+        public class DirectoryKeys
+        {
+            /// <summary>
+            /// Where the bulk of the library is.
+            /// </summary>
+            public const string DIRECTORY_KEY_LIB = "lib";
+            public const string DIRECTORY_KEY_BIN = "bin";
+            public const string DIRECTORY_KEY_MAN = "man";
+            public const string DIRECTORY_KEY_DOC = "doc";
+            public const string DIRECTORY_KEY_EXAMPLE = "example";
+            public const string DIRECTORY_KEY_TEST = "test";
+        }
+
+        /// <summary>
+        /// Title for the package.
+        /// </summary>
+        [JsonProperty(PropertyName = "title")]
+        public string? Title;
+
+        /// <summary>
+        /// Versions of the FHIR standard used in artifacts within this package.
+        /// </summary>
+        /// <remarks>Largely obsolete, and replaced by actual dependencies on the
+        /// core packages.</remarks>
+        [JsonProperty(PropertyName = "fhirVersions")]
+        public List<string>? FhirVersions;
+
+        /// <summary>
+        /// Versions of the FHIR standard used in artifacts within this package.
+        /// </summary>
+        /// <remarks>It seems this is mistakenly generated in the core packages
+        /// published by HL7 and should be the same as <see cref="FhirVersions"/> above.</remarks>
+        [JsonProperty(PropertyName = "fhir-version-list")]
+        public List<string>? FhirVersionList;
+
+        public class Maintainer
+        {
+            [JsonProperty(PropertyName = "name")]
+            public string? Name;
+
+            [JsonProperty(PropertyName = "email")]
+            public string? Email;
+        }
+
+        /// <summary>
+        /// List of individual(s) responsible for maintaining the package.
+        /// </summary>
+        [JsonProperty(PropertyName = "maintainers")]
+        public List<Maintainer>? Maintainers;
+
+        /// <summary>
+        /// For IG packages: The canonical url of the IG (equivalent to ImplementationGuide.url).
+        /// </summary>
+        [JsonProperty(PropertyName = "canonical")]
+        public string? Canonical;
+
+        /// <summary>
+        /// For IG packages: Where the human readable representation (e.g. IG) is published on the web.
+        /// </summary>
+        [JsonProperty(PropertyName = "url")]
+        public string? Url;
+
+        /// <summary>
+        /// Country code for the jurisdiction under which this package is published.
+        /// </summary>
+        /// <remarks>Formatted as an urn specifying the code system and code, e.g. "urn:iso:std:iso:3166#US".</remarks>
+        [JsonProperty(PropertyName = "jurisdiction")]
+        public string? Jurisdiction;
     }
 
     public class LockFileJson
@@ -88,14 +197,12 @@ namespace Firely.Fhir.Packages
     }
 
 
-
-
     public class CanonicalIndex
     {
         public DateTimeOffset date;
 
         [JsonProperty(PropertyName = "index-version")]
-        public int Version; 
+        public int Version;
 
         [JsonProperty(PropertyName = "files")]
         public List<ResourceMetadata>? Files; // canonical -> file
