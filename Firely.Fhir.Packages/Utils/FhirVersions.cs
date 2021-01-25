@@ -43,7 +43,7 @@ namespace Firely.Fhir.Packages
             };
         }
 
-        public static FhirRelease Parse(string version)
+        public static FhirRelease? TryParse(string version)
         {
             return version switch
             {
@@ -77,8 +77,15 @@ namespace Firely.Fhir.Packages
                 "4.0.1" => FhirRelease.R4,
 
                 "4.5.0" => FhirRelease.R5,
-                var other => throw new ArgumentException($"{other} is not a known FHIR version.", nameof(version))
+                _ => null
             };
+        }
+
+        public static FhirRelease Parse(string version)
+        {
+            var release = TryParse(version);
+            if (release is null) throw new ArgumentException($"{version} is not a known FHIR version.", nameof(version));
+            else return release.Value;
         }
 
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
