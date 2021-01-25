@@ -78,8 +78,15 @@ namespace Firely.Fhir.Packages
             await scope.Project.WriteManifest(manifest);
         }
 
+      
+        
+        public class InstallResult
+        {
+            public PackageClosure Closure;
+            public PackageReference Reference; 
+        }
 
-        public static async Task<PackageClosure> Install(this PackageContext scope, PackageDependency dependency)
+        public static async Task<InstallResult> Install(this PackageContext scope, PackageDependency dependency)
         {
             var reference = await scope.CacheInstall(dependency);
             if (reference.NotFound) throw new Exception($"Package '{dependency}' was not found.");
@@ -94,7 +101,7 @@ namespace Firely.Fhir.Packages
             await scope.Project.AddDependency(dependency);
 
             var closure = await scope.Restore();
-            return closure;
+            return new InstallResult { Closure = closure, Reference = reference };
         }
 
     }
