@@ -24,7 +24,8 @@ namespace Firely.Fhir.Packages
 
         public override string ToString()
         {
-            return $"{Name} {Range}";
+            string range = string.IsNullOrEmpty(Range) ? "(latest)" : Range;
+            return $"{Name} {range}"; 
         }
     }
 }

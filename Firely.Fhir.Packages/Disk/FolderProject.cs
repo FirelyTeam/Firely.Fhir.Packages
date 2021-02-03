@@ -16,7 +16,7 @@ namespace Firely.Fhir.Packages
         public Task<List<ResourceMetadata>> GetIndex()
         {
             // this should be cached, but we need to bust it on changes.
-            return Task.FromResult(CanonicalIndexer.IndexFolder(Folder));
+            return Task.FromResult(CanonicalIndexer.IndexFolder(Folder, recurse: true));
         }
 
         /// <summary>
