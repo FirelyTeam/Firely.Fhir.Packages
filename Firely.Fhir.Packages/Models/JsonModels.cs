@@ -230,6 +230,21 @@ namespace Firely.Fhir.Packages
 
         [JsonProperty("type")]
         public string? Type;
+
+        [JsonProperty("fhirVersion")]
+        public string? FhirVersion;
+
+        public void CopyTo(ResourceMetadata other)
+        {
+            other.FileName = FileName;
+            other.ResourceType = ResourceType;
+            other.Id = Id;
+            other.Canonical = Canonical;
+            other.Version = Version;
+            other.Kind = Kind;
+            other.Type = Type;
+            other.FhirVersion = FhirVersion;
+        }
     }
 
     public class PackageCatalogEntry

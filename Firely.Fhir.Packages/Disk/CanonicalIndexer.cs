@@ -1,8 +1,8 @@
-﻿using System.IO;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Hl7.Fhir.ElementModel;
 using System;
-using Hl7.Fhir.ElementModel;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
@@ -41,7 +41,8 @@ namespace Firely.Fhir.Packages
                     Canonical = node.GetString("url"),
                     Version = node.GetString("version"),
                     Kind = node.GetString("kind"),
-                    Type = node.GetString("type")
+                    Type = node.GetString("type"),
+                    FhirVersion = node.GetString("fhirVersion")
                 };
             }
             catch (Exception)
@@ -54,7 +55,7 @@ namespace Firely.Fhir.Packages
         public static string GetString(this ISourceNode node, string expression)
         {
             var parts = expression.Split('.');
-            
+
             foreach (var part in parts)
             {
                 node = node.Children(part).FirstOrDefault();

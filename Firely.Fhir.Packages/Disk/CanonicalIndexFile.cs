@@ -1,11 +1,11 @@
-﻿using System.IO;
-using System;
+﻿using System;
+using System.IO;
 
 namespace Firely.Fhir.Packages
 {
     public static class CanonicalIndexFile
     {
-        public const int VERSION = 3;
+        public const int VERSION = 4;
 
         public static CanonicalIndex GetFromFolder(string folder, bool recurse)
         {
@@ -61,10 +61,10 @@ namespace Firely.Fhir.Packages
             Write(index, path);
         }
 
-     
 
-      
-       
+
+
+
     }
 }
 
