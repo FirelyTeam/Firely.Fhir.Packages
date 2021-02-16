@@ -18,14 +18,9 @@ namespace Firely.Fhir.Packages
 
         public void Add(PackageReference package, ResourceMetadata metadata)
         {
-            var reference = new PackageFileReference
-            {
-                Package = package,
-                Canonical = metadata.Canonical,
-                FileName = metadata.FileName,
-                ResourceType = metadata.ResourceType
-            };
-            this.Add(reference);
+            var reference = new PackageFileReference() { Package = package };
+            metadata.CopyTo(reference);
+            Add(reference);
         }
     }
 
