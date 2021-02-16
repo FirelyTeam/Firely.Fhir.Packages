@@ -75,7 +75,8 @@ namespace Firely.Fhir.Packages
         public static PackageManifest ReadFromFolder(string folder)
         {
             var path = Path.Combine(folder, PackageConsts.Manifest);
-            return Read(path);
+            var manifest = Read(path);
+            return manifest;
         }
 
         /// <summary>
@@ -86,16 +87,18 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public static PackageManifest Create(string name, string fhirVersion)
         {
-            var version = FhirVersions.Parse(fhirVersion);
+            var release = FhirVersions.Parse(fhirVersion);
+            var version = FhirVersions.FhirVersionFromRelease(release);
 
-            return new PackageManifest
+            var manifest = new PackageManifest
             {
                 Name = name,
                 Description = "Put a description here",
                 Version = "0.1.0",
-                FhirVersions = new List<string> { FhirVersions.FhirVersionFromRelease(version) },
                 Dependencies = new Dictionary<string, string>()
             };
+            manifest.SetFhirVersion(version);
+            return manifest;
         }
 
         ///// <summary>

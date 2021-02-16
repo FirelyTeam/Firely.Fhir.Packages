@@ -46,7 +46,8 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public Task<PackageManifest> ReadManifest()
         {
-            return Task.FromResult(ManifestFile.ReadFromFolder(Folder));
+            var manifest = ManifestFile.ReadFromFolder(Folder);
+            return Task.FromResult(manifest); ;
         }
 
         public Task WriteClosure(PackageClosure closure)
