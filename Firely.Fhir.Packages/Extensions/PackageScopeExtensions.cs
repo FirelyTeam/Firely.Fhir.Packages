@@ -91,8 +91,7 @@ namespace Firely.Fhir.Packages
             var reference = await scope.CacheInstall(dependency);
             if (reference.NotFound) throw new Exception($"Package '{dependency}' was not found.");
 
-            var manifest = scope.Project.ReadManifest();
-            if (manifest is null)
+            if (!await scope.Project.HasManifest())
             {
                 var fhirVersion = await scope.Cache.ReadPackageFhirVersion(reference);
                 await scope.EnsureManifest("project", fhirVersion);

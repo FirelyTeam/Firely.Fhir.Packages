@@ -31,6 +31,8 @@ namespace Firely.Fhir.Packages
             try
             {
                 var node = ElementNavigation.ParseToSourceNode(filepath);
+                if (node is null) return null;
+
                 string? canonical = node.GetString("url"); // node.Children("url").FirstOrDefault()?.Text;
 
                 return new ResourceMetadata
@@ -53,6 +55,8 @@ namespace Firely.Fhir.Packages
 
         public static string GetString(this ISourceNode node, string expression)
         {
+            if (node is null) return null;
+
             var parts = expression.Split('.');
             
             foreach (var part in parts)
@@ -77,11 +81,12 @@ namespace Firely.Fhir.Packages
 
             Uri baseUri = new Uri(relativeTo);
             Uri fullUri = new Uri(path);
-
+            
             Uri relativeUri = baseUri.MakeRelativeUri(fullUri);
 
             // Uri's use forward slashes so convert back to backward slashes
-            return relativeUri.ToString();
+            var result = Uri.UnescapeDataString(relativeUri.ToString());
+            return result;
 
         }
     }

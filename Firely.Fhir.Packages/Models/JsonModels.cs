@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
@@ -239,7 +240,6 @@ namespace Firely.Fhir.Packages
         public string FhirVersion;
     }
 
-
     public static class JsonModelExtensions
     {
         public static PackageReference GetPackageReference(this PackageManifest manifest)
@@ -300,6 +300,20 @@ namespace Firely.Fhir.Packages
                 }
             }
             return false;
+        }
+
+        public static string GetFhirVersion(this PackageManifest manifest)
+        {
+            string version =
+                manifest.FhirVersions?.FirstOrDefault()
+                ?? manifest.FhirVersionList?.FirstOrDefault();
+
+            return version;
+        }
+
+        public static void SetFhirVersion(this PackageManifest manifest, string version)
+        {
+            manifest.FhirVersions = new List<string> { version };
         }
     }
 }
