@@ -39,8 +39,10 @@ namespace Firely.Fhir.Packages
         [JsonProperty(PropertyName = "dist")]
         public Dist? Dist;
 
-        [JsonProperty(PropertyName = "author")]
-        public string? Author;
+        // Removed the porperty, because in NPM-6 it's a string and in NPM-7 it's a subclass.
+        // The horror!
+        //[JsonProperty(PropertyName = "author")]
+        //public string? Author;
 
         [JsonProperty(PropertyName = "fhirVersion")]
         public string? FhirVersion;

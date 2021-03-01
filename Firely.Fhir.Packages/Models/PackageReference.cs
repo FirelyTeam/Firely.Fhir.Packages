@@ -12,20 +12,24 @@ namespace Firely.Fhir.Packages
         public string? Name; // null means empty reference
         public string? Version;
 
-        public PackageReference(string name, string? version = null)
-        {
-            if (name.StartsWith("@"))
-            {
-                var segments = name.Split('/');
-                Scope = segments[0].Substring(1);
-                Name = segments[1];
-            }
-            else
-            {
-                Name = name;
-                Scope = null;
-            }
+        /// <summary>
+        /// Provide the name and optionally the version of the package. 
+        /// </summary>
+        /// <param name="name">The package name may include the (exact) version if separated with an at @ sign.</param>
+        /// <param name="version">Optionally the exact version of the package</param>
+        public PackageReference(string name, string version) : this(null, name, version)
+        { }
+        
 
+        public PackageReference(string reference)
+        {
+            (this.Scope, this.Name, this.Version) = ParseReference(reference);
+        }
+
+        public PackageReference (string scope, string name, string version)
+        {
+            this.Scope = scope;
+            this.Name = name;
             this.Version = version;
         }
 
@@ -46,6 +50,11 @@ namespace Firely.Fhir.Packages
         public static implicit operator PackageReference (KeyValuePair<string, string> kvp)
         {
             return new PackageReference(kvp.Key, kvp.Value);
+        }
+
+        public static implicit operator PackageReference(string reference)
+        {
+            return new PackageReference(reference);
         }
 
         public static bool operator == (PackageReference A, PackageReference B)
@@ -81,6 +90,31 @@ namespace Firely.Fhir.Packages
             return (Name, Version).GetHashCode();
         }
 
+        public static PackageReference Parse(string reference)
+        {
+            var (scope, name, version) = ParseReference(reference);
+            return new PackageReference(scope, name, version);
+        }
 
+        private static (string scope, string name, string version) ParseReference(string reference)
+        {
+            string scope = null;
+            string version = null;
+
+            if (reference.StartsWith("@")) // scope: @scope/name@version
+            {
+                var segments = reference.Split('/');
+                scope = segments[0].Substring(1);
+                reference = segments[1];
+            }
+
+            var parts = reference.Split("@"); // name@version
+            string name = parts[0];
+            if (parts.Length > 1) version = parts[1];
+            return (scope, name, version);
+
+        }
+
+      
     }
 }
