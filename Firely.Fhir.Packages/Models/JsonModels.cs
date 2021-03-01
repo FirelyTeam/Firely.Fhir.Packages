@@ -36,6 +36,9 @@ namespace Firely.Fhir.Packages
         [JsonProperty(PropertyName = "description")]
         public string? Description;
 
+        [JsonProperty(PropertyName = "dist")]
+        public Dist? Dist;
+
         [JsonProperty(PropertyName = "author")]
         public string? Author;
 
@@ -47,6 +50,15 @@ namespace Firely.Fhir.Packages
 
         [JsonProperty(PropertyName = "unlisted")]
         public string? Unlisted;
+    }
+
+    public class Dist
+    {
+        [JsonProperty(PropertyName = "shasum")]
+        public string Shasum;
+
+        [JsonProperty(PropertyName = "tarball")]
+        public string Tarball;
     }
 
     public class PackageManifest
