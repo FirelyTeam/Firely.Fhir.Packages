@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using SemVer;
+using System.Collections.Generic;
 using System.Linq;
-using SemVer;
 
 namespace Firely.Fhir.Packages
 {
@@ -8,6 +8,7 @@ namespace Firely.Fhir.Packages
     {
         readonly List<Version> list = new List<Version>();
 
+        [System.CLSCompliant(false)]
         public IReadOnlyCollection<Version> Items => list;
 
         public Versions() { }
@@ -17,7 +18,7 @@ namespace Firely.Fhir.Packages
             Append(versions);
         }
 
-        public void Append(IEnumerable<string> versions)   
+        public void Append(IEnumerable<string> versions)
         {
             foreach (var s in versions)
             {
@@ -29,11 +30,13 @@ namespace Firely.Fhir.Packages
             list.Sort();
         }
 
+        [System.CLSCompliant(false)]
         public Version Latest(bool previews = false)
         {
             return list.LastOrDefault();
         }
 
+        [System.CLSCompliant(false)]
         public static bool TryParseVersion(string s, out Version v)
         {
             try
@@ -50,15 +53,17 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        [System.CLSCompliant(false)]
         public Version Resolve(Range range)
         {
-           
+
             return range.MaxSatisfying(list);
         }
 
+        [System.CLSCompliant(false)]
         public bool Has(Version version)
         {
-            foreach(var item in list)
+            foreach (var item in list)
             {
                 if (item == version) return true;
             }
