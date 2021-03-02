@@ -11,7 +11,7 @@ namespace Firely.Fhir.Packages
         public string Name;
         public string Range;  // 3.x, 3.1 - 3.3, 1.1 | 1.2
 
-        public PackageDependency(string name, string range = null)
+        public PackageDependency(string name, string? range = null)
         {
             this.Name = name;
             this.Range = range;

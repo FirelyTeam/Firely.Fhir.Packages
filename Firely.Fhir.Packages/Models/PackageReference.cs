@@ -20,12 +20,6 @@ namespace Firely.Fhir.Packages
         public PackageReference(string name, string version) : this(null, name, version)
         { }
         
-
-        public PackageReference(string reference)
-        {
-            (this.Scope, this.Name, this.Version) = ParseReference(reference);
-        }
-
         public PackageReference (string scope, string name, string version)
         {
             this.Scope = scope;
@@ -54,7 +48,7 @@ namespace Firely.Fhir.Packages
 
         public static implicit operator PackageReference(string reference)
         {
-            return new PackageReference(reference);
+            return Parse(reference);
         }
 
         public static bool operator == (PackageReference A, PackageReference B)

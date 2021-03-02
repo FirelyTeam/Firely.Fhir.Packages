@@ -14,7 +14,7 @@ namespace Firely.Fhir.Packages.Tests
             Assert.AreEqual("hl7.fhir.r4.core", reference.Name);
             Assert.AreEqual("4.0.1", reference.Version);
 
-            reference = new PackageReference("hl7.fhir.r4.core@4.0.1");
+            reference = PackageReference.Parse("hl7.fhir.r4.core@4.0.1");
 
             Assert.AreEqual(null, reference.Scope);
             Assert.AreEqual("hl7.fhir.r4.core", reference.Name);
