@@ -11,7 +11,7 @@ namespace Firely.Fhir.Packages
         public string Name;
         public string Range;  // 3.x, 3.1 - 3.3, 1.1 | 1.2
 
-        public PackageDependency(string name, string range)
+        public PackageDependency(string name, string? range = null)
         {
             this.Name = name;
             this.Range = range;
@@ -20,6 +20,11 @@ namespace Firely.Fhir.Packages
         public static implicit operator PackageDependency(KeyValuePair<string, string> pair)
         {
             return new PackageDependency(pair.Key, pair.Value);
+        }
+
+        public static implicit operator PackageDependency(string reference)
+        {
+            return new PackageDependency(reference, null); // latest
         }
 
         public override string ToString()
