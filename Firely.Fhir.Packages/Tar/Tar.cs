@@ -132,6 +132,7 @@ namespace Firely.Fhir.Packages
             Tar.Write(tar, entries);
         }
 
+        [CLSCompliant(false)]
         public static void Write(this TarOutputStream tar, IEnumerable<FileEntry> entries)
         {
             foreach (var entry in entries)
@@ -140,6 +141,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        [CLSCompliant(false)]
         public static void Write(this TarOutputStream tar, FileEntry file)
         {
             using (Stream stream = file.GetStream())
@@ -164,6 +166,7 @@ namespace Firely.Fhir.Packages
             tar.CloseEntry();
         }
 
+        [CLSCompliant(false)]
         public static void Write(this TarOutputStream tar, string path, string content)
         {
             var entry = new FileEntry

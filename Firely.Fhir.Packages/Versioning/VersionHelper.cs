@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using SemVer;
+using System.Collections.Generic;
 using System.Linq;
-using SemVer;
 
 namespace Firely.Fhir.Packages
 {
@@ -19,6 +19,7 @@ namespace Firely.Fhir.Packages
             return list;
         }
 
+        [System.CLSCompliant(false)]
         public static Version Resolve(this Versions versions, string pattern)
         {
             if (pattern == "latest" || string.IsNullOrEmpty(pattern))
