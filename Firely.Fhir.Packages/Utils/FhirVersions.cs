@@ -3,6 +3,15 @@ using System;
 
 namespace Firely.Fhir.Packages
 {
+    public enum FhirRelease
+    {
+        DSTU1 = 0,
+        DSTU2 = 1,
+        STU3 = 2,
+        R4 = 3,
+        R5 = 4
+    }
+
     public static class FhirVersions
     {
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
