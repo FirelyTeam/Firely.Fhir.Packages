@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace Firely.Fhir.Packages
 {
@@ -10,13 +11,20 @@ namespace Firely.Fhir.Packages
         {
             try
             {
-                return JsonConvert.DeserializeObject<T>(content);
+                return JsonConvert.DeserializeObject<T>(content, settings);
             }
             catch
             {
                 return default;
             }
         }
+
+        private static JsonSerializerSettings settings = new JsonSerializerSettings
+        {
+            MissingMemberHandling = MissingMemberHandling.Ignore
+        };
+
+
 
         public static PackageManifest ReadManifest(string content)
         {

@@ -3,6 +3,26 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Firely.Fhir.Packages.Tests
 {
     [TestClass]
+    public class ParsingTest
+    {
+        [TestMethod]
+        public void ParseReferences()
+        {
+            var reference = PackageReference.Parse("hl7.fhir.r4.core@4.0.1");
+            
+            Assert.AreEqual(null, reference.Scope);
+            Assert.AreEqual("hl7.fhir.r4.core", reference.Name);
+            Assert.AreEqual("4.0.1", reference.Version);
+
+            reference = PackageReference.Parse("hl7.fhir.r4.core@4.0.1");
+
+            Assert.AreEqual(null, reference.Scope);
+            Assert.AreEqual("hl7.fhir.r4.core", reference.Name);
+            Assert.AreEqual("4.0.1", reference.Version);
+        }
+    }
+
+        [TestClass]
     public class VersionsTest
     {
         [TestMethod]
