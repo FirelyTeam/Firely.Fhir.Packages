@@ -9,6 +9,19 @@ namespace Firely.Fhir.Packages
 {
     public static class Tar
     {
+        public static string PackToDisk(string path, IEnumerable<FileEntry> entries)
+        {
+            var packagefile = Path.ChangeExtension(path, ".tgz");
+
+            using var file = File.Create(packagefile);
+            using var gzip = new GZipOutputStream(file);
+            using TarOutputStream tar = new TarOutputStream(gzip);
+            
+            Write(tar, entries);
+            
+            return packagefile;
+        }
+
         public static string PackToDisk(string path, FileEntry single, IEnumerable<FileEntry> entries)
         {
             var packagefile = Path.ChangeExtension(path, ".tgz");

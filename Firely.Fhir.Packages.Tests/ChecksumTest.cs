@@ -9,7 +9,7 @@ namespace Firely.Fhir.Packages.Tests
         public void TestFhirPackage()
         {
             // This one should fail, because Simplifier has not yet implemented adding checksums.
-            // TestPackageChecksum(PackageUrlProviders.Simplifier, "hl7.fhir.r4.core@4.0.1");
+            TestPackageChecksum(PackageUrlProviders.Simplifier, "hl7.fhir.r4.core@4.0.1");
         }
 
         [TestMethod]
