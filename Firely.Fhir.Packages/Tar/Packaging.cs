@@ -1,7 +1,8 @@
-﻿using System.IO;
-using ICSharpCode.SharpZipLib.Tar;
-using System.Linq;
+﻿using ICSharpCode.SharpZipLib.Tar;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,6 +20,7 @@ namespace Firely.Fhir.Packages
             return Parser.ReadManifest(entry.Buffer);
         }
 
+        [CLSCompliant(false)]
         public static void WriteResource(this TarOutputStream tar, FileEntry entry)
         {
             entry.ChangeFolder(PACKAGE);
@@ -64,7 +66,7 @@ namespace Firely.Fhir.Packages
             return Tar.Pack(entries);
         }
 
-        public static async Task UnpackToFolder(byte[] buffer, string folder) 
+        public static async Task UnpackToFolder(byte[] buffer, string folder)
         {
             await Task.Run(() =>
             {

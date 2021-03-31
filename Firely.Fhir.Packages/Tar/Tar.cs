@@ -17,7 +17,7 @@ namespace Firely.Fhir.Packages
             using var gzip = new GZipOutputStream(file);
             using TarOutputStream tar = new TarOutputStream(gzip);
             
-            WriteEntries(tar, entries);
+            Write(tar, entries);
             
             return packagefile;
         }
@@ -31,7 +31,7 @@ namespace Firely.Fhir.Packages
             using (TarOutputStream tar = new TarOutputStream(gzip))
             {
                 Write(tar, single);
-                WriteEntries(tar, entries);
+                Write(tar, entries);
             }
             return packagefile;
         }
@@ -43,7 +43,7 @@ namespace Firely.Fhir.Packages
             using (TarOutputStream tar = new TarOutputStream(gzip))
             {
                 tar.Write(single);
-                tar.WriteEntries(entries);
+                tar.Write(entries);
             }
             stream.Seek(0, SeekOrigin.Begin);
             var bytes = stream.ToArray();
@@ -57,7 +57,7 @@ namespace Firely.Fhir.Packages
             using (var gzip = new GZipOutputStream(stream))
             using (TarOutputStream tar = new TarOutputStream(gzip))
             {
-                tar.WriteEntries(entries);
+                tar.Write(entries);
             }
             stream.Seek(0, SeekOrigin.Begin);
             var bytes = stream.ToArray();
@@ -142,10 +142,11 @@ namespace Firely.Fhir.Packages
             using var gzip = new GZipOutputStream(stream);
             using TarOutputStream tar = new TarOutputStream(gzip);
 
-            Tar.WriteEntries(tar, entries);
+            Tar.Write(tar, entries);
         }
 
-        public static void WriteEntries(this TarOutputStream tar, IEnumerable<FileEntry> entries)
+        [CLSCompliant(false)]
+        public static void Write(this TarOutputStream tar, IEnumerable<FileEntry> entries)
         {
             foreach (var entry in entries)
             {
@@ -153,6 +154,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        [CLSCompliant(false)]
         public static void Write(this TarOutputStream tar, FileEntry file)
         {
             using (Stream stream = file.GetStream())
@@ -177,6 +179,7 @@ namespace Firely.Fhir.Packages
             tar.CloseEntry();
         }
 
+        [CLSCompliant(false)]
         public static void Write(this TarOutputStream tar, string path, string content)
         {
             var entry = new FileEntry
