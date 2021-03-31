@@ -9,6 +9,19 @@ namespace Firely.Fhir.Packages
 {
     public static class Tar
     {
+        public static string PackToDisk(string path, IEnumerable<FileEntry> entries)
+        {
+            var packagefile = Path.ChangeExtension(path, ".tgz");
+
+            using var file = File.Create(packagefile);
+            using var gzip = new GZipOutputStream(file);
+            using TarOutputStream tar = new TarOutputStream(gzip);
+            
+            WriteEntries(tar, entries);
+            
+            return packagefile;
+        }
+
         public static string PackToDisk(string path, FileEntry single, IEnumerable<FileEntry> entries)
         {
             var packagefile = Path.ChangeExtension(path, ".tgz");
@@ -18,7 +31,7 @@ namespace Firely.Fhir.Packages
             using (TarOutputStream tar = new TarOutputStream(gzip))
             {
                 Write(tar, single);
-                Write(tar, entries);
+                WriteEntries(tar, entries);
             }
             return packagefile;
         }
@@ -30,7 +43,7 @@ namespace Firely.Fhir.Packages
             using (TarOutputStream tar = new TarOutputStream(gzip))
             {
                 tar.Write(single);
-                tar.Write(entries);
+                tar.WriteEntries(entries);
             }
             stream.Seek(0, SeekOrigin.Begin);
             var bytes = stream.ToArray();
@@ -44,7 +57,7 @@ namespace Firely.Fhir.Packages
             using (var gzip = new GZipOutputStream(stream))
             using (TarOutputStream tar = new TarOutputStream(gzip))
             {
-                tar.Write(entries);
+                tar.WriteEntries(entries);
             }
             stream.Seek(0, SeekOrigin.Begin);
             var bytes = stream.ToArray();
@@ -129,10 +142,10 @@ namespace Firely.Fhir.Packages
             using var gzip = new GZipOutputStream(stream);
             using TarOutputStream tar = new TarOutputStream(gzip);
 
-            Tar.Write(tar, entries);
+            Tar.WriteEntries(tar, entries);
         }
 
-        public static void Write(this TarOutputStream tar, IEnumerable<FileEntry> entries)
+        public static void WriteEntries(this TarOutputStream tar, IEnumerable<FileEntry> entries)
         {
             foreach (var entry in entries)
             {

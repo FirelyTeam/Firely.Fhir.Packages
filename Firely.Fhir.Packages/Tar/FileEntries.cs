@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -14,23 +15,30 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public static bool IsManifestFile(string filepath)
+        
+        public static bool Match(this FileEntry file, string filename)
         {
-            return Path.GetFileName(filepath).ToLower() == PackageConsts.Manifest;
+            return string.Compare(file.FileName, filename, ignoreCase: true) == 0;
         }
 
-        public static IEnumerable<string> FilesToPack(string folder)
+        public static bool HasExtension(this FileEntry file, params string[] extensions)
         {
-            foreach (var filepath in Directory.GetFiles(folder, "*.xml"))
-                yield return filepath;
-
-            foreach (var filepath in Directory.GetFiles(folder, "*.json").Where(f => !IsManifestFile(f)))
-                yield return filepath;
+            var extension = Path.GetExtension(file.FileName);
+            foreach(var ext in extensions)
+            {
+                if (string.Compare(extension, ext, ignoreCase: true) == 0) return true;
+            }
+            return false;
         }
 
-        public static IEnumerable<FileEntry> ReadFilesToPack(string folder)
+        public static IEnumerable<string> AllFilesToPack(string folder)
         {
-            return FilesToPack(folder).Select(ReadFileEntry);
+            return Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
+        }
+
+        public static IEnumerable<FileEntry> ReadAllFilesToPack(string folder)
+        {
+            return AllFilesToPack(folder).Select(ReadFileEntry);
         }
 
         public static FileEntry ReadFileEntry(string filepath)
@@ -53,6 +61,53 @@ namespace Firely.Fhir.Packages
             string filename = Path.GetFileName(entry.FilePath);
             entry.FilePath = Path.Combine(folder, Path.GetFileName(filename));
             return entry;
+        }
+
+        public static IEnumerable<FileEntry> MakePathsRelative(this IEnumerable<FileEntry> files, string root)
+        {
+            foreach (var file in files)
+                yield return file.MakeRelativePath(root);
+        }
+
+
+        private static Uri MakeFolderUri(string folder)
+        {
+            if (!folder.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                folder += Path.DirectorySeparatorChar;
+            }
+            return new Uri(folder);
+        }
+
+        public static string MakeRelativePath(string path, string root)
+        {
+            Uri pathUri = new Uri(path);
+            Uri rootUri = MakeFolderUri(root);
+            return Uri.UnescapeDataString(rootUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
+        }
+
+        public static FileEntry MakeRelativePath(this FileEntry file, string root)
+        {
+            file.FilePath = MakeRelativePath(file.FilePath, root);
+            return file;
+        }
+
+
+        public static IEnumerable<FileEntry> OrganizeToPackageStructure(this IEnumerable<FileEntry> files)
+        {
+            var other = Path.Combine(PackageConsts.PackageFolder, "other");
+
+            foreach (var file in files)
+            {
+                if (file.Match(PackageConsts.Manifest))
+                    yield return file.ChangeFolder(PackageConsts.PackageFolder);
+
+                if (file.HasExtension(".xml", ".json"))
+                    yield return file.ChangeFolder(PackageConsts.PackageFolder);
+
+              
+                yield return file.ChangeFolder(other);
+            }
         }
 
     }

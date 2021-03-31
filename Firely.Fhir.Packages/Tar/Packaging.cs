@@ -27,11 +27,14 @@ namespace Firely.Fhir.Packages
 
         public static string PackFolder(string name, string folder)
         {
-            var manifest = FileEntries.ReadFileEntry(Path.Combine(folder, PackageConsts.Manifest)).ChangeFolder(PACKAGE);
-            var entries = FileEntries.ReadFilesToPack(folder).ChangeFolder(PACKAGE);
+            var files = FileEntries
+                .ReadAllFilesToPack(folder)
+                .MakePathsRelative(folder)
+                .OrganizeToPackageStructure();
 
-            return Tar.PackToDisk(name, manifest, entries);
+            return Tar.PackToDisk(name, files);
         }
+
 
         public static byte[] ToByteArray(this PackageManifest manifest)
         {

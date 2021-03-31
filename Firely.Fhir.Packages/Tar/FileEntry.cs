@@ -11,6 +11,9 @@ namespace Firely.Fhir.Packages
         {
             return new MemoryStream(Buffer);
         }
+
+        public string FileName => Path.GetFileName(FilePath);
+
     }
 
 }
