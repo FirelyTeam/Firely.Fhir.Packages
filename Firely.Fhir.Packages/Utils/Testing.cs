@@ -4,7 +4,7 @@ namespace Firely.Fhir.Packages
 {
 
 
-    public static class Testing
+    internal static class Testing
     {
         public static HttpClient GetInsecureClient()
         {

@@ -102,7 +102,7 @@ namespace Firely.Fhir.Packages
                 reference = segments[1];
             }
 
-            var parts = reference.Split("@"); // name@version
+            var parts = reference.Split('@'); // name@version
             string name = parts[0];
             if (parts.Length > 1) version = parts[1];
             return (scope, name, version);

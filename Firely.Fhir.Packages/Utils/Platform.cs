@@ -6,10 +6,17 @@ namespace Firely.Fhir.Packages
 {
     public static class Platform
     {
-        public enum OperatingSystem { Windows, Linux, OSX, Unknown };
+        public static string GetFhirPackageRoot()
+        {
+            string root = GetGenericDataLocation();
+
+            return Path.Combine(root, ".fhir", "packages");
+        }
 
 
-        public static OperatingSystem GetPlatform()
+        internal enum OperatingSystem { Windows, Linux, OSX, Unknown };
+
+        internal static OperatingSystem GetPlatform()
         {
 #if NETSTANDARD2_0
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return OperatingSystem.Windows;
@@ -29,7 +36,7 @@ namespace Firely.Fhir.Packages
 #endif
         }
 
-        public static string GetGenericDataLocation()
+        internal static string GetGenericDataLocation()
         {
             switch(GetPlatform())
             {
@@ -48,13 +55,6 @@ namespace Firely.Fhir.Packages
                     }
                 default: throw new Exception("Unknown OS");
             }
-        }
-
-        public static string GetFhirPackageRoot()
-        {
-            string root = GetGenericDataLocation();
-
-            return Path.Combine(root, ".fhir", "packages");
         }
 
     }

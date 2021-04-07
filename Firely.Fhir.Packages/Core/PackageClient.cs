@@ -110,6 +110,21 @@ namespace Firely.Fhir.Packages
             return response;
         }
 
+        public override string ToString() => urlProvider.ToString();
+
+        public async Task<Versions> GetVersions(string name)
+        {
+            var listing = await DownloadListingAsync(name);
+            if (listing is null) return new Versions();
+            
+            return listing.GetVersions();
+        }
+
+        public async Task<byte[]> GetPackage(PackageReference reference)
+        {
+            return await DownloadPackage(reference);
+        }
+
         #region IDisposable
 
         bool disposed;
@@ -134,20 +149,5 @@ namespace Firely.Fhir.Packages
         }
 
         #endregion
-
-        public override string ToString() => urlProvider.ToString();
-
-        public async Task<Versions> GetVersions(string name)
-        {
-            var listing = await DownloadListingAsync(name);
-            if (listing is null) return new Versions();
-            
-            return listing.GetVersions();
-        }
-
-        public async Task<byte[]> GetPackage(PackageReference reference)
-        {
-            return await DownloadPackage(reference);
-        }
     }
 }
