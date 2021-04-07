@@ -12,7 +12,7 @@ namespace Firely.Fhir.Packages
     {
         public static PackageClient Create(string source, bool npm = false, bool insecure = false)
         {
-            var urlprovider = npm ? (IPackageUrlProvider) new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
+            var urlprovider = npm ? (IPackageUrlProvider) new NpmPackageUrlProvider(source) : new FhirPackageUrlProvider(source);
             var httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
 
             return new PackageClient(urlprovider, httpClient);

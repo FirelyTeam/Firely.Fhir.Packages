@@ -1,5 +1,8 @@
 ﻿namespace Firely.Fhir.Packages
 {
+    /// <summary>
+    /// This UrlProvider builds Fhir Package and package listing endpoint URLs .
+    /// </summary>
     public class FhirPackageUrlProvider : IPackageUrlProvider
     {
         public string Root { get; private set; }
@@ -21,7 +24,5 @@
             return url;
         }
     }
-
-
 
 }

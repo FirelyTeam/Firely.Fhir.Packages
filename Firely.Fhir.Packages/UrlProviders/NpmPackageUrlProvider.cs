@@ -1,10 +1,13 @@
 ﻿namespace Firely.Fhir.Packages
 {
-    public class NodePackageUrlProvider : IPackageUrlProvider
+    /// <summary>
+    /// This Url provider generates package and package listing endpoint URLS following the NPM specification
+    /// </summary>
+    public class NpmPackageUrlProvider : IPackageUrlProvider
     {
         public string Root { get; private set; } 
 
-        public NodePackageUrlProvider(string root)
+        public NpmPackageUrlProvider(string root)
         {
             this.Root = root.TrimEnd('/') ;
         }

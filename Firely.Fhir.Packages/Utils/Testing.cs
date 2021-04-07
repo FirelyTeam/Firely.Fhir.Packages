@@ -6,7 +6,7 @@ namespace Firely.Fhir.Packages
 
     internal static class Testing
     {
-        public static HttpClient GetInsecureClient()
+        internal static HttpClient GetInsecureClient()
         {
             // for testing without proper certificate
 #if NETSTANDARD2_0
