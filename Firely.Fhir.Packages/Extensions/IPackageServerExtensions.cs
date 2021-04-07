@@ -4,10 +4,11 @@ namespace Firely.Fhir.Packages
 {
     public static class PackageServerExtensions
     {
-        public static async ValueTask<Versions> GetVersions(this IPackageServer server, PackageDependency dependency)
-        {
-            return await server.GetVersions(dependency.Name);
-        }
+        // We can/should probably remove this one.
+        //public static async ValueTask<Versions> GetVersions(this IPackageServer server, PackageDependency dependency)
+        //{
+        //    return await server.GetVersions(dependency.Name);
+        //}
 
         public static async ValueTask<PackageReference> Resolve(this IPackageServer server, PackageDependency dependency)
         {
@@ -28,7 +29,7 @@ namespace Firely.Fhir.Packages
         public async static ValueTask<bool> HasMatch(this IPackageServer server, PackageDependency dependency)
         {
             var reference = await server.Resolve(dependency);
-            return await Task.FromResult(reference.Found);
+            return reference.Found;
         }
     }
 }
