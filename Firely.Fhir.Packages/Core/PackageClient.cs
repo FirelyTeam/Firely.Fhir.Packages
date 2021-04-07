@@ -142,7 +142,7 @@ namespace Firely.Fhir.Packages
             var listing = await DownloadListingAsync(name);
             if (listing is null) return new Versions();
             
-            return listing.ToVersions();
+            return listing.GetVersions();
         }
 
         public async Task<byte[]> GetPackage(PackageReference reference)

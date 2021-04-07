@@ -53,7 +53,6 @@ namespace Firely.Fhir.Packages
             }
         }
 
-
         public static string GetString(this ISourceNode node, string expression)
         {
             if (node is null) return null;
