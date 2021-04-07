@@ -37,7 +37,7 @@ namespace Firely.Fhir.Packages
 
                 return new ResourceMetadata
                 {
-                    FileName = GetRelativePath(folder, filepath),
+                    FileName = Disk.GetRelativePath(filepath, folder),
                     ResourceType = node.Name,
                     Id = node.GetString("id"),
                     Canonical = node.GetString("url"),
@@ -67,28 +67,13 @@ namespace Firely.Fhir.Packages
             return node.Text;
         }
 
-        public static IEnumerable<string> GetRelativePaths(string folder, IEnumerable<string> paths)
+        public static IEnumerable<string> GetRelativePaths(string root, IEnumerable<string> paths)
         {
             foreach (var path in paths)
-                yield return GetRelativePath(folder, path);
+                yield return Disk.GetRelativePath(path, root);
         }
 
-        public static string GetRelativePath(string relativeTo, string path)
-        {
-            // Require trailing backslash for path
-            if (!relativeTo.EndsWith("\\")) 
-                relativeTo += "\\";
-
-            Uri baseUri = new Uri(relativeTo);
-            Uri fullUri = new Uri(path);
-            
-            Uri relativeUri = baseUri.MakeRelativeUri(fullUri);
-
-            // Uri's use forward slashes so convert back to backward slashes
-            var result = Uri.UnescapeDataString(relativeUri.ToString());
-            return result;
-
-        }
+       
     }
 }
 

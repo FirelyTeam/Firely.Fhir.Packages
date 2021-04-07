@@ -15,7 +15,6 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        
         public static bool Match(this FileEntry file, string filename)
         {
             return string.Compare(file.FileName, filename, ignoreCase: true) == 0;
@@ -66,31 +65,9 @@ namespace Firely.Fhir.Packages
         public static IEnumerable<FileEntry> MakePathsRelative(this IEnumerable<FileEntry> files, string root)
         {
             foreach (var file in files)
-                yield return file.MakeRelativePath(root);
+                yield return file.MakePathRelativeTo(root);
         }
 
-
-        private static Uri MakeFolderUri(string folder)
-        {
-            if (!folder.EndsWith(Path.DirectorySeparatorChar.ToString()))
-            {
-                folder += Path.DirectorySeparatorChar;
-            }
-            return new Uri(folder);
-        }
-
-        public static string MakeRelativePath(string path, string root)
-        {
-            Uri pathUri = new Uri(path);
-            Uri rootUri = MakeFolderUri(root);
-            return Uri.UnescapeDataString(rootUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
-        }
-
-        public static FileEntry MakeRelativePath(this FileEntry file, string root)
-        {
-            file.FilePath = MakeRelativePath(file.FilePath, root);
-            return file;
-        }
 
 
         public static IEnumerable<FileEntry> OrganizeToPackageStructure(this IEnumerable<FileEntry> files)
@@ -108,6 +85,12 @@ namespace Firely.Fhir.Packages
               
                 yield return file.ChangeFolder(other);
             }
+        }
+
+        public static FileEntry MakePathRelativeTo(this FileEntry file, string root)
+        {
+            file.FilePath = Disk.GetRelativePath(file.FilePath, root);
+            return file;
         }
 
     }
