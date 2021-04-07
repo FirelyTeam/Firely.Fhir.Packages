@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Firely.Fhir.Packages
 {
-    public static class ElementNavigation
+    internal static class ElementNavigation
     {
         static readonly FhirJsonParsingSettings _jsonParsingSettings = new FhirJsonParsingSettings()
         {
@@ -19,7 +19,7 @@ namespace Firely.Fhir.Packages
             ValidateFhirXhtml = false
         };
 
-        public static ISourceNode ParseToSourceNode(string filepath)
+        internal static ISourceNode ParseToSourceNode(string filepath)
         {
             if (FhirFileFormats.HasXmlExtension(filepath))
             {
@@ -33,19 +33,6 @@ namespace Firely.Fhir.Packages
 
             return null;
         }
-
-        //public static IElementNavigator GetNavigatorForFile(string filepath)
-        //{
-        //    var text = File.ReadAllText(filepath);
-        //    var extension = Path.GetExtension(filepath).ToLower();
-
-        //    switch (extension)
-        //    {
-        //        case ".xml": return XmlDomFhirNavigator.Create(text);
-        //        case ".json": return JsonDomFhirNavigator.Create(text);
-        //        default: return null;
-        //    }
-        //}
 
     }
 
