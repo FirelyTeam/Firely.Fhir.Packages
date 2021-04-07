@@ -24,7 +24,7 @@ namespace Firely.Fhir.Packages
         public async Task Install(PackageReference reference, byte[] buffer)
         {
             var folder = PackageRootFolder(reference);
-            await Packaging.UnpackToFolder(buffer, folder);
+            await Packaging.ExtractPackageToDisk(buffer, folder);
             CreateIndexFile(reference);
         }
 

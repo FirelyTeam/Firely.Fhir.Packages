@@ -9,21 +9,21 @@ using System.Threading.Tasks;
 namespace Firely.Fhir.Packages
 {
 
-    public static partial class Packaging
+    public static class Packaging
     {
-        const string PACKAGE = "package";
+        const string PACKAGEFOLDER = "package";
 
         public static PackageManifest ExtractManifestFromPackageFile(string path)
         {
-            string file = Path.Combine(PACKAGE, PackageConsts.Manifest);
-            var entry = Tar.ExtractMatchingFiles(path, file).FirstOrDefault();
+            string file = Path.Combine(PACKAGEFOLDER, PackageConsts.Manifest);
+            var entry = ExtractMatchingFiles(path, file).FirstOrDefault();
             return Parser.ReadManifest(entry.Buffer);
         }
 
         [CLSCompliant(false)]
         public static void WriteResource(this TarOutputStream tar, FileEntry entry)
         {
-            entry.ChangeFolder(PACKAGE);
+            entry.ChangeFolder(PACKAGEFOLDER);
             Tar.Write(tar, entry);
         }
 
@@ -34,7 +34,7 @@ namespace Firely.Fhir.Packages
                 .MakePathsRelative(folder)
                 .OrganizeToPackageStructure();
 
-            return Tar.PackToDisk(name, files);
+            return Tar.PackToDisk(files, name);
         }
 
 
@@ -48,30 +48,30 @@ namespace Firely.Fhir.Packages
         {
             return new FileEntry
             {
-                FilePath = Path.Combine(PACKAGE, PackageConsts.Manifest),
+                FilePath = Path.Combine(PACKAGEFOLDER, PackageConsts.Manifest),
                 Buffer = manifest.ToByteArray()
             };
         }
 
-        public static byte[] CreatePackage(PackageManifest manifest, IEnumerable<FileEntry> entries)
-        {
-            var entry = manifest.ToFileEntry();
-            entries = entries.ChangeFolder(PACKAGE);
-            return Tar.Pack(entry, entries);
-        }
+        //public static byte[] CreatePackage(PackageManifest manifest, IEnumerable<FileEntry> entries)
+        //{
+        //    var entry = manifest.ToFileEntry();
+        //    entries = entries.ChangeFolder(PACKAGE);
+        //    return Tar.Pack(entry, entries);
+        //}
 
         public static byte[] CreatePackage(IEnumerable<FileEntry> entries)
         {
-            entries = entries.ChangeFolder(PACKAGE);
+            entries = entries.ChangeFolder(PACKAGEFOLDER);
             return Tar.Pack(entries);
         }
 
-        public static async Task UnpackToFolder(byte[] buffer, string folder)
+        public static async Task ExtractPackageToDisk(byte[] buffer, string folder)
         {
             await Task.Run(() =>
             {
-                var tarball = Tar.Unzip(buffer);
-                Tar.ExtractTarballToToDisk(tarball, folder);
+                var tar = Tar.Unzip(buffer);
+                Tar.ExtractTarArchiveToDisk(tar, folder);
             });
         }
 
@@ -95,15 +95,11 @@ namespace Firely.Fhir.Packages
             return (manifest, files);
         }
 
-        public static IEnumerable<FileEntry> ExtractFiles(string path)
+        public static IEnumerable<FileEntry> ExtractMatchingFiles(string packagefile, string match)
         {
-            return Tar.ExtractFiles(path, _ => true);
+            return Tar.ExtractFiles(packagefile, name => Disk.PathMatch(name, match));
         }
 
-        public static IEnumerable<FileEntry> ExtractFiles(Stream stream)
-        {
-            return Tar.ExtractFiles(stream, _ => true);
-        }
     }
 }
 

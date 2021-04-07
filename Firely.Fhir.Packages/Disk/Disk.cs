@@ -26,6 +26,12 @@ namespace Firely.Fhir.Packages
             return new Uri(folder);
         }
 
+        internal static bool PathMatch(string pathA, string pathB)
+        {
+            pathA = pathA.Replace('\\', '/');
+            pathB = pathB.Replace('\\', '/');
+            return pathA == pathB;
+        }
 
         // Duplicate found under CanonicalIndexer
         //public static string GetRelativePath(string root, string path)
