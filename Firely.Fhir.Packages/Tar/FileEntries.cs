@@ -92,17 +92,14 @@ namespace Firely.Fhir.Packages
             return file;
         }
 
-
-        public static IEnumerable<FileEntry> OrganizeToPackageStructure(this IEnumerable<FileEntry> files)
-        {
-            foreach (var file in files)
-            {
-                yield return OrganizeToPackageStructure(file);
-            }
-        }
-
         static string FOLDER_OTHER = Path.Combine(PackageConsts.PackageFolder, "other");
 
+        /// <summary>
+        /// This is a basic implementation to move the package manifest and all resources to the package folder and 
+        /// all other files to packages/other. You can write and inject your own implementation when packaging a folder
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
         public static FileEntry OrganizeToPackageStructure(FileEntry file)
         {
             if (file.Match(PackageConsts.Manifest))
