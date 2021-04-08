@@ -100,7 +100,7 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public static FileEntry OrganizeToPackageStructure(FileEntry file)
+        public static FileEntry OrganizeToPackageStructure(this FileEntry file)
         {
             if (file.Match(PackageConsts.Manifest))
                 return file.ChangeFolder(PackageConsts.PackageFolder);
