@@ -95,19 +95,24 @@ namespace Firely.Fhir.Packages
 
         public static IEnumerable<FileEntry> OrganizeToPackageStructure(this IEnumerable<FileEntry> files)
         {
-            var other = Path.Combine(PackageConsts.PackageFolder, "other");
-
             foreach (var file in files)
             {
-                if (file.Match(PackageConsts.Manifest))
-                    yield return file.ChangeFolder(PackageConsts.PackageFolder);
-
-                if (file.HasExtension(".xml", ".json"))
-                    yield return file.ChangeFolder(PackageConsts.PackageFolder);
-
-              
-                yield return file.ChangeFolder(other);
+                yield return OrganizeToPackageStructure(file);
             }
+        }
+
+        static string FOLDER_OTHER = Path.Combine(PackageConsts.PackageFolder, "other");
+
+        public static FileEntry OrganizeToPackageStructure(FileEntry file)
+        {
+            if (file.Match(PackageConsts.Manifest))
+                return file.ChangeFolder(PackageConsts.PackageFolder);
+
+            else if (file.HasExtension(".xml", ".json"))
+                return file.ChangeFolder(PackageConsts.PackageFolder);
+
+            else
+                return file.ChangeFolder(FOLDER_OTHER);
         }
 
     }
