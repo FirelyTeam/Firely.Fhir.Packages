@@ -74,11 +74,14 @@ namespace Firely.Fhir.Packages
                 yield return GetRelativePath(folder, path);
         }
 
+        private static string DirectorySeparatorString = $"{Path.DirectorySeparatorChar}";
+
         public static string GetRelativePath(string relativeTo, string path)
         {
+          
             // Require trailing backslash for path
-            if (!relativeTo.EndsWith("\\")) 
-                relativeTo += "\\";
+            if (!relativeTo.EndsWith(DirectorySeparatorString)) 
+                relativeTo += DirectorySeparatorString;
 
             Uri baseUri = new Uri(relativeTo);
             Uri fullUri = new Uri(path);
