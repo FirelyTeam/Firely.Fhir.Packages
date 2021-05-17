@@ -1,15 +1,20 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- Solution-wide properties for NuGet packaging -->
-  <PropertyGroup>
-    <LangVersion>9.0</LangVersion>
-    <VersionPrefix>2.1.0</VersionPrefix>
-    <VersionSuffix>simplifier-special-27-2</VersionSuffix>
-    <Authors>Firely</Authors>
-    <Company>Firely (https://fire.ly)</Company>
-    <Copyright>Copyright 2013-2020 Firely</Copyright>
-    <RepositoryType>git</RepositoryType>
-    <FhirNetSdkVersion>1.9.0</FhirNetSdkVersion>
-  </PropertyGroup>
-  
+    <!-- Solution-wide properties for NuGet packaging -->
+    <PropertyGroup>
+        <LangVersion>9.0</LangVersion>
+        <VersionPrefix>2.1.0</VersionPrefix>
+        <VersionSuffix>simplifier-special-27-2</VersionSuffix>
+        <Authors>Firely</Authors>
+        <Company>Firely (https://fire.ly)</Company>
+        <Copyright>Copyright 2013-2020 Firely</Copyright>
+        <RepositoryType>git</RepositoryType>
+        <FhirNetSdkVersion>3.2.0</FhirNetSdkVersion>
+
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(FhirNetSdkVersion.StartsWith('1'))">
+        <DefineConstants>BUILDFHIRRELEASEENUM</DefineConstants>
+    </PropertyGroup>
+    
 </Project>

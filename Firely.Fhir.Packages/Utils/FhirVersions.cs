@@ -3,7 +3,8 @@ using System;
 
 namespace Firely.Fhir.Packages
 {
-#if true // if the hl7.fhir doesn't have it.
+#if BUILDFHIRRELEASEENUM
+    // SDK does not have FhirRelease before 2.0
     public enum FhirRelease
     {
         DSTU1,
