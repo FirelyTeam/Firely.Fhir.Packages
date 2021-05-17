@@ -32,11 +32,20 @@ namespace Firely.Fhir.Packages
             var files = FileEntries
                 .ReadAllFilesToPack(folder)
                 .MakePathsRelative(folder)
-                .OrganizeToPackageStructure();
+                .Select(FileEntries.OrganizeToPackageStructure);
 
             return Tar.PackToDisk(name, files);
         }
 
+        public static string PackFolder(string name, string folder, Func<FileEntry, FileEntry> organize)
+        {
+            var files = FileEntries
+                .ReadAllFilesToPack(folder)
+                .MakePathsRelative(folder)
+                .Select(organize);
+
+            return Tar.PackToDisk(name, files);
+        }
 
         public static byte[] ToByteArray(this PackageManifest manifest)
         {

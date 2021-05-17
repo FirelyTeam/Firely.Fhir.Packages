@@ -3,6 +3,19 @@ using System;
 
 namespace Firely.Fhir.Packages
 {
+#if BUILDFHIRRELEASEENUM
+    // SDK does not have FhirRelease before 2.0
+    public enum FhirRelease
+    {
+        DSTU1,
+        DSTU2,
+        STU3,
+        R4,
+        R5,
+        R4B
+    }
+#endif
+
     public static class FhirVersions
     {
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
@@ -42,6 +55,8 @@ namespace Firely.Fhir.Packages
                 _ => -1
             };
         }
+
+        
 
         public static FhirRelease? TryParse(string version)
         {

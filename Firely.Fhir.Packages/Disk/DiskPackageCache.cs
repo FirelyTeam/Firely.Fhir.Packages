@@ -50,12 +50,12 @@ namespace Firely.Fhir.Packages
 
         public string PackageContentFolder(PackageReference reference)
         {
-            // for backwards compatibility:
-            {
-                var pkgfolder = PackageFolderName(reference, '-');
-                var folder = Path.Combine(Root, pkgfolder, PackageConsts.PackageFolder);
-                if (Directory.Exists(folder)) return folder;
-            }
+            //// for backwards compatibility:
+            //{
+            //    var pkgfolder = PackageFolderName(reference, '-');
+            //    var folder = Path.Combine(Root, pkgfolder, PackageConsts.PackageFolder);
+            //    if (Directory.Exists(folder)) return folder;
+            //}
 
             // the new way:
             {
@@ -97,6 +97,7 @@ namespace Firely.Fhir.Packages
 
             var folder = PackageContentFolder(reference);
             string path = Path.Combine(folder, filename);
+
             string content;
             try
             {

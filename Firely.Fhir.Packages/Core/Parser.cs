@@ -43,18 +43,9 @@ namespace Firely.Fhir.Packages
             //return JsonConvert.SerializeObject(manifest, Formatting.Indented )+"\n";
         }
 
-        //public static string JsonMerge(object thing, string contents)
-        //{
-        //    var mixin = JObject.FromObject(thing);
-        //    var source = JObject.Parse(contents);
-        //    var settings = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Ignore };
-        //    source.Merge(mixin, settings);
-        //    return source.ToString();
-        //}
-
         public static string JsonMergeManifest(PackageManifest manifest, string original)
         {
-            var jmanifest = JObject.FromObject(manifest);
+            var jmanifest = JObject.FromObject(manifest, new JsonSerializer { NullValueHandling = NullValueHandling.Ignore });
             var jcontent = JObject.Parse(original);
 
             var settings = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Ignore };

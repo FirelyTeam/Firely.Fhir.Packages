@@ -54,15 +54,38 @@ namespace Firely.Fhir.Packages.Tests
             Assert.IsFalse(parsedJson.ContainsKey("author"));
         }
 
+        [TestMethod]
+        public void MergeDoesNotWriteNulls()
+        {
+            var dir = CreateTempDir();
+            var manifest1 = new PackageManifest { Name = "a-b-c", Version = "4.0.1" };
+            var manifest2 = new PackageManifest { Name = "a-b-c", Version = "4.0.1", Author = "Turing" };
+            
+            var serialized1 = Parser.WriteManifest(manifest1);
+            var serialized2 = Parser.JsonMergeManifest(manifest2, serialized1);
+
+            var roundtrip = JObject.Parse(serialized2);
+
+            Assert.IsFalse(roundtrip.ContainsKey("keywords"));
+            Assert.IsFalse(roundtrip.ContainsKey("license"));
+            Assert.IsFalse(roundtrip.ContainsKey("homepage"));
+        }
+
+
         private string writeManifest(PackageManifest manif)
         {
-            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            Directory.CreateDirectory(tempDir);
-
+            var tempDir = CreateTempDir();
             FolderProject proj = new FolderProject(tempDir);
             proj.WriteManifest(manif);
 
             return File.ReadAllText(Path.Combine(tempDir, PackageConsts.Manifest));
+        }
+
+        private static string CreateTempDir()
+        {
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            return tempDir;
         }
     }
 }
