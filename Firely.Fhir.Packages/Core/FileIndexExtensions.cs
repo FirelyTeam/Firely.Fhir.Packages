@@ -36,6 +36,13 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        public static void Add(this FileIndex index, PackageReference package, ResourceMetadata metadata)
+        {
+            var reference = new PackageFileReference() { Package = package };
+            metadata.CopyTo(reference);
+            index.Add(reference);
+        }
+
         public static async Task Index(this FileIndex index, IProject project)
         {
             var entries = await project.GetIndex();
