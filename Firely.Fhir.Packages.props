@@ -4,12 +4,12 @@
     <PropertyGroup>
         <LangVersion>9.0</LangVersion>
         <VersionPrefix>2.1.0</VersionPrefix>
-        <VersionSuffix>simplifier-special-27-2</VersionSuffix>
+        <VersionSuffix>SDK-3-0</VersionSuffix>
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
         <Copyright>Copyright 2013-2020 Firely</Copyright>
         <RepositoryType>git</RepositoryType>
-        <FhirNetSdkVersion>3.2.0</FhirNetSdkVersion>
+        <FhirNetSdkVersion>3.*</FhirNetSdkVersion>
 
     </PropertyGroup>
 

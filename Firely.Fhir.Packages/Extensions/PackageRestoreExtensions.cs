@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
@@ -30,13 +31,14 @@ namespace Firely.Fhir.Packages
             return reference;
         }
 
-        public static async Task<PackageClosure> Restore(this PackageContext scope)
+        public static async Task<PackageClosure> Restore(this PackageContext context)
         {
-            scope.Closure = new PackageClosure(); // reset
-            var manifest = await scope.Project.ReadManifest();
+            context.Closure = new PackageClosure(); // reset
+            var manifest = await context.Project.ReadManifest();
+            if (manifest is null) throw new Exception("This context does not have a package manifest (package.json)");
 
-            await scope.RestoreManifest(manifest);
-            return await scope.SaveClosure();
+            await context.RestoreManifest(manifest);
+            return await context.SaveClosure();
         }
 
         public static async Task<PackageClosure> SaveClosure(this PackageContext scope)
