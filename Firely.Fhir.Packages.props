@@ -4,7 +4,7 @@
     <PropertyGroup>
         <LangVersion>9.0</LangVersion>
         <VersionPrefix>2.1.0</VersionPrefix>
-        <VersionSuffix>SDK-3-0</VersionSuffix>
+        <VersionSuffix>SDK3</VersionSuffix>
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
         <Copyright>Copyright 2013-2020 Firely</Copyright>
