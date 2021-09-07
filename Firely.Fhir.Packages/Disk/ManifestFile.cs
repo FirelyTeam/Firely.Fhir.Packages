@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hl7.Fhir.Specification;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -126,9 +127,9 @@ namespace Firely.Fhir.Packages
         /// <param name="fhirVersion">The FHIR version of the package contents.</param>
         /// <returns></returns>
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
-        public static PackageManifest Create(string name, int fhirRelease)
+        public static PackageManifest Create(string name, FhirRelease fhirRelease)
         {
-            var fhirVersion = FhirVersions.GetFhirVersion(fhirRelease);
+            var fhirVersion = FhirVersions.FhirVersionFromRelease(fhirRelease);
             return Create(name, fhirVersion);
         }
 

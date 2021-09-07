@@ -68,17 +68,6 @@ namespace Firely.Fhir.Packages
             manifest ??= ManifestFile.Create(name, fhirVersion);
             await scope.Project.WriteManifest(manifest);
         }
-
-        [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
-        public static async Task EnsureManifest(this PackageContext scope, string name, int fhirRelease)
-        {
-            var fhirversion = FhirVersions.GetFhirVersion(fhirRelease);
-            var manifest = await scope.Project.ReadManifest();
-            manifest ??= ManifestFile.Create(name, fhirversion);
-            await scope.Project.WriteManifest(manifest);
-        }
-
-      
         
         public class InstallResult
         {
