@@ -27,7 +27,7 @@ namespace Firely.Fhir.Packages
             if (buffer is null) return PackageReference.None;
 
             await scope.Cache.Install(reference, buffer);
-            scope.Report?.Invoke($"Installed {reference}.");
+            scope.onInstalled?.Invoke(reference);
             return reference;
         }
 

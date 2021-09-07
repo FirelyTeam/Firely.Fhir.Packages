@@ -10,17 +10,17 @@ namespace Firely.Fhir.Packages
         public readonly IProject Project;
         public readonly IPackageServer Server;
         internal PackageClosure Closure;
-        internal readonly Action<string> Report;
+        internal readonly Action<PackageReference> onInstalled;
 
         public FileIndex Index => _index ??= BuildIndex().Result; // You cannot have async getters in C#, maybe not make this a property ?! (Paul)
         private FileIndex? _index;
 
-        public PackageContext(IPackageCache cache, IProject project, IPackageServer server, Action<string>? report = null)
-        {
+        public PackageContext(IPackageCache cache, IProject project, IPackageServer server, Action<PackageReference>? onInstalled = null)
+        { 
             this.Cache = cache;
             this.Project = project;
             this.Server = server;
-            this.Report = report;
+            this.onInstalled = onInstalled;
         }
 
         private async Task<PackageClosure> ReadClosure()
