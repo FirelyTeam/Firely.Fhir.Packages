@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-    public static class PackageScopeExtensions
+    public static class PackageContextExtensions
     {
         public static async Task<string> GetFileContentByCanonical(this PackageContext scope, string uri)
         {
