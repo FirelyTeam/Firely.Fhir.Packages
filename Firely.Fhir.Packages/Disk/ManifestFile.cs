@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Specification;
+using Hl7.Fhir.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -88,8 +89,9 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public static PackageManifest Create(string name, string fhirVersion)
         {
-            var release = FhirVersions.Parse(fhirVersion);
-            var version = FhirVersions.FhirVersionFromRelease(release);
+            var release = FhirReleaseParser.Parse(fhirVersion);
+            //var release = FhirVersions.Parse(fhirVersion);
+            var version = FhirReleaseParser.FhirVersionFromRelease(release); 
 
             var manifest = new PackageManifest
             {
