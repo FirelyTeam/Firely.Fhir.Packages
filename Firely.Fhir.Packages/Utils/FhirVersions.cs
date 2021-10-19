@@ -17,7 +17,7 @@ namespace Firely.Fhir.Packages
     }
 #endif
     [Obsolete("Use Hl7.Fhir.Utility.FhirReleaseParser from the SDK if possible")]
-    public static class FhirVersions
+    static class FhirVersions
     {
         public static FhirRelease? TryParse(string version)
         {
