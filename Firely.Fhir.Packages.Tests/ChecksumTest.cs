@@ -18,7 +18,7 @@ namespace Firely.Fhir.Packages.Tests
             TestPackageChecksum(PackageUrlProviders.Npm, "jquery@3.5.1");
         }
 
-        public void TestPackageChecksum(IPackageUrlProvider provider, PackageReference reference)
+        public static void TestPackageChecksum(IPackageUrlProvider provider, PackageReference reference)
         {
             Assert.IsNotNull(reference.Name);
             Assert.IsNotNull(reference.Version);
