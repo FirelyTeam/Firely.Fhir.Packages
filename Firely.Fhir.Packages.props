@@ -9,7 +9,7 @@
         <Company>Firely (https://fire.ly)</Company>
         <Copyright>Copyright 2013-2020 Firely</Copyright>
         <RepositoryType>git</RepositoryType>
-        <FhirNetSdkVersion>3.6.0</FhirNetSdkVersion>
+        <FhirNetSdkVersion>4.0.0-alpha-20211103.7</FhirNetSdkVersion>
 
     </PropertyGroup>
 

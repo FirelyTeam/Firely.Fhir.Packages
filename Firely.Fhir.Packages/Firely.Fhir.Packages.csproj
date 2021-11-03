@@ -28,8 +28,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Hl7.Fhir.Support.Poco" Version="$(FhirNetSdkVersion)" />
-		<PackageReference Include="Hl7.FhirPath" Version="$(FhirNetSdkVersion)" />
 		<PackageReference Include="Hl7.Fhir.Support" Version="$(FhirNetSdkVersion)" />
 		<PackageReference Include="Hl7.Fhir.Serialization" Version="$(FhirNetSdkVersion)" />
 	</ItemGroup>
