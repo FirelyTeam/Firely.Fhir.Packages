@@ -9,7 +9,7 @@ namespace Firely.Fhir.Packages
         public static HttpClient GetInsecureClient()
         {
             // for testing without proper certificate
-#if NETSTANDARD2_0
+#if !NET452
             var httpClientHandler = new HttpClientHandler();
             httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
             var client = new HttpClient(httpClientHandler, true);

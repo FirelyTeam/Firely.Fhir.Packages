@@ -20,6 +20,7 @@ namespace Firely.Fhir.Packages
             return Parser.ReadManifest(entry.Buffer);
         }
 
+
         [CLSCompliant(false)]
         public static void WriteResource(this TarOutputStream tar, FileEntry entry)
         {
