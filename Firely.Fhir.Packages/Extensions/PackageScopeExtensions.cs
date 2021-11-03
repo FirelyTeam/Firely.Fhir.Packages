@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -31,14 +32,9 @@ namespace Firely.Fhir.Packages
 
         public static async Task<string> GetFileContent(this PackageContext scope, PackageFileReference reference)
         {
-            if (!reference.Package.Found) // this is a hack, because we cannot reference the project itself with a PackageReference
-            {
-                return await scope.Project.GetFileContent(reference.FileName);
-            }
-            else
-            {
-                return await scope.Cache.GetFileContent(reference);
-            }
+            return !reference.Package.Found
+                ? await scope.Project.GetFileContent(reference.FilePath)
+                : await scope.Cache.GetFileContent(reference);
         }
 
         public static IEnumerable<string> ReadAllFiles(this PackageContext scope)
@@ -75,12 +71,12 @@ namespace Firely.Fhir.Packages
             await scope.Project.WriteManifest(manifest);
         }
 
-      
-        
+
+
         public class InstallResult
         {
             public PackageClosure Closure;
-            public PackageReference Reference; 
+            public PackageReference Reference;
         }
 
         public static async Task<InstallResult> Install(this PackageContext scope, PackageDependency dependency)
@@ -98,6 +94,42 @@ namespace Firely.Fhir.Packages
 
             var closure = await scope.Restore();
             return new InstallResult { Closure = closure, Reference = reference };
+        }
+
+        private static PackageFileReference getFileReference(this PackageContext scope, string resourceType, string id)
+        {
+            return scope.Index.Where(i => i.ResourceType == resourceType && i.Id == id).FirstOrDefault();
+
+        }
+
+        public static async Task<string> GetFileContentById(this PackageContext scope, string resourceType, string id)
+        {
+            var reference = scope.getFileReference(resourceType, id);
+            if (reference is null) return null;
+
+            var content = await scope.GetFileContent(reference);
+            return content;
+        }
+        public static IEnumerable<string> GetFileNames(this PackageContext scope)
+        {
+            return scope.Index.Select(i => i.FileName);
+        }
+
+        public static async Task<string> GetFileContentByFileName(this PackageContext scope, string fileName)
+        {
+            var reference = scope.Index.Where(i => i.FileName == fileName).FirstOrDefault();
+            if (reference is null) return null;
+
+            var content = await scope.GetFileContent(reference);
+            return content;
+        }
+        public static async Task<string> GetFileContentByFilePath(this PackageContext scope, string filePath)
+        {
+            var reference = scope.Index.Where(i => i.FilePath == filePath).FirstOrDefault();
+            if (reference is null) return null;
+
+            var content = await scope.GetFileContent(reference);
+            return content;
         }
 
     }
