@@ -11,6 +11,7 @@ resources:
 
 variables:
   buildConfiguration: 'Release'
+  vmImage: 'windows-latest'
 
 trigger:
   branches: 
@@ -35,7 +36,7 @@ stages:
       nuGetServiceConnections: GitHubPackageGetFeed
       nuGetSources: --source https://nuget.pkg.github.com/FirelyTeam/index.json
       pool: 
-        vmImage: 'ubuntu-latest'
+        vmImage: $(vmImage)
 
 - stage: deploy
   dependsOn: build
@@ -43,5 +44,5 @@ stages:
   - template: deploy-plugin-package.yml@templates
     parameters:
       pool: 
-        vmImage: 'ubuntu-latest'
+        vmImage: $(vmImage)
       nugetcredentials: MyGet
