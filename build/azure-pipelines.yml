@@ -12,6 +12,7 @@ resources:
 variables:
   buildConfiguration: 'Release'
   vmImage: 'windows-latest'
+  GITHUB_PACKAGES_APIKEY: $(GitHubPushPackagesAPIKey)  # key is set in UI of Azure Devops
 
 trigger:
   branches: 
@@ -41,8 +42,8 @@ stages:
 - stage: deploy
   dependsOn: build
   jobs:
-  - template: deploy-plugin-package.yml@templates
+  - template: push-nuget-package.yml@templates
     parameters:
-      pool: 
-        vmImage: $(vmImage)
-      nugetcredentials: MyGet
+      artifact: 'NuGet Packages'
+      source: https://nuget.pkg.github.com/FirelyTeam/index.json
+      apiKey: $(GITHUB_PACKAGES_APIKEY)
