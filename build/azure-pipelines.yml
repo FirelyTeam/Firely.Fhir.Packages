@@ -11,9 +11,14 @@ resources:
 
 variables:
   buildConfiguration: 'Release'
+  vmImage: 'windows-latest'
+  GITHUB_PACKAGES_APIKEY: $(GitHubPushPackagesAPIKey)  # key is set in UI of Azure Devops
+
+pool: 
+  vmImage: $(vmImage)
 
 trigger:
-  branches:
+  branches: 
     include:
     - develop*
     - release*
@@ -29,15 +34,27 @@ stages:
   jobs:
   - template: build.yml@templates  # Template reference
     parameters:
+      dotNetCoreVersion: 5.0.x
       packageArtifacts: true
-      pool:
-        name: 'Private pool'
+      restoreDependencies: true
+      nuGetServiceConnections: GitHubPackageGetFeed
+      nuGetSources: --source https://nuget.pkg.github.com/FirelyTeam/index.json
+      pool: 
+        vmImage: $(vmImage)
 
 - stage: deploy
   dependsOn: build
+  displayName: Deploy packages to GitHub
   jobs:
-  - template: deploy-plugin-package.yml@templates
-    parameters:
-      pool:
-        name: 'Private pool'
-      nugetcredentials: MyGet
+  - deployment: gitHub
+    displayName: GitHub Packages
+    environment: GitHub
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: push-nuget-package.yml@templates
+            parameters:
+              artifact: 'NuGet Packages'
+              source: https://nuget.pkg.github.com/FirelyTeam/index.json
+              apiKey: $(GITHUB_PACKAGES_APIKEY)
