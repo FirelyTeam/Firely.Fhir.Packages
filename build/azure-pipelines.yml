@@ -30,14 +30,17 @@ stages:
   - template: build.yml@templates  # Template reference
     parameters:
       packageArtifacts: true
-      pool:
-        name: 'Private pool'
+      restoreDependencies: true
+      nuGetServiceConnections: GitHubPackageGetFeed
+      nuGetSources: --source https://nuget.pkg.github.com/FirelyTeam/index.json
+      pool: 
+        vmImage: 'ubuntu-latest'
 
 - stage: deploy
   dependsOn: build
   jobs:
   - template: deploy-plugin-package.yml@templates
     parameters:
-      pool:
-        name: 'Private pool'
+      pool: 
+        vmImage: 'ubuntu-latest'
       nugetcredentials: MyGet
