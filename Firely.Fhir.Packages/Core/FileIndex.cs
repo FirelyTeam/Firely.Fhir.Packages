@@ -38,7 +38,7 @@ namespace Firely.Fhir.Packages
                 ? this.Where(r => r.Canonical == canonical && r.Version == version)
                 : this.Where(r => r.Canonical == canonical);
 
-            return candidates.Count() > 1 ? candidates.ResolveFromMultipleCandidates() : candidates.SingleOrDefault();
+            return candidates.Count() > 1 ? resolveFromMultipleCandidates(candidates) : candidates.SingleOrDefault();
         }
 
         public void Add(PackageReference package, ResourceMetadata metadata)
@@ -46,6 +46,15 @@ namespace Firely.Fhir.Packages
             var reference = new PackageFileReference() { Package = package };
             metadata.CopyTo(reference);
             Add(reference);
+        }
+
+        private static PackageFileReference resolveFromMultipleCandidates(IEnumerable<PackageFileReference> candidates)
+        {
+            candidates = candidates.Where(c => c.HasSnapshot || c.HasExpansion);
+            if (candidates.Count() == 1)
+                return candidates.First();
+            else
+                throw new InvalidOperationException("Found multiple conflicting conformance resources with the same canonical url identifier.");
         }
     }
 
@@ -57,15 +66,6 @@ namespace Firely.Fhir.Packages
             {
                 await index.Index(cache, reference);
             }
-        }
-
-        internal static PackageFileReference ResolveFromMultipleCandidates(this IEnumerable<PackageFileReference> candidates)
-        {
-            candidates = candidates.Where(c => c.HasSnapshot || c.HasExpansion);
-            if (candidates.Count() == 1)
-                return candidates.First();
-            else
-                throw new InvalidOperationException("Found multiple conflicting conformance resources with the same canonical url identifier.");
         }
 
         internal static async Task Index(this FileIndex index, IPackageCache cache, PackageReference reference)

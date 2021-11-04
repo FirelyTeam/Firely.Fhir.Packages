@@ -13,13 +13,12 @@ namespace Firely.Fhir.Packages
                 ? scope.Index.ResolveBestCandidateByCanonical(uri, version)
                 : scope.Index.ResolveCanonical(uri, version);
 
-            return reference is not null ? await scope.GetFileContent(reference) : null;
+            return reference is not null ? await scope.getFileContent(reference) : null;
         }
 
         public static async Task<PackageReference> Install(this PackageContext scope, string name, string range)
         {
             var dependency = new PackageDependency(name, range);
-
             return await scope.CacheInstall(dependency);
         }
 
@@ -30,7 +29,7 @@ namespace Firely.Fhir.Packages
                 : scope.Index.ResolveCanonical(uri, version);
         }
 
-        public static async Task<string> GetFileContent(this PackageContext scope, PackageFileReference reference)
+        private static async Task<string> getFileContent(this PackageContext scope, PackageFileReference reference)
         {
             return !reference.Package.Found
                 ? await scope.Project.GetFileContent(reference.FilePath)
@@ -41,7 +40,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var reference in scope.Index)
             {
-                var content = scope.GetFileContent(reference).Result;
+                var content = scope.getFileContent(reference).Result;
                 yield return content;
             }
         }
@@ -50,7 +49,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var item in references)
             {
-                var content = scope.GetFileContent(item).Result;
+                var content = scope.getFileContent(item).Result;
                 yield return content;
             }
         }
@@ -107,7 +106,7 @@ namespace Firely.Fhir.Packages
             var reference = scope.getFileReference(resourceType, id);
             if (reference is null) return null;
 
-            var content = await scope.GetFileContent(reference);
+            var content = await scope.getFileContent(reference);
             return content;
         }
         public static IEnumerable<string> GetFileNames(this PackageContext scope)
@@ -120,7 +119,7 @@ namespace Firely.Fhir.Packages
             var reference = scope.Index.Where(i => i.FileName == fileName).FirstOrDefault();
             if (reference is null) return null;
 
-            var content = await scope.GetFileContent(reference);
+            var content = await scope.getFileContent(reference);
             return content;
         }
         public static async Task<string> GetFileContentByFilePath(this PackageContext scope, string filePath)
@@ -128,7 +127,7 @@ namespace Firely.Fhir.Packages
             var reference = scope.Index.Where(i => i.FilePath == filePath).FirstOrDefault();
             if (reference is null) return null;
 
-            var content = await scope.GetFileContent(reference);
+            var content = await scope.getFileContent(reference);
             return content;
         }
 
