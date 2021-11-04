@@ -41,9 +41,17 @@ stages:
 
 - stage: deploy
   dependsOn: build
+  displayName: Deploy packages to GitHub
   jobs:
-  - template: push-nuget-package.yml@templates
-    parameters:
-      artifact: 'NuGet Packages'
-      source: https://nuget.pkg.github.com/FirelyTeam/index.json
-      apiKey: $(GITHUB_PACKAGES_APIKEY)
+  - deployment: gitHub
+    displayName: GitHub Packages
+    environment: GitHub
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: push-nuget-package.yml@templates
+            parameters:
+              artifact: 'NuGet Packages'
+              source: https://nuget.pkg.github.com/FirelyTeam/index.json
+              apiKey: $(GITHUB_PACKAGES_APIKEY)
