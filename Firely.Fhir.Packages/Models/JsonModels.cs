@@ -223,13 +223,13 @@ namespace Firely.Fhir.Packages
         public List<ResourceMetadata>? Files; // canonical -> file
     }
 
-    public class ResourceMetadata
+    /// <summary>
+    /// entry of Index.json, should stay conformant to the spec here: https://confluence.hl7.org/display/FHIR/NPM+Package+Specification#NPMPackageSpecification-.index.json
+    /// </summary>
+    public class IndexData
     {
         [JsonProperty("filename")]
         public string FileName;
-
-        [JsonProperty("filepath")]
-        public string FilePath;
 
         [JsonProperty("resourceType")]
         public string ResourceType;
@@ -249,15 +249,33 @@ namespace Firely.Fhir.Packages
         [JsonProperty("type")]
         public string? Type;
 
+        public void CopyTo(IndexData other)
+        {
+            other.FileName = FileName;
+            other.ResourceType = ResourceType;
+            other.Id = Id;
+            other.Canonical = Canonical;
+            other.Version = Version;
+            other.Kind = Kind;
+            other.Type = Type;
+        }
+    }
+
+    /// <summary>
+    /// Firely specific additions to index.json entries to end up in the .firely.index.json file at the root of the package after installation.
+    /// </summary>
+    public class ResourceMetadata : IndexData
+    {
+        [JsonProperty("filepath")]
+        public string FilePath;
+
         [JsonProperty("fhirVersion")]
         public string? FhirVersion;
 
-        //Firely specific attribute used to make choices when multiple artifacts with the same canonical URL and version are found.
-        [JsonProperty("firely-hasSnapshot")]
+        [JsonProperty("hasSnapshot")]
         public bool HasSnapshot;
 
-        //Firely specific attribute used to make choices when multiple artifacts with the same canonical URL and version are found.
-        [JsonProperty("firely-hasExpansion")]
+        [JsonProperty("hasExpansion")]
         public bool HasExpansion;
 
         public void CopyTo(ResourceMetadata other)
@@ -282,6 +300,7 @@ namespace Firely.Fhir.Packages
         public string Description;
         public string FhirVersion;
     }
+
 
     public static class JsonModelExtensions
     {

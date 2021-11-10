@@ -21,7 +21,7 @@ namespace Firely.Fhir.Packages
             foreach (var filepath in filepaths)
             {
                 var meta = GetFileMetadata(folder, filepath);
-                if (meta is object)
+                if (meta is not null)
                     yield return meta;
             }
         }
@@ -49,6 +49,8 @@ namespace Firely.Fhir.Packages
                         FilePath = GetRelativePath(folder, filepath)
                     };
         }
+
+
 
 
         public static string GetString(this ISourceNode node, string expression)
