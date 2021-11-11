@@ -15,7 +15,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        
+
         public static bool Match(this FileEntry file, string filename)
         {
             return string.Compare(file.FileName, filename, ignoreCase: true) == 0;
@@ -24,7 +24,7 @@ namespace Firely.Fhir.Packages
         public static bool HasExtension(this FileEntry file, params string[] extensions)
         {
             var extension = Path.GetExtension(file.FileName);
-            foreach(var ext in extensions)
+            foreach (var ext in extensions)
             {
                 if (string.Compare(extension, ext, ignoreCase: true) == 0) return true;
             }
@@ -41,6 +41,21 @@ namespace Firely.Fhir.Packages
             return AllFilesToPack(folder).Select(ReadFileEntry);
         }
 
+        public static IEnumerable<FileEntry> AddIndexFiles(this IEnumerable<FileEntry> entries)
+        {
+            var entryList = entries.ToList();
+            var folders = entries.Select(e => Path.GetDirectoryName(e.FilePath)).Distinct();
+
+            foreach (var folder in folders)
+            {
+                var files = entries.Where(e => Path.GetDirectoryName(e.FilePath) == folder);
+                var indexFile = IndexJsonFile.GenerateIndexFile(files, folder);
+                entryList.Add(indexFile);
+            }
+
+            return entryList;
+        }
+
         public static FileEntry ReadFileEntry(string filepath)
         {
             var buffer = File.ReadAllBytes(filepath);
@@ -52,7 +67,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var entry in entries)
             {
-                yield return entry.ChangeFolder(folder);    
+                yield return entry.ChangeFolder(folder);
             }
         }
 

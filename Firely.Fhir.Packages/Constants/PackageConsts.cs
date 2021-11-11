@@ -5,6 +5,7 @@
         public const string Manifest = "package.json";
         public const string LockFile = "fhirpkg.lock.json";
         public const string CanonicalIndexFile = ".firely.index.json";
+        public const string IndexJsonFile = ".index.json";
         public const string PackageFolder = "package";
     }
 

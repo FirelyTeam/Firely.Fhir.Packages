@@ -212,7 +212,11 @@ namespace Firely.Fhir.Packages
     }
 
 
-    public class CanonicalIndex
+
+    /// <summary>
+    /// Index.json, should stay conformant to the spec here: https://confluence.hl7.org/display/FHIR/NPM+Package+Specification#NPMPackageSpecification-.index.json
+    /// </summary>
+    public class IndexJson
     {
         public DateTimeOffset date;
 
@@ -220,7 +224,7 @@ namespace Firely.Fhir.Packages
         public int Version;
 
         [JsonProperty(PropertyName = "files")]
-        public List<ResourceMetadata>? Files; // canonical -> file
+        public List<IndexData>? Files; // canonical -> file
     }
 
     /// <summary>
@@ -259,6 +263,20 @@ namespace Firely.Fhir.Packages
             other.Kind = Kind;
             other.Type = Type;
         }
+    }
+
+    /// <summary>
+    /// Firely specific additions to index.json entries to end up in the .firely.index.json file at the root of the package after installation.
+    /// </summary>
+    public class CanonicalIndex
+    {
+        public DateTimeOffset date;
+
+        [JsonProperty(PropertyName = "index-version")]
+        public int Version;
+
+        [JsonProperty(PropertyName = "files")]
+        public List<ResourceMetadata>? Files; // canonical -> file
     }
 
     /// <summary>

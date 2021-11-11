@@ -33,7 +33,8 @@ namespace Firely.Fhir.Packages
             var files = FileEntries
                 .ReadAllFilesToPack(folder)
                 .MakePathsRelative(folder)
-                .Select(FileEntries.OrganizeToPackageStructure);
+                .Select(FileEntries.OrganizeToPackageStructure)
+                .AddIndexFiles();
 
             return Tar.PackToDisk(name, files);
         }
@@ -43,7 +44,8 @@ namespace Firely.Fhir.Packages
             var files = FileEntries
                 .ReadAllFilesToPack(folder)
                 .MakePathsRelative(folder)
-                .Select(organize);
+                .Select(organize)
+                .AddIndexFiles();
 
             return Tar.PackToDisk(name, files);
         }

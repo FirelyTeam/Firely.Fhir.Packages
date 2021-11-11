@@ -35,11 +35,47 @@ namespace Firely.Fhir.Packages
             return null;
         }
 
+        public static ISourceNode ParseToSourceNode(Stream stream)
+        {
+            StreamReader reader = new(stream);
+            string text = reader.ReadToEnd();
+
+            if (text.TrimStart().StartsWith("{"))
+            {
+                return FhirJsonNode.Parse(text, null, _jsonParsingSettings);
+            }
+
+            if (text.TrimStart().StartsWith("<"))
+            {
+                return FhirXmlNode.Parse(text, _xmlParsingSettings);
+            }
+
+            return null;
+        }
+
         internal static bool TryParseToSourceNode(string filepath, out ISourceNode node)
         {
             try
             {
                 node = ParseToSourceNode(filepath);
+                if (node is null)
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                node = null;
+                return false;
+            }
+            return true;
+        }
+
+        internal static bool TryParseToSourceNode(Stream stream, out ISourceNode node)
+        {
+            try
+            {
+                node = ParseToSourceNode(stream);
                 if (node is null)
                 {
                     return false;

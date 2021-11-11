@@ -50,6 +50,35 @@ namespace Firely.Fhir.Packages
                     };
         }
 
+        public static IEnumerable<IndexData> GenerateIndexFile(IEnumerable<FileEntry> entries)
+        {
+            foreach (var entry in entries)
+            {
+                var data = GetIndexData(entry);
+                if (data is not null)
+                    yield return data;
+            }
+        }
+
+        private static IndexData GetIndexData(FileEntry entry)
+        {
+            return ElementNavigation.TryParseToSourceNode(entry.GetStream(), out var node)
+                  ? new IndexData
+                  {
+                      FileName = Path.GetFileName(entry.FileName),
+                      ResourceType = node.Name,
+                      Id = node.GetString("id"),
+                      Canonical = node.GetString("url"),
+                      Version = node.GetString("version"),
+                      Kind = node.GetString("kind"),
+                      Type = node.GetString("type")
+                  }
+                : new IndexData
+                {
+                    FileName = entry.FileName
+                };
+        }
+
 
 
 
