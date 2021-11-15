@@ -54,7 +54,7 @@ namespace Firely.Fhir.Packages
 
             // the new way:
             {
-                var pkgfolder = PackageFolderName(reference, '#');
+                var pkgfolder = PackageFolderName(reference);
                 var folder = Path.Combine(Root, pkgfolder, PackageConsts.PackageFolder);
                 return folder;
             }
@@ -75,7 +75,7 @@ namespace Firely.Fhir.Packages
             foreach (var folder in folders)
             {
                 var entry = Disk.GetFolderName(folder);
-                var idx = entry.IndexOfAny(new[] { '-', '#' }); // backwards compatibility: also support '-'
+                var idx = entry.IndexOfAny(new[] { '#' }); // backwards compatibility: also support '-'
 
                 references.Add(new PackageReference
                 {
