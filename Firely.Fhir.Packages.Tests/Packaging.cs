@@ -42,8 +42,8 @@ namespace Firely.Fhir.Packages.Tests
             var package = files.Select(FileEntries.OrganizeToPackageStructure)
                                .AddIndexFiles();
 
-            package.Should().Contain(e => e.FilePath == "package/.index.json");
-            package.Should().Contain(e => e.FilePath == "package/other/.index.json");
+            package.Should().Contain(e => e.FilePath == @"package\.index.json");
+            package.Should().Contain(e => e.FilePath == @"package\other\.index.json");
 
 
         }
