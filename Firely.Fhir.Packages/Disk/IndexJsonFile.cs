@@ -14,11 +14,11 @@ namespace Firely.Fhir.Packages
         {
             var files = CanonicalIndexer.GenerateIndexFile(entries);
             var index = new IndexJson { Files = files.ToList(), Version = VERSION, date = DateTimeOffset.Now };
-            return ConvertToFileEntry(index, folder);
+            return convertToFileEntry(index, folder);
 
         }
 
-        private static FileEntry ConvertToFileEntry(IndexJson index, string folder)
+        private static FileEntry convertToFileEntry(IndexJson index, string folder)
         {
             var content = Parser.WriteIndexJson(index);
             return new FileEntry

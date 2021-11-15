@@ -8,7 +8,7 @@ namespace Firely.Fhir.Packages
     {
         public static byte[] ShaSum(byte[] buffer)
         {
-            using var sha = new SHA1Managed();
+            using var sha = SHA1.Create();
             var hash = sha.ComputeHash(buffer);
             return hash;
         }
