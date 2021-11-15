@@ -9,8 +9,9 @@
         <Company>Firely (https://fire.ly)</Company>
         <Copyright>Copyright 2013-2020 Firely</Copyright>
         <RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>
         <FhirNetSdkVersion>3.2.0</FhirNetSdkVersion>
-
+		<PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(FhirNetSdkVersion.StartsWith('1'))">
