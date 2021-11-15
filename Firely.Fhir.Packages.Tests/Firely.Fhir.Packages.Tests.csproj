@@ -3,7 +3,7 @@
   <Import Project="..\Firely.Fhir.Packages.props" />
   
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
