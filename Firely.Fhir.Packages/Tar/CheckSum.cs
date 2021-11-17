@@ -3,7 +3,6 @@ using System.Text;
 
 namespace Firely.Fhir.Packages
 {
-
     public static class CheckSum
     {
         public static byte[] ShaSum(byte[] buffer)
@@ -23,7 +22,6 @@ namespace Firely.Fhir.Packages
             return builder.ToString();
         }
     }
-
 }
 
 

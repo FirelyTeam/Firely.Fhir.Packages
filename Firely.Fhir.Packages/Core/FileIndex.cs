@@ -50,11 +50,11 @@ namespace Firely.Fhir.Packages
         private static PackageFileReference resolveFromMultipleCandidates(IEnumerable<PackageFileReference> candidates)
         {
             candidates = candidates.Where(c => c.HasSnapshot || c.HasExpansion);
-            if (candidates.Count() == 1)
-                return candidates.First();
-            else
-                throw new InvalidOperationException("Found multiple conflicting conformance resources with the same canonical url identifier.");
+            return candidates.Count() == 1
+                ? candidates.First()
+                : throw new InvalidOperationException("Found multiple conflicting conformance resources with the same canonical url identifier.");
         }
+
     }
 
 }

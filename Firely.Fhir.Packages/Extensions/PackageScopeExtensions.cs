@@ -98,9 +98,15 @@ namespace Firely.Fhir.Packages
         private static PackageFileReference getFileReference(this PackageContext scope, string resourceType, string id)
         {
             return scope.Index.Where(i => i.ResourceType == resourceType && i.Id == id).FirstOrDefault();
-
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="resourceType"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static async Task<string> GetFileContentById(this PackageContext scope, string resourceType, string id)
         {
             var reference = scope.getFileReference(resourceType, id);
@@ -114,6 +120,12 @@ namespace Firely.Fhir.Packages
             return scope.Index.Select(i => i.FileName);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public static async Task<string> GetFileContentByFileName(this PackageContext scope, string fileName)
         {
             var reference = scope.Index.Where(i => i.FileName == fileName).FirstOrDefault();
@@ -122,6 +134,13 @@ namespace Firely.Fhir.Packages
             var content = await scope.getFileContent(reference);
             return content;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static async Task<string> GetFileContentByFilePath(this PackageContext scope, string filePath)
         {
             var reference = scope.Index.Where(i => i.FilePath == filePath).FirstOrDefault();
@@ -129,6 +148,19 @@ namespace Firely.Fhir.Packages
 
             var content = await scope.getFileContent(reference);
             return content;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="resourceType"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> ListCanonicalUris(this PackageContext scope, string resourceType = null)
+        {
+            return (resourceType is not null)
+                ? scope.Index.Where(i => i.ResourceType == resourceType).Select(i => i.Canonical)
+                : scope.Index.Select(i => i.Canonical);
         }
 
     }

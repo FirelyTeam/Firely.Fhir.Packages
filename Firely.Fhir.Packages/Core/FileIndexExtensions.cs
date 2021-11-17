@@ -30,7 +30,7 @@ namespace Firely.Fhir.Packages
 
         public static void Add(this FileIndex index, PackageReference reference, CanonicalIndex cindex)
         {
-            if (cindex.Files is object)
+            if (cindex.Files is not null)
             {
                 index.Add(reference, cindex.Files);
             }
