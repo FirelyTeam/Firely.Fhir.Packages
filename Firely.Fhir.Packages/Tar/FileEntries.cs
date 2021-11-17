@@ -46,7 +46,7 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="entries">File entries to be indexed</param>
         /// <returns>List of file entries including an index file</returns>
-        internal static IEnumerable<FileEntry> AddIndexFiles(this IEnumerable<FileEntry> entries)
+        public static IEnumerable<FileEntry> AddIndexFiles(this IEnumerable<FileEntry> entries)
         {
             var entryList = entries.ToList();
             var folders = entries.Select(e => Path.GetDirectoryName(e.FilePath)).Distinct();
