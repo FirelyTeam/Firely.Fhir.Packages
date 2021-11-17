@@ -40,6 +40,11 @@ namespace Firely.Fhir.Packages
             return candidates.Count() > 1 ? resolveFromMultipleCandidates(candidates) : candidates.SingleOrDefault();
         }
 
+        /// <summary>
+        /// Adds the metadata of a artifact to the index of a package
+        /// </summary>
+        /// <param name="package">Reference to a specific version of a package</param>
+        /// <param name="metadata">The added metadata of a artifact</param>
         public void Add(PackageReference package, ResourceMetadata metadata)
         {
             var reference = new PackageFileReference() { Package = package };

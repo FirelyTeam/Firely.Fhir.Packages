@@ -35,7 +35,7 @@ namespace Firely.Fhir.Packages
             return null;
         }
 
-        public static ISourceNode ParseToSourceNode(Stream stream)
+        private static ISourceNode parseToSourceNode(Stream stream)
         {
             StreamReader reader = new(stream);
             string text = reader.ReadToEnd();
@@ -71,11 +71,17 @@ namespace Firely.Fhir.Packages
             return true;
         }
 
+        /// <summary>
+        /// Try to parse a stream to a SourceNode
+        /// </summary>
+        /// <param name="stream">Stream to be parsed</param>
+        /// <param name="node">Newly parsed SourceNode</param>
+        /// <returns>Whether the stream has been successfully parsed to a SourceNode</returns>
         internal static bool TryParseToSourceNode(Stream stream, out ISourceNode node)
         {
             try
             {
-                node = ParseToSourceNode(stream);
+                node = parseToSourceNode(stream);
                 if (node is null)
                 {
                     return false;
