@@ -41,6 +41,11 @@ namespace Firely.Fhir.Packages
             return AllFilesToPack(folder).Select(ReadFileEntry);
         }
 
+        /// <summary>
+        /// Indexes a list of file entries and adds that index file to the list
+        /// </summary>
+        /// <param name="entries">File entries to be indexed</param>
+        /// <returns>List of file entries including an index file</returns>
         public static IEnumerable<FileEntry> AddIndexFiles(this IEnumerable<FileEntry> entries)
         {
             var entryList = entries.ToList();

@@ -29,6 +29,12 @@ namespace Firely.Fhir.Packages
         //    return cache.GetPackageReferences().WithName(pkgname);
         //}
 
+        /// <summary>
+        /// Install a package from a file on disk
+        /// </summary>
+        /// <param name="cache">Cache in which the package is to be installed</param>
+        /// <param name="path">file path of the package to be installed</param>
+        /// <returns>Reference to the installed package</returns>
         public static async Task<PackageReference> InstallFromFile(this IPackageCache cache, string path)
         {
             var manifest = Packaging.ExtractManifestFromPackageFile(path);
@@ -39,6 +45,13 @@ namespace Firely.Fhir.Packages
             return reference;
         }
 
+        /// <summary>
+        /// Install a package from a file on disk
+        /// </summary>
+        /// <param name="cache">Cache in which the package is to be installed</param>
+        /// <param name="reference">Reference of the package to be installed</param>
+        /// <param name="path">file path of the package to be installed</param>
+        /// <returns></returns>
         public static async Task Install(this IPackageCache cache, PackageReference reference, string path)
         {
             if (!await cache.IsInstalled(reference))

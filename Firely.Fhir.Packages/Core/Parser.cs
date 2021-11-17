@@ -73,7 +73,12 @@ namespace Firely.Fhir.Packages
             return JsonConvert.SerializeObject(references, Formatting.Indented);
         }
 
-        public static string WriteIndexJson(IndexJson index)
+        /// <summary>
+        /// Writes an IndexJson to a string
+        /// </summary>
+        /// <param name="index">index object to be serialized to json</param>
+        /// <returns>string representation of an index.json object</returns>
+        internal static string WriteIndexJson(IndexJson index)
         {
             return JsonConvert.SerializeObject(index, Formatting.Indented);
         }

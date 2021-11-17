@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hl7.Fhir.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var reference in scope.Index)
             {
-                var content = scope.getFileContent(reference).Result;
+                var content = TaskHelper.Await(() => scope.getFileContent(reference));
                 yield return content;
             }
         }
@@ -49,7 +50,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var item in references)
             {
-                var content = scope.getFileContent(item).Result;
+                var content = TaskHelper.Await(() => scope.getFileContent(item));
                 yield return content;
             }
         }

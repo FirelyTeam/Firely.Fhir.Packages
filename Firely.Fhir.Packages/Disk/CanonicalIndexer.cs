@@ -18,12 +18,7 @@ namespace Firely.Fhir.Packages
 
         private static IEnumerable<ResourceMetadata> EnumerateMetadata(string folder, IEnumerable<string> filepaths)
         {
-            foreach (var filepath in filepaths)
-            {
-                var meta = GetFileMetadata(folder, filepath);
-                if (meta is not null)
-                    yield return meta;
-            }
+            return filepaths.Select(p => GetFileMetadata(folder, p)).Where(p => p is not null);
         }
 
         public static ResourceMetadata? GetFileMetadata(string folder, string filepath)
@@ -50,17 +45,12 @@ namespace Firely.Fhir.Packages
                     };
         }
 
-        public static IEnumerable<IndexData> GenerateIndexFile(IEnumerable<FileEntry> entries)
+        internal static IEnumerable<IndexData> GenerateIndexFile(IEnumerable<FileEntry> entries)
         {
-            foreach (var entry in entries)
-            {
-                var data = GetIndexData(entry);
-                if (data is not null)
-                    yield return data;
-            }
+            return entries.Select(e => getIndexData(e)).Where(e => e is not null);
         }
 
-        private static IndexData GetIndexData(FileEntry entry)
+        private static IndexData getIndexData(FileEntry entry)
         {
             return ElementNavigation.TryParseToSourceNode(entry.GetStream(), out var node)
                   ? new IndexData
@@ -78,8 +68,6 @@ namespace Firely.Fhir.Packages
                     FileName = entry.FileName
                 };
         }
-
-
 
 
         public static string GetString(this ISourceNode node, string expression)
