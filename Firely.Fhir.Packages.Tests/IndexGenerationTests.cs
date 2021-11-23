@@ -8,28 +8,48 @@ namespace Firely.Fhir.Packages.Tests
     public class IndexGenerationTest
     {
         internal const string HL7_CORE_PACKAGE_R4 = "hl7.fhir.r4.core@4.0.1";
-        internal const string US_CORE_TESTPACKAGE = "hl7.fhir.us.core@3.2.0";
-        private const string US_CORE_PAT_URL = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient";
+
+        private const string CORE_PAT_URL = "http://hl7.org/fhir/StructureDefinition/Patient";
+        private const string CORE_VS_URL = "http://hl7.org/fhir/ValueSet/administrative-gender";
+        private const string CORE_CS_URL = "http://hl7.org/fhir/ConceptMap/101";
+        private const string CORE_NS_PATH = "package/NamingSystem-example.json";
+
+
         private const string JSON_SCHEMA_PATH = "openapi/Patient.schema.json";
         private const string JSON_SCHEMA_NAME = "Patient.schema.json";
 
         [TestMethod]
         public void ResourceMetadataIsHarvestedCorrectly()
         {
-            var FixtureDirectory = TestHelper.InitializeTemporary("integration-test", US_CORE_TESTPACKAGE).Result;
+            var FixtureDirectory = TestHelper.InitializeTemporary("integration-test", HL7_CORE_PACKAGE_R4).Result;
             var projectContext = TestHelper.Open(FixtureDirectory, _ => { }).Result;
 
-            var usCorePat = projectContext.Index.ResolveCanonical(US_CORE_PAT_URL);
-            usCorePat.Should().NotBeNull();
+            var corePat = projectContext.Index.ResolveCanonical(CORE_PAT_URL);
+            corePat.Should().NotBeNull();
 
-            usCorePat.Canonical.Should().Be(US_CORE_PAT_URL);
-            usCorePat.FhirVersion.Should().Be("4.0.1");
-            usCorePat.FileName.Should().Be("StructureDefinition-us-core-patient.json");
-            usCorePat.FilePath.Should().Be("package/StructureDefinition-us-core-patient.json");
-            usCorePat.Kind.Should().Be("resource");
-            usCorePat.ResourceType.Should().Be("StructureDefinition");
-            usCorePat.Type.Should().Be("Patient");
-            usCorePat.Version.Should().Be("3.2.0");
+            corePat.Canonical.Should().Be(CORE_PAT_URL);
+            corePat.FhirVersion.Should().Be("4.0.1");
+            corePat.FileName.Should().Be("StructureDefinition-Patient.json");
+            corePat.FilePath.Should().Be("package/StructureDefinition-Patient.json");
+            corePat.Kind.Should().Be("resource");
+            corePat.ResourceType.Should().Be("StructureDefinition");
+            corePat.Type.Should().Be("Patient");
+            corePat.Version.Should().Be("4.0.1");
+
+            var coreValueSet = projectContext.Index.ResolveCanonical(CORE_VS_URL);
+            coreValueSet.ValueSetCodeSystem = "http://hl7.org/fhir/administrative-gender";
+
+            var coreCodeSystem = projectContext.Index.ResolveCanonical(CORE_CS_URL);
+            coreCodeSystem.ConceptMapUris.SourceUri.Should().Be("http://hl7.org/fhir/ValueSet/address-use");
+            coreCodeSystem.ConceptMapUris.TargetUri.Should().Be("http://terminology.hl7.org/ValueSet/v3-AddressUse");
+
+            var coreNamingSystem = projectContext.Index.Where(r => r.FilePath == CORE_NS_PATH).FirstOrDefault();
+            coreNamingSystem.Should().NotBeNull();
+            if (coreNamingSystem != null)
+            {
+                coreNamingSystem.NamingSystemUniqueId.Should().Contain("http://snomed.info/sct");
+                coreNamingSystem.NamingSystemUniqueId.Should().Contain("2.16.840.1.113883.6.96");
+            }
         }
 
         [TestMethod]
