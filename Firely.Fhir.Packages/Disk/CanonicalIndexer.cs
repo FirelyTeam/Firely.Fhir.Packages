@@ -36,7 +36,10 @@ namespace Firely.Fhir.Packages
                         Type = node.GetString("type"),
                         FhirVersion = node.GetString("fhirVersion"),
                         HasSnapshot = node.checkForSnapshot(),
-                        HasExpansion = node.checkForExpansion()
+                        HasExpansion = node.checkForExpansion(),
+                        ValueSetCodeSystem = node.getCodeSystemFromValueSet(),
+                        NamingSystemUniqueId = node.getUniqueIdsFromNamingSystem(),
+                        ConceptMapUris = node.getConceptMapsSourceAndTarget()
                     }
                     : new ResourceMetadata
                     {
@@ -73,7 +76,7 @@ namespace Firely.Fhir.Packages
         public static string GetString(this ISourceNode node, string expression)
         {
             if (node is null) return null;
-            node = node.findDescendant(expression);
+            node = node.findFirstDescendant(expression);
             return node?.Text;
         }
 
@@ -83,7 +86,7 @@ namespace Firely.Fhir.Packages
                 yield return GetRelativePath(folder, path);
         }
 
-        private static ISourceNode findDescendant(this ISourceNode node, string expression)
+        private static ISourceNode findFirstDescendant(this ISourceNode node, string expression)
         {
             var parts = expression.Split('.');
 
@@ -94,6 +97,11 @@ namespace Firely.Fhir.Packages
             }
 
             return node;
+        }
+
+        private static IEnumerable<ISourceNode>? findDescendants(this ISourceNode node, string name)
+        {
+            return node.Descendants()?.Where(node => node.Name == name);
         }
 
         private static string DirectorySeparatorString = $"{Path.DirectorySeparatorChar}";
@@ -123,8 +131,57 @@ namespace Firely.Fhir.Packages
 
         private static bool checkForExpansion(this ISourceNode node)
         {
-            return node.Name == "ValueSet" ? node.findDescendant("expansion.contains") is not null : false;
+            return node.Name == "ValueSet" && node.findFirstDescendant("expansion.contains") is not null;
         }
+
+        private static string? getCodeSystemFromValueSet(this ISourceNode node)
+        {
+            if (node.isWholeCodeSystemValueSet())
+            {
+                var uri = node.GetString("compose.include.system");
+                string version;
+
+                if (uri is not null)
+                    version = node.GetString("compose.include.version");
+                else
+                    return null;
+
+                return (version is not null) ? $"{uri}|{version}" : uri;
+
+            }
+            return null;
+        }
+
+        private static bool isWholeCodeSystemValueSet(this ISourceNode node)
+        {
+            return node.Name == "ValueSet" &&
+                node.findFirstDescendant("compose.exclude") is null &&
+                node.findFirstDescendant("compose.include.filter") is null &&
+                node.findFirstDescendant("compose.include.concept") is null &&
+                node.findFirstDescendant("compose.include.valueSet") is null;
+        }
+
+        private static string[]? getUniqueIdsFromNamingSystem(this ISourceNode node)
+        {
+            return node.Name == "NamingSystem"
+                ? node.findDescendants("uniqueId")
+                       .Select(node => node.GetString("value"))
+                       .ToArray()
+                : null;
+        }
+
+        private static SourceAndTarget? getConceptMapsSourceAndTarget(this ISourceNode node)
+        {
+            return node.Name == "ConceptMap"
+                ? new SourceAndTarget
+                {
+                    TargetUri = node.GetString("targetCanonical") ?? node.GetString("targetUri"),
+                    SourceUri = node.GetString("sourceCanonical") ?? node.GetString("sourceUri"),
+                }
+                : null;
+        }
+
+
 
     }
 }
