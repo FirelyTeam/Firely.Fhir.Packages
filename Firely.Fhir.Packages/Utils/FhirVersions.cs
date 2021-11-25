@@ -16,6 +16,7 @@ namespace Firely.Fhir.Packages
     }
 #endif
 
+
     public static class FhirVersions
     {
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Firely.Fhir.Packages
@@ -171,7 +172,16 @@ namespace Firely.Fhir.Packages
             return builder.ToString();
         }
 
+        public static PackageManifestType? TryGetPackageType(this PackageManifest manifest)
+        {
+            if (PackageManifestTypes.TryParse(manifest.Type, out var type)) return type;
+            else return null;
+        }
+
     }
+
+ 
+
 }
 
 
