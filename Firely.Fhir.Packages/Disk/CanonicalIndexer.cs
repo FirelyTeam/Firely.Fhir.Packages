@@ -175,8 +175,8 @@ namespace Firely.Fhir.Packages
             return node.Name == "ConceptMap"
                 ? new SourceAndTarget
                 {
-                    TargetUri = node.GetString("targetCanonical") ?? node.GetString("targetUri"),
-                    SourceUri = node.GetString("sourceCanonical") ?? node.GetString("sourceUri"),
+                    TargetUri = node.GetString("targetCanonical") ?? node.GetString("targetUri") ?? node.GetString("targetReference.reference"),
+                    SourceUri = node.GetString("sourceCanonical") ?? node.GetString("sourceUri") ?? node.GetString("sourceReference.reference")
                 }
                 : null;
         }
