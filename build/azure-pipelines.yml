@@ -45,6 +45,7 @@ stages:
 - stage: deploy
   dependsOn: build
   displayName: Deploy packages to GitHub
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest')) # not a PR
   jobs:
   - deployment: gitHub
     displayName: GitHub Packages
