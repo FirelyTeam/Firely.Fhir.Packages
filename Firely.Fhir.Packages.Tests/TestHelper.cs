@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hl7.Fhir.Utility;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages.Tests
 {
-    internal class TestHelper
+    internal static class TestHelper
     {
 
+        internal static PackageContext GetPackageContext(params string[] dependencies)
+        {
+            var FixtureDirectory = TaskHelper.Await(() => InitializeTemporary("integration-test", dependencies));
+            return TaskHelper.Await(() => Open(FixtureDirectory, _ => { }));
+        }
 
         /// <summary>
         /// Open and restore an NPM package from the given location.
