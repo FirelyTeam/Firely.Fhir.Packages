@@ -24,7 +24,7 @@ namespace Firely.Fhir.Packages
                 {
                     if (!first)
                     {
-                        builder.Append("&");
+                        builder.Append('&');
                     }
 
                     builder.AppendFormat("{0}={1}", Uri.EscapeDataString(key), Uri.EscapeDataString(value));
@@ -35,6 +35,6 @@ namespace Firely.Fhir.Packages
 
             return builder.ToString();
         }
-        
+
     }
 }

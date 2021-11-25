@@ -21,7 +21,7 @@ namespace Firely.Fhir.Packages
 
         public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, Dictionary<TKey, TValue> other)
         {
-            foreach(var item in other)
+            foreach (var item in other)
             {
                 dictionary.Add(item.Key, item.Value);
             }
@@ -36,6 +36,6 @@ namespace Firely.Fhir.Packages
         {
             return pattern.StartsWith("http");
         }
-        
+
     }
 }
