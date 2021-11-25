@@ -13,6 +13,8 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public enum PackageManifestType
     {
+        None = 0,
+
         Conformance, 
         IG,
         Core,
@@ -27,7 +29,7 @@ namespace Firely.Fhir.Packages
         public static bool TryParse(string value, out PackageManifestType type)
         {
             string typestr = value.Replace("-", "");
-            bool ok = Enum.TryParse(typestr, out type);
+            bool ok = Enum.TryParse(typestr, ignoreCase: true, out type);
             return ok;
         }
 
