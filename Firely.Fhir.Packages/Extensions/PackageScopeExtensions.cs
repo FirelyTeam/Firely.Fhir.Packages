@@ -155,7 +155,7 @@ namespace Firely.Fhir.Packages
         /// <param name="scope">The package containing the resources</param>
         /// <param name="resourceType">Resource type as string used to filter</param>
         /// <returns>Sequence of uri strings.</returns>
-        public static IEnumerable<string> ListCanonicalUris(this PackageContext scope, string resourceType = null)
+        public static IEnumerable<string> ListCanonicalUris(this PackageContext scope, string? resourceType = null)
         {
             return (resourceType is not null)
                 ? scope.Index.Where(i => i.ResourceType == resourceType && i.Canonical is not null).Select(i => i.Canonical)
@@ -190,7 +190,7 @@ namespace Firely.Fhir.Packages
         /// <param name="targetUri">An uri that is either the target uri, target ValueSet system or target StructureDefinition canonical url for the map.</param>
         /// <returns>A sequence of ConceptMap resources.</returns>
         /// <remarks>Either sourceUri may be null, or targetUri, but not both</remarks>
-        public static async Task<IEnumerable<string>> GetConceptMapsBySourceAndTarget(this PackageContext scope, string sourceUri, string targetUri)
+        public static async Task<IEnumerable<string>> GetConceptMapsBySourceAndTarget(this PackageContext scope, string? sourceUri, string? targetUri)
         {
             if (sourceUri == null && targetUri == null)
                 return null;
