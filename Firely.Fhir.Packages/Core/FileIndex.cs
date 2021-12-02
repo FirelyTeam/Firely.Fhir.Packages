@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
+
     public class FileIndex : List<PackageFileReference>
     {
-
         public FileIndex()
         {
         }

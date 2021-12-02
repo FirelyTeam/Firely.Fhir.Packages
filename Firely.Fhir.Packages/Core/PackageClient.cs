@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hl7.Fhir.Specification;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
@@ -101,9 +102,9 @@ namespace Firely.Fhir.Packages
             return await httpClient.GetByteArrayAsync(url);
         }
 
-        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, int fhirVersion, byte[] buffer)
+        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, FhirRelease release, byte[] buffer)
         {
-            string url = urlProvider.GetPublishUrl(fhirVersion, reference, PublishMode.Any);
+            string url = urlProvider.GetPublishUrl(release, reference, PublishMode.Any);
             var content = new ByteArrayContent(buffer);
             var response = await httpClient.PostAsync(url, content);
 

@@ -1,4 +1,6 @@
-﻿namespace Firely.Fhir.Packages
+﻿using Hl7.Fhir.Specification;
+
+namespace Firely.Fhir.Packages
 {
 
     public interface IPackageUrlProvider
@@ -6,7 +8,7 @@
         string Root { get; }
         string GetPackageListingUrl(string name);
         string GetPackageUrl(PackageReference reference);
-        string GetPublishUrl(int fhirVersion, PackageReference reference, PublishMode mode);
+        string GetPublishUrl(FhirRelease release, PackageReference reference, PublishMode mode);
     }
 
 }

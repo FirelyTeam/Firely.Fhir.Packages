@@ -16,13 +16,8 @@ namespace Firely.Fhir.Packages.Tests
             return TaskHelper.Await(() => Open(FixtureDirectory, _ => { }));
         }
 
-        /// <summary>
-        /// Open and restore an NPM package from the given location.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="progressHandler"></param>
-        /// <returns></returns>
-        internal async static Task<PackageContext> Open(string path, Action<string> progressHandler)
+
+        internal async static Task<PackageContext> Open(string path, Action<PackageReference> progressHandler)
         {
             var client = PackageClient.Create();
             var cache = new DiskPackageCache();

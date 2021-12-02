@@ -164,6 +164,9 @@ namespace Firely.Fhir.Packages
         [JsonProperty(PropertyName = "fhir-version-list")]
         public List<string>? FhirVersionList;
 
+        [JsonProperty(PropertyName = "type")]
+        public string Type;
+
         public class Maintainer
         {
             [JsonProperty(PropertyName = "name")]
@@ -211,6 +214,7 @@ namespace Firely.Fhir.Packages
         public Dictionary<string, string> MissingDependencies;
     }
 
+    
 
 
     /// <summary>

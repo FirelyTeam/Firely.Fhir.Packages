@@ -1,4 +1,6 @@
-﻿namespace Firely.Fhir.Packages
+﻿using Hl7.Fhir.Specification;
+
+namespace Firely.Fhir.Packages
 {
     public class FhirPackageUrlProvider : IPackageUrlProvider
     {
@@ -15,9 +17,9 @@
 
         public override string ToString() => $"(FHIR) {Root}";
 
-        public string GetPublishUrl(int fhirVersion, PackageReference reference, PublishMode mode)
+        public string GetPublishUrl(FhirRelease release, PackageReference reference, PublishMode mode)
         {
-            string url = $"{Root}/r{fhirVersion}?publishMode={mode}";
+            string url = $"{Root}/{release}?publishMode={mode}";
             return url;
         }
     }
