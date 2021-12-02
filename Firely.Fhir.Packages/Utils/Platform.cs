@@ -31,11 +31,11 @@ namespace Firely.Fhir.Packages
 
         public static string GetGenericDataLocation()
         {
-            switch(GetPlatform())
+            switch (GetPlatform())
             {
                 case OperatingSystem.Windows:
                     return Environment.GetEnvironmentVariable("UserProfile");
-                    
+
                 case OperatingSystem.Linux:
                     {
                         var path = Environment.GetEnvironmentVariable("HOME");

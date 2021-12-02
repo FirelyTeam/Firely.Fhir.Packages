@@ -79,17 +79,24 @@ namespace Firely.Fhir.Packages
 
             foreach (var folder in folders)
             {
-                var entry = Disk.GetFolderName(folder);
-                var idx = entry.IndexOfAny(new[] { '#' }); // backwards compatibility: also support '-'
-
-                references.Add(new PackageReference
-                {
-                    Name = entry.Substring(0, idx),
-                    Version = entry.Substring(idx + 1)
-                });
+                var name = Disk.GetFolderName(folder);
+                
+                var reference = ParseFoldernameToReference(name);
+                references.Add(reference);
             }
 
             return Task.FromResult(references.AsEnumerable());
+        }
+
+        public static PackageReference ParseFoldernameToReference(string foldername)
+        {
+            var idx = foldername.IndexOf('#'); 
+
+            return new PackageReference
+            {
+                Name = foldername.Substring(0, idx),
+                Version = foldername.Substring(idx + 1)
+            };
         }
 
         public Task<string> GetFileContent(PackageReference reference, string filename)

@@ -1,4 +1,6 @@
-﻿namespace Firely.Fhir.Packages
+﻿using Hl7.Fhir.Specification;
+
+namespace Firely.Fhir.Packages
 {
     public class NodePackageUrlProvider : IPackageUrlProvider
     {
@@ -22,10 +24,10 @@
                 : $"{Root}/@{reference.Scope}/{reference.Name}/-/{reference.Name}-{reference.Version}.tgz";
         }
 
-        public string GetPublishUrl(int fhirVersion, PackageReference reference, PublishMode mode)
+        public string GetPublishUrl(FhirRelease release, PackageReference reference, PublishMode mode)
         { 
             // this is not yet made NPM compliant. 
-            return $"{Root}/r{fhirVersion}/{reference.Name}";
+            return $"{Root}/{release}/{reference.Name}";
         }
 
         public override string ToString() => $"(NPM) {Root}";

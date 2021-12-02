@@ -38,7 +38,7 @@ namespace Firely.Fhir.Packages.Tests
         /// <param name="path"></param>
         /// <param name="progressHandler"></param>
         /// <returns></returns>
-        public async static Task<PackageContext> Open(string path, Action<string> progressHandler)
+        public async static Task<PackageContext> Open(string path, Action<PackageReference> progressHandler)
         {
             var client = PackageClient.Create();
             var cache = new DiskPackageCache();

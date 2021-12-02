@@ -28,7 +28,8 @@ namespace Firely.Fhir.Packages
 
             if (FhirFileFormats.HasJsonExtension(filepath))
             {
-                return FhirJsonNode.Parse(File.ReadAllText(filepath), null, _jsonParsingSettings);
+                var content = File.ReadAllText(filepath);
+                return FhirJsonNode.Parse(content, null, _jsonParsingSettings);
             }
 
             return null;
