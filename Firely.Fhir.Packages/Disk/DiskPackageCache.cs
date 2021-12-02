@@ -59,7 +59,7 @@ namespace Firely.Fhir.Packages
 
             // the new way:
             {
-                var pkgfolder = PackageFolderName(reference, '#');
+                var pkgfolder = PackageFolderName(reference);
                 var folder = Path.Combine(Root, pkgfolder, PackageConsts.PackageFolder);
                 return folder;
             }

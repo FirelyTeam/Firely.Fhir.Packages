@@ -15,6 +15,7 @@ namespace Firely.Fhir.Packages
             return this.FirstOrDefault(r => r.Canonical == canonical);
         }
 
+
         public void Add(PackageReference package, ResourceMetadata metadata)
         {
             var reference = new PackageFileReference() { Package = package };

@@ -39,11 +39,18 @@ namespace Firely.Fhir.Packages
         internal static async Task Index(this FileIndex index, IProject project)
         {
             var entries = await project.GetIndex();
-
             index.Add(PackageReference.None, entries);
         }
+
+        public static void Add(this FileIndex index, PackageReference package, ResourceMetadata metadata)
+        {
+            var reference = new PackageFileReference() { Package = package };
+            metadata.CopyTo(reference);
+            index.Add(reference);
+        }
+
          
-        public static async Task AddToFileIndex(this IPackageCache cache, FileIndex index, PackageReference reference)
+        internal static async Task AddToIndexIndex(this IPackageCache cache, FileIndex index, PackageReference reference)
         {
             var canonicals = await cache.GetCanonicalIndex(reference);
             index.Add(reference, canonicals);
