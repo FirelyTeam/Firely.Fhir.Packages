@@ -34,7 +34,7 @@ stages:
   jobs:
   - template: build.yml@templates  # Template reference
     parameters:
-      dotNetCoreVersion: 5.0.x
+      dotNetCoreVersion: 6.0.x
       packageArtifacts: true
       restoreDependencies: true
       nuGetServiceConnections: GitHubPackageGetFeed
