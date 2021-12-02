@@ -39,7 +39,9 @@ namespace Firely.Fhir.Packages
                 case OperatingSystem.Linux:
                     {
                         var path = Environment.GetEnvironmentVariable("HOME");
-                        return Path.Combine(path, ".local/share");
+#warning: this is changed, because we need it now in a deployment for Mitre/Sushi in the right folder.
+                        //return Path.Combine(path, ".local/share");
+                        return path;
                     }
                 case OperatingSystem.OSX:
                     {

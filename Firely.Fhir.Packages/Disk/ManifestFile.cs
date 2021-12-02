@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Hl7.Fhir.Specification;
+using Hl7.Fhir.Utility;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Firely.Fhir.Packages
@@ -87,8 +90,9 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public static PackageManifest Create(string name, string fhirVersion)
         {
-            var release = FhirVersions.Parse(fhirVersion);
-            var version = FhirVersions.FhirVersionFromRelease(release);
+            var release = FhirReleaseParser.Parse(fhirVersion);
+            //var release = FhirVersions.Parse(fhirVersion);
+            var version = FhirReleaseParser.FhirVersionFromRelease(release); 
 
             var manifest = new PackageManifest
             {
@@ -126,9 +130,9 @@ namespace Firely.Fhir.Packages
         /// <param name="fhirRelease">The FHIR version of the package contents.</param>
         /// <returns></returns>
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
-        public static PackageManifest Create(string name, int fhirRelease)
-        {
-            var fhirVersion = FhirVersions.GetFhirVersion(fhirRelease);
+        public static PackageManifest Create(string name, FhirRelease fhirRelease)
+        { 
+            var fhirVersion = FhirReleaseParser.FhirVersionFromRelease(fhirRelease);
             return Create(name, fhirVersion);
         }
 
@@ -171,7 +175,16 @@ namespace Firely.Fhir.Packages
             return builder.ToString();
         }
 
+        public static PackageManifestType? TryGetPackageType(this PackageManifest manifest)
+        {
+            if (PackageManifestTypes.TryParse(manifest.Type, out var type)) return type;
+            else return null;
+        }
+
     }
+
+ 
+
 }
 
 
