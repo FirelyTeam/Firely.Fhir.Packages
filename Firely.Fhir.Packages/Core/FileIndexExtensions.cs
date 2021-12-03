@@ -54,7 +54,7 @@ namespace Firely.Fhir.Packages
         /// Not that it is the same as the Index(index, cache, ref) above. 
         /// Let's re-evaluate what to make public.
         /// </summary>
-        public static async Task AddToIndex(this IPackageCache cache, FileIndex index, PackageReference reference)
+        public static async Task AddToFileIndex(this IPackageCache cache, FileIndex index, PackageReference reference)
         {
             var canonicals = await cache.GetCanonicalIndex(reference);
             index.Add(reference, canonicals);
