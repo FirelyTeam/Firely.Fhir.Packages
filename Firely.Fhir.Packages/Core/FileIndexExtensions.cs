@@ -49,8 +49,12 @@ namespace Firely.Fhir.Packages
             index.Add(reference);
         }
 
-         
-        internal static async Task AddToIndexIndex(this IPackageCache cache, FileIndex index, PackageReference reference)
+        /// <summary>
+        /// This method is currently used by Firely Terminal, to create ad hoc scopes.
+        /// Not that it is the same as the Index(index, cache, ref) above. 
+        /// Let's re-evaluate what to make public.
+        /// </summary>
+        public static async Task AddToFileIndex(this IPackageCache cache, FileIndex index, PackageReference reference)
         {
             var canonicals = await cache.GetCanonicalIndex(reference);
             index.Add(reference, canonicals);
