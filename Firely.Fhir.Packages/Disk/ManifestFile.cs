@@ -127,7 +127,7 @@ namespace Firely.Fhir.Packages
         /// Creates a new <see cref="PackageManifest"/> initialized with sensible default values.
         /// </summary>
         /// <param name="name">A name for the package</param>
-        /// <param name="fhirVersion">The FHIR version of the package contents.</param>
+        /// <param name="fhirRelease">The FHIR version of the package contents.</param>
         /// <returns></returns>
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
         public static PackageManifest Create(string name, FhirRelease fhirRelease)

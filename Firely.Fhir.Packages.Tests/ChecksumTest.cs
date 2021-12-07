@@ -18,17 +18,25 @@ namespace Firely.Fhir.Packages.Tests
             TestPackageChecksum(PackageUrlProviders.Npm, "jquery@3.5.1");
         }
 
-        public void TestPackageChecksum(IPackageUrlProvider provider, PackageReference reference)
+        public static void TestPackageChecksum(IPackageUrlProvider provider, PackageReference reference)
         {
+            Assert.IsNotNull(reference.Name);
+            Assert.IsNotNull(reference.Version);
+
             PackageClient client = new(provider);
 
             var listing = client.DownloadListingAsync(reference.Name).Result;
 
+            Assert.IsNotNull(listing?.Versions);
+
             var release = listing.Versions[reference.Version];
+
+            Assert.IsNotNull(release.Dist);
+
             var original_hash = release.Dist.Shasum;
 
             var buffer = client.GetPackage(reference).Result;
-            
+
             var bytehash = CheckSum.ShaSum(buffer);
             var hash = CheckSum.HashToHexString(bytehash);
             Assert.AreEqual(original_hash, hash);

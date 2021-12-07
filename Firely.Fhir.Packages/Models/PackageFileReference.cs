@@ -5,7 +5,7 @@
     /// </summary>
     public class PackageFileReference : ResourceMetadata
     {
-        public PackageReference Package; 
+        public PackageReference Package;
     }
 
 }

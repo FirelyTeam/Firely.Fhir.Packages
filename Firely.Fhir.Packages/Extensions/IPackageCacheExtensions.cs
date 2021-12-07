@@ -29,20 +29,42 @@ namespace Firely.Fhir.Packages
         //    return cache.GetPackageReferences().WithName(pkgname);
         //}
 
+        /// <summary>
+        /// Install a package from a file on disk
+        /// </summary>
+        /// <param name="cache">Cache in which the package is to be installed</param>
+        /// <param name="path">file path of the package to be installed</param>
+        /// <returns>Reference to the installed package</returns>
         public static async Task<PackageReference> InstallFromFile(this IPackageCache cache, string path)
         {
             var manifest = Packaging.ExtractManifestFromPackageFile(path);
             var reference = manifest.GetPackageReference();
-            var buffer = File.ReadAllBytes(path);
-            
-            await cache.Install(reference, buffer);
 
-            return reference; 
+            await cache.Install(reference, path);
+
+            return reference;
         }
+
+        /// <summary>
+        /// Install a package from a file on disk
+        /// </summary>
+        /// <param name="cache">Cache in which the package is to be installed</param>
+        /// <param name="reference">Reference of the package to be installed</param>
+        /// <param name="path">file path of the package to be installed</param>
+        /// <returns></returns>
+        public static async Task Install(this IPackageCache cache, PackageReference reference, string path)
+        {
+            if (!await cache.IsInstalled(reference))
+            {
+                var buffer = File.ReadAllBytes(path);
+                await cache.Install(reference, buffer);
+            }
+        }
+
 
         public static async Task<string> GetFileContent(this IPackageCache cache, PackageFileReference reference)
         {
-            return await cache.GetFileContent(reference.Package, reference.FileName);
+            return await cache.GetFileContent(reference.Package, reference.FilePath);
         }
 
         public static async Task<string> ReadPackageFhirVersion(this IPackageCache cache, PackageReference reference)
@@ -50,7 +72,7 @@ namespace Firely.Fhir.Packages
             var m = await cache.ReadManifest(reference);
             var fhirVersion = m.GetFhirVersion();
             return fhirVersion;
-        } 
+        }
 
     }
 }

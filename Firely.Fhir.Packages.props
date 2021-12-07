@@ -3,17 +3,15 @@
     <!-- Solution-wide properties for NuGet packaging -->
     <PropertyGroup>
         <LangVersion>9.0</LangVersion>
-
         <VersionPrefix>2.2.0</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
-
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
         <Copyright>Copyright 2013-2020 Firely</Copyright>
         <RepositoryType>git</RepositoryType>
-		    <RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>
-        <FhirNetSdkVersion>3.*</FhirNetSdkVersion>
+		<RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>
+        <FhirNetSdkVersion>4.0.0-alpha-20211103.7</FhirNetSdkVersion>
+		<PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(FhirNetSdkVersion.StartsWith('1'))">

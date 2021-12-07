@@ -20,6 +20,7 @@ namespace Firely.Fhir.Packages
             return Parser.ReadManifest(entry.Buffer);
         }
 
+
         [CLSCompliant(false)]
         public static void WriteResource(this TarOutputStream tar, FileEntry entry)
         {
@@ -32,7 +33,8 @@ namespace Firely.Fhir.Packages
             var files = FileEntries
                 .ReadAllFilesToPack(folder)
                 .MakePathsRelative(folder)
-                .Select(FileEntries.OrganizeToPackageStructure);
+                .Select(FileEntries.OrganizeToPackageStructure)
+                .AddIndexFiles();
 
             return Tar.PackToDisk(name, files);
         }
@@ -42,7 +44,8 @@ namespace Firely.Fhir.Packages
             var files = FileEntries
                 .ReadAllFilesToPack(folder)
                 .MakePathsRelative(folder)
-                .Select(organize);
+                .Select(organize)
+                .AddIndexFiles();
 
             return Tar.PackToDisk(name, files);
         }

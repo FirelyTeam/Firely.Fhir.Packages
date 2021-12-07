@@ -11,7 +11,7 @@ namespace Firely.Fhir.Packages
 
         public static OperatingSystem GetPlatform()
         {
-#if NETSTANDARD2_0
+#if !NET452
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return OperatingSystem.Windows;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return OperatingSystem.Linux;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return OperatingSystem.OSX;

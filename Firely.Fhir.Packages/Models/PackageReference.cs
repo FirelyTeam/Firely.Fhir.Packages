@@ -19,8 +19,8 @@ namespace Firely.Fhir.Packages
         /// <param name="version">Optionally the exact version of the package</param>
         public PackageReference(string name, string version) : this(null, name, version)
         { }
-        
-        public PackageReference (string scope, string name, string version)
+
+        public PackageReference(string scope, string name, string version)
         {
             this.Scope = scope;
             this.Name = name;
@@ -35,13 +35,13 @@ namespace Firely.Fhir.Packages
             return s;
         }
 
-        public static PackageReference None => new PackageReference { Name = null, Version = null };
+        public static PackageReference None => new() { Name = null, Version = null };
 
         public bool NotFound => !Found;
 
         public bool Found => !(Name is null || Version is null);
 
-        public static implicit operator PackageReference (KeyValuePair<string, string> kvp)
+        public static implicit operator PackageReference(KeyValuePair<string, string> kvp)
         {
             return new PackageReference(kvp.Key, kvp.Value);
         }
@@ -51,12 +51,12 @@ namespace Firely.Fhir.Packages
             return Parse(reference);
         }
 
-        public static bool operator == (PackageReference A, PackageReference B)
+        public static bool operator ==(PackageReference A, PackageReference B)
         {
             return (A.Name == B.Name && A.Version == B.Version);
         }
 
-        public static bool operator != (PackageReference A, PackageReference B)
+        public static bool operator !=(PackageReference A, PackageReference B)
         {
             return !(A == B);
         }
@@ -69,7 +69,7 @@ namespace Firely.Fhir.Packages
 
         public override bool Equals(object obj)
         {
-            if (!(obj is PackageReference))
+            if (obj is not PackageReference)
             {
                 return false;
             }
@@ -109,6 +109,6 @@ namespace Firely.Fhir.Packages
 
         }
 
-      
+
     }
 }

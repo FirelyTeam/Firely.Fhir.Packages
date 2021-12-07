@@ -8,7 +8,7 @@ namespace Firely.Fhir.Packages
     {
         public static byte[] ShaSum(byte[] buffer)
         {
-            using var sha = new SHA1Managed();
+            using var sha = SHA1.Create();
             var hash = sha.ComputeHash(buffer);
             return hash;
         }
@@ -16,7 +16,7 @@ namespace Firely.Fhir.Packages
         public static string HashToHexString(byte[] hash)
         {
             var builder = new StringBuilder();
-            foreach(var @byte in hash)
+            foreach (var @byte in hash)
             {
                 builder.Append(@byte.ToString("x2"));
             }

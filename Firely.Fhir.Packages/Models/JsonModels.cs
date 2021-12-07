@@ -216,7 +216,11 @@ namespace Firely.Fhir.Packages
 
     
 
-    public class CanonicalIndex
+
+    /// <summary>
+    /// Index.json, should stay conformant to the spec here: https://confluence.hl7.org/display/FHIR/NPM+Package+Specification#NPMPackageSpecification-.index.json
+    /// </summary>
+    public class IndexJson
     {
         public DateTimeOffset date;
 
@@ -224,10 +228,13 @@ namespace Firely.Fhir.Packages
         public int Version;
 
         [JsonProperty(PropertyName = "files")]
-        public List<ResourceMetadata>? Files; // canonical -> file
+        public List<IndexData>? Files; // canonical -> file
     }
 
-    public class ResourceMetadata
+    /// <summary>
+    /// entry of Index.json, should stay conformant to the spec here: https://confluence.hl7.org/display/FHIR/NPM+Package+Specification#NPMPackageSpecification-.index.json
+    /// </summary>
+    public class IndexData
     {
         [JsonProperty("filename")]
         public string FileName;
@@ -250,10 +257,7 @@ namespace Firely.Fhir.Packages
         [JsonProperty("type")]
         public string? Type;
 
-        [JsonProperty("fhirVersion")]
-        public string? FhirVersion;
-
-        public void CopyTo(ResourceMetadata other)
+        public void CopyTo(IndexData other)
         {
             other.FileName = FileName;
             other.ResourceType = ResourceType;
@@ -262,7 +266,53 @@ namespace Firely.Fhir.Packages
             other.Version = Version;
             other.Kind = Kind;
             other.Type = Type;
+        }
+    }
+
+    /// <summary>
+    /// Firely specific additions to index.json entries to end up in the .firely.index.json file at the root of the package after installation.
+    /// </summary>
+    public class CanonicalIndex
+    {
+        public DateTimeOffset date;
+
+        [JsonProperty(PropertyName = "index-version")]
+        public int Version;
+
+        [JsonProperty(PropertyName = "files")]
+        public List<ResourceMetadata>? Files; // canonical -> file
+    }
+
+    /// <summary>
+    /// Firely specific additions to index.json entries to end up in the .firely.index.json file at the root of the package after installation.
+    /// </summary>
+    public class ResourceMetadata : IndexData
+    {
+        [JsonProperty("filepath")]
+        public string FilePath;
+
+        [JsonProperty("fhirVersion")]
+        public string? FhirVersion;
+
+        [JsonProperty("hasSnapshot")]
+        public bool HasSnapshot;
+
+        [JsonProperty("hasExpansion")]
+        public bool HasExpansion;
+
+        public void CopyTo(ResourceMetadata other)
+        {
+            other.FileName = FileName;
+            other.FilePath = FilePath;
+            other.ResourceType = ResourceType;
+            other.Id = Id;
+            other.Canonical = Canonical;
+            other.Version = Version;
+            other.Kind = Kind;
+            other.Type = Type;
             other.FhirVersion = FhirVersion;
+            other.HasExpansion = HasExpansion;
+            other.HasSnapshot = HasSnapshot;
         }
     }
 
@@ -272,6 +322,7 @@ namespace Firely.Fhir.Packages
         public string Description;
         public string FhirVersion;
     }
+
 
     public static class JsonModelExtensions
     {

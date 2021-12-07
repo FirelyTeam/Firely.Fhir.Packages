@@ -1,4 +1,6 @@
-﻿using ICSharpCode.SharpZipLib.GZip;
+﻿
+
+using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using System;
 using System.Collections.Generic;
@@ -11,19 +13,21 @@ namespace Firely.Fhir.Packages
     {
         public static string PackToDisk(string path, IEnumerable<FileEntry> entries)
         {
+
             var packagefile = Path.ChangeExtension(path, ".tgz");
 
             using var file = File.Create(packagefile);
             using var gzip = new GZipOutputStream(file);
             using TarOutputStream tar = new TarOutputStream(gzip);
-            
+
             Write(tar, entries);
-            
+
             return packagefile;
         }
 
         public static string PackToDisk(string path, FileEntry single, IEnumerable<FileEntry> entries)
         {
+
             var packagefile = Path.ChangeExtension(path, ".tgz");
 
             using (var file = File.Create(packagefile))
@@ -145,6 +149,7 @@ namespace Firely.Fhir.Packages
             Tar.Write(tar, entries);
         }
 
+
         [CLSCompliant(false)]
         public static void Write(this TarOutputStream tar, IEnumerable<FileEntry> entries)
         {
@@ -189,10 +194,7 @@ namespace Firely.Fhir.Packages
             };
             Write(tar, entry);
         }
-
-        
     }
-
 }
 
 

@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using System;
+using System.Text;
 
 namespace Firely.Fhir.Packages
 {
@@ -39,7 +38,7 @@ namespace Firely.Fhir.Packages
 
         public static string WriteManifest(PackageManifest manifest)
         {
-            return JsonConvert.SerializeObject(manifest, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore } )+"\n";
+            return JsonConvert.SerializeObject(manifest, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }) + "\n";
             //return JsonConvert.SerializeObject(manifest, Formatting.Indented )+"\n";
         }
 
@@ -51,7 +50,7 @@ namespace Firely.Fhir.Packages
             var settings = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Ignore };
             jcontent.Remove("dependencies");
             jcontent.Merge(jmanifest, settings);
-            return jcontent.ToString()+"\n";
+            return jcontent.ToString() + "\n";
         }
 
         public static LockFileJson ReadLockFileJson(string content)
@@ -61,17 +60,27 @@ namespace Firely.Fhir.Packages
 
         public static string WriteLockFileDto(LockFileJson dto)
         {
-            return JsonConvert.SerializeObject(dto, Formatting.Indented)+"\n";
+            return JsonConvert.SerializeObject(dto, Formatting.Indented) + "\n";
         }
 
         public static CanonicalIndex ReadCanonicalIndex(string content)
         {
             return JsonConvert.DeserializeObject<CanonicalIndex>(content);
-        } 
+        }
 
         public static string WriteCanonicalIndex(CanonicalIndex references)
         {
             return JsonConvert.SerializeObject(references, Formatting.Indented);
+        }
+
+        /// <summary>
+        /// Writes an IndexJson to a string
+        /// </summary>
+        /// <param name="index">index object to be serialized to json</param>
+        /// <returns>string representation of an index.json object</returns>
+        internal static string WriteIndexJson(IndexJson index)
+        {
+            return JsonConvert.SerializeObject(index, Formatting.Indented);
         }
 
     }

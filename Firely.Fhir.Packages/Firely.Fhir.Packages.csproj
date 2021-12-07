@@ -1,6 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-
 	<Import Project="..\Firely.Fhir.Packages.props" />
 
 	<PropertyGroup>
@@ -13,26 +11,25 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.* " />
-		<PackageReference Include="SharpZipLib" Version="1.1.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.*" />
 		<PackageReference Include="SemanticVersioning" Version="1.2.0" />
 		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.2" />
+		<PackageReference Include="SharpZipLib" Version="1.1.0" />
 	</ItemGroup>
-
+	
 	<ItemGroup Condition=" '$(TargetFramework)' != 'net452' ">
-		<PackageReference Include="System.Memory" Version="4.5.2" />
+		<PackageReference Include="System.Memory" Version="4.5.4" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 	</ItemGroup>
+	
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
 		<Reference Include="System.Net.Http" />
 		<Reference Include="System.Net.Http.WebRequest.dll" />
 	</ItemGroup>
 
-
 	<ItemGroup>
-		<PackageReference Include="Hl7.Fhir.Support.Poco" Version="$(FhirNetSdkVersion)" />
-		<PackageReference Include="Hl7.FhirPath" Version="$(FhirNetSdkVersion)" />
 		<PackageReference Include="Hl7.Fhir.Support" Version="$(FhirNetSdkVersion)" />
 		<PackageReference Include="Hl7.Fhir.Serialization" Version="$(FhirNetSdkVersion)" />
 	</ItemGroup>
+
 </Project>
