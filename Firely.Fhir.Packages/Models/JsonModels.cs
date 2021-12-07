@@ -300,6 +300,15 @@ namespace Firely.Fhir.Packages
         [JsonProperty("hasExpansion")]
         public bool HasExpansion;
 
+        [JsonProperty("valuesetCodeSystem")]
+        public string? ValueSetCodeSystem;
+
+        [JsonProperty("conceptMapUris")]
+        public SourceAndTarget ConceptMapUris;
+
+        [JsonProperty("namingSystemUniqueId")]
+        public string[]? NamingSystemUniqueId;
+
         public void CopyTo(ResourceMetadata other)
         {
             other.FileName = FileName;
@@ -313,6 +322,9 @@ namespace Firely.Fhir.Packages
             other.FhirVersion = FhirVersion;
             other.HasExpansion = HasExpansion;
             other.HasSnapshot = HasSnapshot;
+            other.ValueSetCodeSystem = ValueSetCodeSystem;
+            other.ConceptMapUris = ConceptMapUris;
+            other.NamingSystemUniqueId = NamingSystemUniqueId;
         }
     }
 
@@ -321,6 +333,14 @@ namespace Firely.Fhir.Packages
         public string Name;
         public string Description;
         public string FhirVersion;
+    }
+
+    public class SourceAndTarget
+    {
+        [JsonProperty("targetUri")]
+        public string? TargetUri;
+        [JsonProperty("sourceUri")]
+        public string? SourceUri;
     }
 
 

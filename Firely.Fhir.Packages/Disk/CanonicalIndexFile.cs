@@ -5,11 +5,11 @@ namespace Firely.Fhir.Packages
 {
     public static class CanonicalIndexFile
     {
-        public const int VERSION = 6;
+        public const int VERSION = 7;
 
         public static CanonicalIndex GetFromFolder(string folder, bool recurse)
         {
-            if (ExistsIn(folder))
+            if (existsIn(folder))
             {
                 var index = ReadFromFolder(folder);
                 if (index.Version == VERSION) return index;
@@ -22,7 +22,7 @@ namespace Firely.Fhir.Packages
         {
             var entries = CanonicalIndexer.IndexFolder(folder, recurse);
             var index = new CanonicalIndex { Files = entries, Version = VERSION, date = DateTimeOffset.Now };
-            WriteToFolder(index, folder);
+            writeToFolder(index, folder);
             return index;
         }
 
@@ -43,22 +43,22 @@ namespace Firely.Fhir.Packages
             else return null;
         }
 
-        private static void Write(CanonicalIndex index, string path)
+        private static void write(CanonicalIndex index, string path)
         {
             var content = Parser.WriteCanonicalIndex(index);
             File.WriteAllText(path, content);
         }
 
-        private static bool ExistsIn(string folder)
+        private static bool existsIn(string folder)
         {
             var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
             return File.Exists(path);
         }
 
-        private static void WriteToFolder(CanonicalIndex index, string folder)
+        private static void writeToFolder(CanonicalIndex index, string folder)
         {
             var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
-            Write(index, path);
+            write(index, path);
         }
 
 
