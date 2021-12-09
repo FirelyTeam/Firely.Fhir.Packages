@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -7,7 +9,7 @@ namespace Firely.Fhir.Packages
     {
         public static void Add(this FileIndex index, PackageReference reference, CanonicalIndex cindex)
         {
-            if (cindex.Files is object)
+            if (cindex.Files is not null)
             {
                 index.Add(reference, cindex.Files);
             }
@@ -44,7 +46,7 @@ namespace Firely.Fhir.Packages
 
         public static void Add(this FileIndex index, PackageReference package, ResourceMetadata metadata)
         {
-            var reference = new PackageFileReference() { Package = package };
+            var reference = new PackageFileReference(metadata.FileName, metadata.FilePath) { Package = package };
             metadata.CopyTo(reference);
             index.Add(reference);
         }
@@ -61,3 +63,5 @@ namespace Firely.Fhir.Packages
         }
     }
 }
+
+#nullable restore

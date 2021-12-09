@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿#nullable enable
+
+using System.IO;
 
 namespace Firely.Fhir.Packages
 {
@@ -17,7 +19,7 @@ namespace Firely.Fhir.Packages
             base.Dispose(true);
         }
     }
-
 }
 
+#nullable restore
 

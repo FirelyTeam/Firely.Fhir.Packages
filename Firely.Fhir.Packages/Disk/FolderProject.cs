@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -34,7 +36,7 @@ namespace Firely.Fhir.Packages
         /// Reads and parses a <see cref="PackageClosure"/> from the <see cref="Folder"/>.
         /// </summary>
         /// <returns></returns>
-        public Task<PackageClosure> ReadClosure()
+        public Task<PackageClosure?> ReadClosure()
         {
             var closure = LockFile.ReadFromFolder(Folder);
             return Task.FromResult(closure);
@@ -44,7 +46,7 @@ namespace Firely.Fhir.Packages
         /// Reads and parses a <see cref="PackageManifest"/> from the <see cref="Folder"/>.
         /// </summary>
         /// <returns></returns>
-        public Task<PackageManifest> ReadManifest()
+        public Task<PackageManifest?> ReadManifest()
         {
             var manifest = ManifestFile.ReadFromFolder(Folder);
             return Task.FromResult(manifest); ;
@@ -64,5 +66,6 @@ namespace Firely.Fhir.Packages
             return Task.FromResult(0); //because in net45 there is no Task.CompletedTask (Paul)
         }
     }
-
 }
+
+#nullable restore

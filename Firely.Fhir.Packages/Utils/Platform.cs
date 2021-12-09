@@ -1,4 +1,7 @@
-﻿using System;
+﻿#nullable enable
+
+
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -31,25 +34,21 @@ namespace Firely.Fhir.Packages
 
         public static string GetGenericDataLocation()
         {
-            switch (GetPlatform())
+            string? path = GetPlatform() switch
             {
-                case OperatingSystem.Windows:
-                    return Environment.GetEnvironmentVariable("UserProfile");
+                OperatingSystem.Windows =>
+                    Environment.GetEnvironmentVariable("UserProfile"),
 
-                case OperatingSystem.Linux:
-                    {
-                        var path = Environment.GetEnvironmentVariable("HOME");
-#warning: this is changed, because we need it now in a deployment for Mitre/Sushi in the right folder.
-                        //return Path.Combine(path, ".local/share");
-                        return path;
-                    }
-                case OperatingSystem.OSX:
-                    {
-                        var path = Environment.GetEnvironmentVariable("HOME");
-                        return path;
-                    }
-                default: throw new Exception("Unknown OS");
-            }
+                OperatingSystem.Linux =>
+                     Environment.GetEnvironmentVariable("HOME"),
+
+                OperatingSystem.OSX =>
+                   Environment.GetEnvironmentVariable("HOME"),
+
+                _ => throw new Exception("Unknown OS")
+            };
+
+            return path == null ? throw new Exception("Cannot determine rootpath of operating system") : path;
         }
 
         public static string GetFhirPackageRoot()
@@ -58,6 +57,7 @@ namespace Firely.Fhir.Packages
 
             return Path.Combine(root, ".fhir", "packages");
         }
-
     }
 }
+
+#nullable restore

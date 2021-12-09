@@ -1,4 +1,6 @@
-﻿using SemVer;
+﻿#nullable enable
+
+using SemVer;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,10 +8,10 @@ namespace Firely.Fhir.Packages
 {
     public class Versions
     {
-        readonly List<Version> list = new List<Version>();
+        private readonly List<Version> _list = new();
 
         [System.CLSCompliant(false)]
-        public IReadOnlyCollection<Version> Items => list;
+        public IReadOnlyCollection<Version> Items => _list;
 
         public Versions() { }
 
@@ -22,22 +24,23 @@ namespace Firely.Fhir.Packages
         {
             foreach (var s in versions)
             {
-                if (TryParseVersion(s, out Version version))
+                if (TryParseVersion(s, out Version? version))
                 {
-                    list.Add(version);
+                    if (version != null)
+                        _list.Add(version);
                 }
             }
-            list.Sort();
+            _list.Sort();
         }
 
         [System.CLSCompliant(false)]
-        public Version Latest(bool previews = false)
+        public Version? Latest()
         {
-            return list.LastOrDefault();
+            return _list.LastOrDefault();
         }
 
         [System.CLSCompliant(false)]
-        public static bool TryParseVersion(string s, out Version v)
+        public static bool TryParseVersion(string s, out Version? v)
         {
             try
             {
@@ -57,19 +60,20 @@ namespace Firely.Fhir.Packages
         public Version Resolve(Range range)
         {
 
-            return range.MaxSatisfying(list);
+            return range.MaxSatisfying(_list);
         }
 
         [System.CLSCompliant(false)]
         public bool Has(Version version)
         {
-            foreach (var item in list)
+            foreach (var item in _list)
             {
                 if (item == version) return true;
             }
             return false;
         }
 
-        public bool IsEmpty => list is null || list.Count == 0;
+        public bool IsEmpty => _list is null || _list.Count == 0;
     }
 }
+#nullable restore

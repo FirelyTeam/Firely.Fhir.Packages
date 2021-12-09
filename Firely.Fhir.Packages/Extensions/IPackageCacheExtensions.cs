@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,10 +10,10 @@ namespace Firely.Fhir.Packages
 {
     public static class IPackageCacheExtensions
     {
-        public static async Task<PackageManifest> ReadManifest(this IPackageCache cache, string name, string version)
+        public static async Task<PackageManifest?> ReadManifest(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
-            return await cache.ReadManifest(reference);
+            return await cache.ReadManifest(reference).ConfigureAwait(false);
         }
 
         public static async Task<CanonicalIndex> ReadCanonicalIndex(this IPackageCache cache, string name, string version)
@@ -38,6 +41,9 @@ namespace Firely.Fhir.Packages
         public static async Task<PackageReference> InstallFromFile(this IPackageCache cache, string path)
         {
             var manifest = Packaging.ExtractManifestFromPackageFile(path);
+            if (manifest == null)
+                throw new InvalidOperationException("Cannot extract manifest from package file");
+
             var reference = manifest.GetPackageReference();
 
             await cache.Install(reference, path);
@@ -57,23 +63,31 @@ namespace Firely.Fhir.Packages
             if (!await cache.IsInstalled(reference))
             {
                 var buffer = File.ReadAllBytes(path);
-                await cache.Install(reference, buffer);
+                await cache.Install(reference, buffer).ConfigureAwait(false);
             }
         }
 
 
         public static async Task<string> GetFileContent(this IPackageCache cache, PackageFileReference reference)
         {
-            return await cache.GetFileContent(reference.Package, reference.FilePath);
+            return await cache.GetFileContent(reference.Package, reference.FilePath).ConfigureAwait(false);
         }
 
         public static async Task<string> ReadPackageFhirVersion(this IPackageCache cache, PackageReference reference)
         {
-            var m = await cache.ReadManifest(reference);
-            var fhirVersion = m.GetFhirVersion();
+            var m = await cache.ReadManifest(reference).ConfigureAwait(false);
+            var fhirVersion = m?.GetFhirVersion();
+
+            if (fhirVersion is null)
+            {
+                throw new ArgumentException($"FHIR Version {reference.Version} from package {reference.Name} is invalid");
+            }
+
             return fhirVersion;
         }
 
     }
 }
+
+#nullable restore
 

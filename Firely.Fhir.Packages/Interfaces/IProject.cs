@@ -8,9 +8,9 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public interface IProject
     {
-        Task<PackageManifest> ReadManifest();
+        Task<PackageManifest?> ReadManifest();
         Task WriteManifest(PackageManifest manifest);
-        Task<PackageClosure> ReadClosure();
+        Task<PackageClosure?> ReadClosure();
         Task WriteClosure(PackageClosure closure);
 
         public Task<string> GetFileContent(string filename);

@@ -1,9 +1,10 @@
-﻿using Hl7.Fhir.Specification;
+﻿#nullable enable
+
+using Hl7.Fhir.Specification;
 using Hl7.Fhir.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Firely.Fhir.Packages
@@ -15,7 +16,7 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="path">The full path to the file containing the manifest.</param>
         /// <returns></returns>
-        public static PackageManifest Read(string path)
+        public static PackageManifest? Read(string path)
         {
             if (File.Exists(path))
             {
@@ -75,9 +76,9 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="folder">The folder containing the package.json file.</param>
         /// <returns></returns>
-        public static PackageManifest ReadFromFolder(string folder)
+        public static PackageManifest? ReadFromFolder(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.Manifest);
+            var path = Path.Combine(folder, PackageConsts.MANIFEST);
             var manifest = Read(path);
             return manifest;
         }
@@ -92,14 +93,14 @@ namespace Firely.Fhir.Packages
         {
             var release = FhirReleaseParser.Parse(fhirVersion);
             //var release = FhirVersions.Parse(fhirVersion);
-            var version = FhirReleaseParser.FhirVersionFromRelease(release); 
+            var version = FhirReleaseParser.FhirVersionFromRelease(release);
 
-            var manifest = new PackageManifest
+            var manifest = new PackageManifest(name, "0.1.0")
             {
                 Name = name,
                 Description = "Put a description here",
                 Version = "0.1.0",
-                Dependencies = new Dictionary<string, string>()
+                Dependencies = new Dictionary<string, string?>()
             };
             manifest.SetFhirVersion(version);
             return manifest;
@@ -131,7 +132,7 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
         public static PackageManifest Create(string name, FhirRelease fhirRelease)
-        { 
+        {
             var fhirVersion = FhirReleaseParser.FhirVersionFromRelease(fhirRelease);
             return Create(name, fhirVersion);
         }
@@ -146,7 +147,7 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public static void WriteToFolder(PackageManifest manifest, string folder, bool merge = false)
         {
-            string path = Path.Combine(folder, PackageConsts.Manifest);
+            string path = Path.Combine(folder, PackageConsts.MANIFEST);
             Write(manifest, path, merge);
         }
 
@@ -177,13 +178,17 @@ namespace Firely.Fhir.Packages
 
         public static PackageManifestType? TryGetPackageType(this PackageManifest manifest)
         {
-            if (PackageManifestTypes.TryParse(manifest.Type, out var type)) return type;
-            else return null;
+            if (manifest?.Type is null)
+                return null;
+
+            return PackageManifestTypes.TryParse(manifest.Type, out var type)
+                ? type
+                : null;
         }
 
     }
 
- 
+
 
 }
 

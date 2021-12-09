@@ -1,17 +1,19 @@
-﻿using System.Net.Http;
+﻿#nullable enable
+
+using System.Net.Http;
 
 namespace Firely.Fhir.Packages
 {
-
-
     public static class Testing
     {
         public static HttpClient GetInsecureClient()
         {
             // for testing without proper certificate
 #if !NET452
-            var httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+            var httpClientHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
             var client = new HttpClient(httpClientHandler, true);
 #else
             // [WMR 20181102] HttpClientHandler and HttpClient are IDisposable ...
@@ -24,6 +26,6 @@ namespace Firely.Fhir.Packages
             return client;
         }
     }
-
-
 }
+
+#nullable restore

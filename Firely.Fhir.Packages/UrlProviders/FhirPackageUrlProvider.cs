@@ -1,4 +1,6 @@
-﻿using Hl7.Fhir.Specification;
+﻿#nullable enable
+
+using Hl7.Fhir.Specification;
 
 namespace Firely.Fhir.Packages
 {
@@ -23,7 +25,6 @@ namespace Firely.Fhir.Packages
             return url;
         }
     }
-
-
-
 }
+
+#nullable restore

@@ -9,7 +9,7 @@ namespace Firely.Fhir.Packages
         public Task<IEnumerable<PackageReference>> GetPackageReferences();
 
         Task Install(PackageReference reference, byte[] buffer);
-        Task<PackageManifest> ReadManifest(PackageReference reference);
+        Task<PackageManifest?> ReadManifest(PackageReference reference);
         Task<CanonicalIndex> GetCanonicalIndex(PackageReference reference);
         Task<string> GetFileContent(PackageReference reference, string filename);
     }

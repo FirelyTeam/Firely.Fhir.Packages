@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
@@ -19,7 +21,8 @@ namespace Firely.Fhir.Packages
             return (left, right);
         }
 
-        public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, Dictionary<TKey, TValue> other)
+
+        public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, Dictionary<TKey, TValue> other) where TKey : notnull
         {
             foreach (var item in other)
             {
@@ -36,6 +39,7 @@ namespace Firely.Fhir.Packages
         {
             return pattern.StartsWith("http");
         }
-
     }
 }
+
+#nullable restore

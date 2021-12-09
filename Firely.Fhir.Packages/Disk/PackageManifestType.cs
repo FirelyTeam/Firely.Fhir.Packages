@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Linq;
 
 namespace Firely.Fhir.Packages
@@ -15,7 +17,7 @@ namespace Firely.Fhir.Packages
     {
         None = 0,
 
-        Conformance, 
+        Conformance,
         IG,
         Core,
         Examples,
@@ -33,12 +35,12 @@ namespace Firely.Fhir.Packages
             return ok;
         }
 
-        public static bool FhirVersionRequired(PackageManifestType type) => !NoFhirVersionRequiredTypes.Contains(type);
+        public static bool FhirVersionRequired(PackageManifestType type) => !NOFHIRVERSIONREQUIREDTYPES.Contains(type);
 
 
-        private static PackageManifestType[] NoFhirVersionRequiredTypes = new[] { PackageManifestType.Tool, PackageManifestType.IGTemplate };
+        private static readonly PackageManifestType[] NOFHIRVERSIONREQUIREDTYPES = new[] { PackageManifestType.Tool, PackageManifestType.IGTemplate };
 
     }
 }
 
-
+#nullable restore

@@ -1,4 +1,6 @@
-﻿using Hl7.Fhir.ElementModel;
+﻿#nullable enable
+
+using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Serialization;
 using System;
 using System.IO;
@@ -7,20 +9,20 @@ namespace Firely.Fhir.Packages
 {
     public static class ElementNavigation
     {
-        static readonly FhirJsonParsingSettings _jsonParsingSettings = new FhirJsonParsingSettings()
+        private static readonly FhirJsonParsingSettings _jsonParsingSettings = new FhirJsonParsingSettings()
         {
             PermissiveParsing = true,
             ValidateFhirXhtml = false,
             AllowJsonComments = true
         };
 
-        static readonly FhirXmlParsingSettings _xmlParsingSettings = new FhirXmlParsingSettings()
+        private static readonly FhirXmlParsingSettings _xmlParsingSettings = new FhirXmlParsingSettings()
         {
             PermissiveParsing = true,
             ValidateFhirXhtml = false
         };
 
-        public static ISourceNode ParseToSourceNode(string filepath)
+        public static ISourceNode? ParseToSourceNode(string filepath)
         {
             if (FhirFileFormats.HasXmlExtension(filepath))
             {
@@ -36,7 +38,7 @@ namespace Firely.Fhir.Packages
             return null;
         }
 
-        private static ISourceNode parseToSourceNode(Stream stream)
+        private static ISourceNode? parseToSourceNode(Stream stream)
         {
             StreamReader reader = new(stream);
             string text = reader.ReadToEnd();
@@ -54,7 +56,7 @@ namespace Firely.Fhir.Packages
             return null;
         }
 
-        internal static bool TryParseToSourceNode(string filepath, out ISourceNode node)
+        internal static bool TryParseToSourceNode(string filepath, out ISourceNode? node)
         {
             try
             {
@@ -78,7 +80,7 @@ namespace Firely.Fhir.Packages
         /// <param name="stream">Stream to be parsed</param>
         /// <param name="node">Newly parsed SourceNode</param>
         /// <returns>Whether the stream has been successfully parsed to a SourceNode</returns>
-        internal static bool TryParseToSourceNode(Stream stream, out ISourceNode node)
+        internal static bool TryParseToSourceNode(Stream stream, out ISourceNode? node)
         {
             try
             {
@@ -95,23 +97,7 @@ namespace Firely.Fhir.Packages
             }
             return true;
         }
-
-        //public static IElementNavigator GetNavigatorForFile(string filepath)
-        //{
-        //    var text = File.ReadAllText(filepath);
-        //    var extension = Path.GetExtension(filepath).ToLower();
-
-        //    switch (extension)
-        //    {
-        //        case ".xml": return XmlDomFhirNavigator.Create(text);
-        //        case ".json": return JsonDomFhirNavigator.Create(text);
-        //        default: return null;
-        //    }
-        //}
-
     }
-
-
 }
 
-
+#nullable restore

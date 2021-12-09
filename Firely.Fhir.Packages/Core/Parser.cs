@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
 
@@ -6,11 +8,11 @@ namespace Firely.Fhir.Packages
 {
     public static class Parser
     {
-        public static T Deserialize<T>(string content)
+        public static T? Deserialize<T>(string content)
         {
             try
             {
-                return JsonConvert.DeserializeObject<T>(content, settings);
+                return JsonConvert.DeserializeObject<T>(content, SETTINGS);
             }
             catch
             {
@@ -18,19 +20,19 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private static JsonSerializerSettings settings = new JsonSerializerSettings
+        private static readonly JsonSerializerSettings SETTINGS = new()
         {
             MissingMemberHandling = MissingMemberHandling.Ignore
         };
 
 
 
-        public static PackageManifest ReadManifest(string content)
+        public static PackageManifest? ReadManifest(string content)
         {
             return JsonConvert.DeserializeObject<PackageManifest>(content);
         }
 
-        public static PackageManifest ReadManifest(byte[] buffer)
+        public static PackageManifest? ReadManifest(byte[] buffer)
         {
             string contents = Encoding.UTF8.GetString(buffer);
             return Parser.ReadManifest(contents);
@@ -53,7 +55,7 @@ namespace Firely.Fhir.Packages
             return jcontent.ToString() + "\n";
         }
 
-        public static LockFileJson ReadLockFileJson(string content)
+        public static LockFileJson? ReadLockFileJson(string content)
         {
             return JsonConvert.DeserializeObject<LockFileJson>(content);
         }
@@ -63,7 +65,7 @@ namespace Firely.Fhir.Packages
             return JsonConvert.SerializeObject(dto, Formatting.Indented) + "\n";
         }
 
-        public static CanonicalIndex ReadCanonicalIndex(string content)
+        public static CanonicalIndex? ReadCanonicalIndex(string content)
         {
             return JsonConvert.DeserializeObject<CanonicalIndex>(content);
         }
@@ -88,4 +90,4 @@ namespace Firely.Fhir.Packages
 
 }
 
-
+#nullable restore

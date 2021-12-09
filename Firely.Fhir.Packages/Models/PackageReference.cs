@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+
+using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
 {
@@ -17,10 +19,10 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="name">The package name may include the (exact) version if separated with an at @ sign.</param>
         /// <param name="version">Optionally the exact version of the package</param>
-        public PackageReference(string name, string version) : this(null, name, version)
+        public PackageReference(string name, string? version) : this(null, name, version)
         { }
 
-        public PackageReference(string scope, string name, string version)
+        public PackageReference(string? scope, string name, string? version)
         {
             this.Scope = scope;
             this.Name = name;
@@ -41,7 +43,7 @@ namespace Firely.Fhir.Packages
 
         public bool Found => !(Name is null || Version is null);
 
-        public static implicit operator PackageReference(KeyValuePair<string, string> kvp)
+        public static implicit operator PackageReference(KeyValuePair<string, string?> kvp)
         {
             return new PackageReference(kvp.Key, kvp.Value);
         }
@@ -61,13 +63,13 @@ namespace Firely.Fhir.Packages
             return !(A == B);
         }
 
-        public void Deconstruct(out string name, out string version)
+        public void Deconstruct(out string? name, out string? version)
         {
             name = Name;
             version = Version;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not PackageReference)
             {
@@ -86,14 +88,14 @@ namespace Firely.Fhir.Packages
 
         public static PackageReference Parse(string reference)
         {
-            var (scope, name, version) = ParseReference(reference);
+            var (scope, name, version) = parseReference(reference);
             return new PackageReference(scope, name, version);
         }
 
-        private static (string scope, string name, string version) ParseReference(string reference)
+        private static (string? scope, string name, string? version) parseReference(string reference)
         {
-            string scope = null;
-            string version = null;
+            string? scope = null;
+            string? version = null;
 
             if (reference.StartsWith("@")) // scope: @scope/name@version
             {
@@ -108,7 +110,7 @@ namespace Firely.Fhir.Packages
             return (scope, name, version);
 
         }
-
-
     }
 }
+
+#nullable restore

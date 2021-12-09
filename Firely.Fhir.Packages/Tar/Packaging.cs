@@ -1,4 +1,6 @@
-﻿using ICSharpCode.SharpZipLib.Tar;
+﻿#nullable enable
+
+using ICSharpCode.SharpZipLib.Tar;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,12 +13,16 @@ namespace Firely.Fhir.Packages
 
     public static partial class Packaging
     {
-        const string PACKAGE = "package";
+        private const string PACKAGE = "package";
 
-        public static PackageManifest ExtractManifestFromPackageFile(string path)
+        public static PackageManifest? ExtractManifestFromPackageFile(string path)
         {
-            string file = Path.Combine(PACKAGE, PackageConsts.Manifest);
+            string file = Path.Combine(PACKAGE, PackageConsts.MANIFEST);
             var entry = Tar.ExtractMatchingFiles(path, file).FirstOrDefault();
+
+            if (entry is null)
+                return null;
+
             return Parser.ReadManifest(entry.Buffer);
         }
 
@@ -58,11 +64,7 @@ namespace Firely.Fhir.Packages
 
         public static FileEntry ToFileEntry(this PackageManifest manifest)
         {
-            return new FileEntry
-            {
-                FilePath = Path.Combine(PACKAGE, PackageConsts.Manifest),
-                Buffer = manifest.ToByteArray()
-            };
+            return new FileEntry(Path.Combine(PACKAGE, PackageConsts.MANIFEST), manifest.ToByteArray());
         }
 
         public static byte[] CreatePackage(PackageManifest manifest, IEnumerable<FileEntry> entries)
@@ -90,11 +92,11 @@ namespace Firely.Fhir.Packages
         public static (PackageManifest manifest, IEnumerable<string> files) GetPackageSummary(this IEnumerable<FileEntry> entries)
         {
             var files = new List<string>();
-            var manifest = new PackageManifest();
+            var manifest = new PackageManifest("", ""); //TODO: discuss what to do here
             foreach (var entry in entries)
             {
                 var filename = Path.GetFileName(entry.FilePath);
-                if (filename == PackageConsts.Manifest)
+                if (filename == PackageConsts.MANIFEST)
                 {
                     manifest = Parser.ReadManifest(entry.Buffer);
                 }
@@ -120,3 +122,4 @@ namespace Firely.Fhir.Packages
 }
 
 
+#nullable restore

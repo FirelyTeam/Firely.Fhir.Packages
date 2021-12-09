@@ -1,4 +1,6 @@
-﻿using SemVer;
+﻿#nullable enable
+
+using SemVer;
 using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
@@ -7,15 +9,15 @@ namespace Firely.Fhir.Packages
     {
         public bool Complete => Missing.Count == 0;
 
-        public List<PackageReference> References = new List<PackageReference>();
-        public List<PackageDependency> Missing = new List<PackageDependency>();
+        public List<PackageReference> References = new();
+        public List<PackageDependency> Missing = new();
 
         public bool Add(PackageReference reference)
         {
             if (Find(reference.Name, out var existing))
             {
                 if (existing == reference) return false;
-                
+
                 var highest = Highest(reference, existing);
                 if (highest != existing)
                 {
@@ -27,16 +29,16 @@ namespace Firely.Fhir.Packages
                 {
                     return false;
                 }
-                
+
             }
-            else 
+            else
             {
                 References.Add(reference);
                 return true;
             }
         }
 
-        public PackageReference Highest(PackageReference A, PackageReference B)
+        public static PackageReference Highest(PackageReference A, PackageReference B)
         {
             var versionA = new Version(A.Version);
             var versionB = new Version(B.Version);
@@ -45,9 +47,9 @@ namespace Firely.Fhir.Packages
             return highest;
         }
 
-        public bool Find(string pkgname, out PackageReference reference)
+        public bool Find(string? pkgname, out PackageReference reference)
         {
-            foreach(var refx in References)
+            foreach (var refx in References)
             {
                 if (string.Compare(refx.Name, pkgname, ignoreCase: true) == 0)
                 {
@@ -56,7 +58,7 @@ namespace Firely.Fhir.Packages
                 }
             }
             reference = default;
-            return false; 
+            return false;
         }
 
         public void AddMissing(PackageDependency reference)
@@ -67,3 +69,5 @@ namespace Firely.Fhir.Packages
     }
 
 }
+
+#nullable restore

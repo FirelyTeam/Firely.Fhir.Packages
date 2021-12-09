@@ -47,7 +47,7 @@ namespace Firely.Fhir.Packages.Tests
             var tempDirectoryPart = $"packages-lib-tests-{name}-{Guid.NewGuid()}";
             var projectDirectory = Path.Combine(Path.GetTempPath(), tempDirectoryPart);
 
-            _ = await Initialize(projectDirectory, name, "0.1.0", "Unit test", "Temporary metapackage",
+            _ = await initialize(projectDirectory, name, "0.1.0", "Unit test", "Temporary metapackage",
                     dependencies);
 
             return projectDirectory;
@@ -64,13 +64,13 @@ namespace Firely.Fhir.Packages.Tests
         /// <param name="dependencies"></param>
         /// <returns></returns>
         /// <remarks>If there is already a package at the location, the information passed in the parameters will override what was already present.</remarks>
-        private async static Task<PackageManifest> Initialize(string path, string? name = null, string? version = null,
+        private async static Task<PackageManifest> initialize(string path, string? name = null, string? version = null,
             string? author = null, string? description = null, string[]? dependencies = null)
         {
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             var project = new FolderProject(path);
 
-            var manifest = await project.ReadManifest() ?? createManifest(name);
+            var manifest = await project.ReadManifest() ?? createManifest(name, version);
             manifest.Author = author ?? manifest.Author ?? "supply your name here";
             manifest.Version = version ?? manifest.Version ?? "0.1.0";
             manifest.Description = description ?? manifest.Description ?? "describe your package";
@@ -84,10 +84,10 @@ namespace Firely.Fhir.Packages.Tests
             await project.WriteManifest(manifest);
             return manifest;
 
-            static PackageManifest createManifest(string? name)
+            static PackageManifest createManifest(string? name, string? version)
             {
                 var defaultName = $"name-your-package-{Guid.NewGuid()}";
-                return new PackageManifest
+                return new PackageManifest(name ?? defaultName, version ?? "0.1.0")
                 {
                     Name = name ?? defaultName
                 };

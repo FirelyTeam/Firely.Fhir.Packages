@@ -1,5 +1,8 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Text;
 
 namespace Firely.Fhir.Packages
@@ -18,23 +21,29 @@ namespace Firely.Fhir.Packages
 
             bool first = true;
 
-            foreach (string key in collection.AllKeys)
+            foreach (var key in collection.AllKeys.Where(k => k is not null))
             {
-                foreach (string value in collection.GetValues(key))
+                var values = collection.GetValues(key);
+
+                if (values != null)
                 {
-                    if (!first)
+                    foreach (var value in values)
                     {
-                        builder.Append('&');
+                        if (!first)
+                        {
+                            builder.Append('&');
+                        }
+
+                        builder.AppendFormat("{0}={1}", Uri.EscapeDataString(key!), Uri.EscapeDataString(value));
+
+                        first = false;
                     }
-
-                    builder.AppendFormat("{0}={1}", Uri.EscapeDataString(key), Uri.EscapeDataString(value));
-
-                    first = false;
                 }
             }
 
             return builder.ToString();
         }
-
     }
 }
+
+#nullable restore
