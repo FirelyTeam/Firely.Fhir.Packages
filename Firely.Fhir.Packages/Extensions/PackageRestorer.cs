@@ -42,7 +42,7 @@ namespace Firely.Fhir.Packages
 
         private async Task restoreDependency(PackageDependency dependency)
         {
-            var reference = await _context.CacheInstall(dependency);
+            var reference = await _context.CacheInstall(dependency).ConfigureAwait(false);
             if (reference.Found)
             {
                 _closure.Add(reference);
