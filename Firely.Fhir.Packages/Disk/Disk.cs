@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿#nullable enable
+
+using System.IO;
 
 namespace Firely.Fhir.Packages
 {
@@ -8,8 +10,9 @@ namespace Firely.Fhir.Packages
         {
             return new DirectoryInfo(path).Name;
         }
-        
-     }
+
+    }
 }
 
 
+#nullable restore

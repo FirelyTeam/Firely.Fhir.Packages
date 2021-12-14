@@ -1,4 +1,6 @@
 ﻿
+#nullable enable
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -57,14 +59,20 @@ namespace Firely.Fhir.Packages
     public class Dist
     {
         [JsonProperty(PropertyName = "shasum")]
-        public string Shasum;
+        public string? Shasum;
 
         [JsonProperty(PropertyName = "tarball")]
-        public string Tarball;
+        public string? Tarball;
     }
 
     public class PackageManifest
     {
+        public PackageManifest(string name, string version)
+        {
+            Name = name;
+            Version = version;
+        }
+
         /// <summary>
         /// The globally unique name for the package.
         /// </summary>
@@ -93,7 +101,7 @@ namespace Firely.Fhir.Packages
         /// Other packages that the contents of this packages depend on.
         /// </summary>
         [JsonProperty(PropertyName = "dependencies")]
-        public Dictionary<string, string>? Dependencies;
+        public Dictionary<string, string?>? Dependencies;
 
         /// <summary>
         /// Other packages necessary during development of this package.
@@ -124,7 +132,7 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <remarks>Some of the common keys used are defined in <see cref="DirectoryKeys"/>.</remarks>
         [JsonProperty(PropertyName = "directories")]
-        public Dictionary<string, string> Directories;
+        public Dictionary<string, string>? Directories;
 
         /// <summary>
         /// String-based keys used in the <see cref="Directories"/> dictionary.
@@ -165,7 +173,7 @@ namespace Firely.Fhir.Packages
         public List<string>? FhirVersionList;
 
         [JsonProperty(PropertyName = "type")]
-        public string Type;
+        public string? Type;
 
         public class Maintainer
         {
@@ -208,13 +216,13 @@ namespace Firely.Fhir.Packages
         public DateTime Updated;
 
         [JsonProperty(PropertyName = "dependencies")]
-        public Dictionary<string, string> PackageReferences;
+        public Dictionary<string, string?>? PackageReferences;
 
         [JsonProperty(PropertyName = "missing")]
-        public Dictionary<string, string> MissingDependencies;
+        public Dictionary<string, string?>? MissingDependencies;
     }
 
-    
+
 
 
     /// <summary>
@@ -236,14 +244,19 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public class IndexData
     {
-        [JsonProperty("filename")]
+        public IndexData(string filename)
+        {
+            FileName = filename;
+        }
+
+        [JsonProperty("filename", Required = Required.Always)]
         public string FileName;
 
         [JsonProperty("resourceType")]
-        public string ResourceType;
+        public string? ResourceType;
 
         [JsonProperty("id")]
-        public string Id;
+        public string? Id;
 
         [JsonProperty("url")]
         public string? Canonical;
@@ -288,26 +301,34 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public class ResourceMetadata : IndexData
     {
-        [JsonProperty("filepath")]
+        public ResourceMetadata(string filename, string filepath) : base(filename)
+        {
+            FileName = filename;
+            FilePath = filepath;
+        }
+
+
+        [JsonProperty("filepath", Required = Required.Always)]
         public string FilePath;
 
         [JsonProperty("fhirVersion")]
         public string? FhirVersion;
 
         [JsonProperty("hasSnapshot")]
-        public bool HasSnapshot;
+        public bool? HasSnapshot;
 
         [JsonProperty("hasExpansion")]
-        public bool HasExpansion;
+        public bool? HasExpansion;
 
         [JsonProperty("valuesetCodeSystem")]
         public string? ValueSetCodeSystem;
 
         [JsonProperty("conceptMapUris")]
-        public SourceAndTarget ConceptMapUris;
+        public SourceAndTarget? ConceptMapUris;
 
         [JsonProperty("namingSystemUniqueId")]
         public string[]? NamingSystemUniqueId;
+
 
         public void CopyTo(ResourceMetadata other)
         {
@@ -330,9 +351,9 @@ namespace Firely.Fhir.Packages
 
     public class PackageCatalogEntry
     {
-        public string Name;
-        public string Description;
-        public string FhirVersion;
+        public string? Name;
+        public string? Description;
+        public string? FhirVersion;
     }
 
     public class SourceAndTarget
@@ -354,13 +375,15 @@ namespace Firely.Fhir.Packages
 
         public static IEnumerable<PackageReference> GetPackageReferences(this LockFileJson dto)
         {
-            foreach (var item in dto.PackageReferences) yield return item; // implicit conversion
+            return dto.PackageReferences == null
+                ? Enumerable.Empty<PackageReference>()
+                : dto.PackageReferences.Select(i => (PackageReference)i);
         }
 
-        public static void AddDependency(this PackageManifest manifest, string name, string version)
+        public static void AddDependency(this PackageManifest manifest, string name, string? version)
         {
             if (version is null) version = "latest";
-            if (manifest.Dependencies is null) manifest.Dependencies = new Dictionary<string, string>();
+            if (manifest.Dependencies is null) manifest.Dependencies = new Dictionary<string, string?>();
             if (!manifest.Dependencies.ContainsKey(name))
             {
                 manifest.Dependencies.Add(name, version);
@@ -383,6 +406,9 @@ namespace Firely.Fhir.Packages
 
         public static bool HasDependency(this PackageManifest manifest, string pkgname)
         {
+            if (manifest?.Dependencies?.Keys is null)
+                return false;
+
             foreach (var key in manifest.Dependencies.Keys)
             {
                 if (string.Compare(key, pkgname, ignoreCase: true) == 0)
@@ -395,6 +421,9 @@ namespace Firely.Fhir.Packages
 
         public static bool RemoveDependency(this PackageManifest manifest, string pkgname)
         {
+            if (manifest?.Dependencies?.Keys is null)
+                return false;
+
             foreach (var key in manifest.Dependencies.Keys)
             {
                 if (string.Compare(key, pkgname, ignoreCase: true) == 0)
@@ -404,11 +433,12 @@ namespace Firely.Fhir.Packages
                 }
             }
             return false;
+
         }
 
-        public static string GetFhirVersion(this PackageManifest manifest)
+        public static string? GetFhirVersion(this PackageManifest manifest)
         {
-            string version =
+            string? version =
                 manifest.FhirVersions?.FirstOrDefault()
                 ?? manifest.FhirVersionList?.FirstOrDefault();
 
@@ -421,3 +451,5 @@ namespace Firely.Fhir.Packages
         }
     }
 }
+
+#nullable restore

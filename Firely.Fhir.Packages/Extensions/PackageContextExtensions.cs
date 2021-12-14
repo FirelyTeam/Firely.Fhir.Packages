@@ -1,4 +1,6 @@
-﻿using Hl7.Fhir.Utility;
+﻿#nullable enable
+
+using Hl7.Fhir.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +10,7 @@ namespace Firely.Fhir.Packages
 {
     public static class PackageContextExtensions
     {
-        public static async Task<string> GetFileContentByCanonical(this PackageContext scope, string uri, string version = null, bool resolveBestCandidate = false)
+        public static async Task<string?> GetFileContentByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = false)
         {
             var reference = resolveBestCandidate
                 ? scope.Index.ResolveBestCandidateByCanonical(uri, version)
@@ -23,7 +25,7 @@ namespace Firely.Fhir.Packages
             return await scope.CacheInstall(dependency).ConfigureAwait(false);
         }
 
-        public static PackageFileReference GetFileReferenceByCanonical(this PackageContext scope, string uri, string version = null, bool resolveBestCandidate = false)
+        public static PackageFileReference? GetFileReferenceByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = false)
         {
             return resolveBestCandidate
                 ? scope.Index.ResolveBestCandidateByCanonical(uri, version)
@@ -59,13 +61,19 @@ namespace Firely.Fhir.Packages
         {
             var manifest = await scope.Project.ReadManifest();
             manifest ??= ManifestFile.Create(name, fhirVersion);
-            await scope.Project.WriteManifest(manifest).ConfigureAwait(false);;
+            await scope.Project.WriteManifest(manifest).ConfigureAwait(false);
         }
 
 
 
         public class InstallResult
         {
+            public InstallResult(PackageClosure closure, PackageReference reference)
+            {
+                Closure = closure;
+                Reference = reference;
+            }
+
             public PackageClosure Closure;
             public PackageReference Reference;
         }
@@ -84,10 +92,10 @@ namespace Firely.Fhir.Packages
             await scope.Project.AddDependency(dependency).ConfigureAwait(false);
 
             var closure = await scope.Restore().ConfigureAwait(false);
-            return new InstallResult { Closure = closure, Reference = reference };
+            return new InstallResult(closure, reference);
         }
 
-        private static PackageFileReference getFileReference(this PackageContext scope, string resourceType, string id)
+        private static PackageFileReference? getFileReference(this PackageContext scope, string resourceType, string id)
         {
             return scope.Index.Where(i => i.ResourceType == resourceType && i.Id == id).FirstOrDefault();
         }
@@ -99,7 +107,7 @@ namespace Firely.Fhir.Packages
         /// <param name="resourceType"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static async Task<string> GetFileContentById(this PackageContext scope, string resourceType, string id)
+        public static async Task<string?> GetFileContentById(this PackageContext scope, string resourceType, string id)
         {
             var reference = scope.getFileReference(resourceType, id);
             return reference is null ? null : await scope.getFileContent(reference).ConfigureAwait(false);
@@ -116,7 +124,7 @@ namespace Firely.Fhir.Packages
         /// <param name="scope">The package containing the resources</param>
         /// <param name="filePath">Filepath of the content to be returned</param>
         /// <returns>the content of a file, represented as string by filepath</returns>
-        public static async Task<string> GetFileContentByFileName(this PackageContext scope, string fileName)
+        public static async Task<string?> GetFileContentByFileName(this PackageContext scope, string fileName)
         {
             var reference = scope.Index.Where(i => i.FileName == fileName).FirstOrDefault();
             if (reference is null) return null;
@@ -131,7 +139,7 @@ namespace Firely.Fhir.Packages
         /// <param name="scope">The package containing the resources</param>
         /// <param name="filePath">Filepath of the content to be returned</param>
         /// <returns>the content of a file, represented as string by filepath</returns>
-        public static async Task<string> GetFileContentByFilePath(this PackageContext scope, string filePath)
+        public static async Task<string?> GetFileContentByFilePath(this PackageContext scope, string filePath)
         {
             var reference = scope.Index.Where(i => i.FilePath == filePath).FirstOrDefault();
             if (reference is null) return null;
@@ -149,8 +157,8 @@ namespace Firely.Fhir.Packages
         public static IEnumerable<string> ListCanonicalUris(this PackageContext scope, string? resourceType = null)
         {
             return (resourceType is not null)
-                ? scope.Index.Where(i => i.ResourceType == resourceType && i.Canonical is not null).Select(i => i.Canonical)
-                : scope.Index.Where(i => i.Canonical is not null).Select(i => i.Canonical);
+                ? scope.Index.Where(i => i.ResourceType == resourceType && i.Canonical is not null).Select(i => i.Canonical!)
+                : scope.Index.Where(i => i.Canonical is not null).Select(i => i.Canonical!);
         }
 
 
@@ -171,7 +179,8 @@ namespace Firely.Fhir.Packages
             else
             {
                 (var uri, var version) = vsReference.ValueSetCodeSystem.Splice('|');
-                return await scope.GetFileContentByCanonical(uri, version).ConfigureAwait(false);
+
+                return uri is not null ? await scope.GetFileContentByCanonical(uri, version).ConfigureAwait(false) : null;
             }
         }
 
@@ -181,13 +190,13 @@ namespace Firely.Fhir.Packages
         /// <param name="targetUri">An uri that is either the target uri, target ValueSet system or target StructureDefinition canonical url for the map.</param>
         /// <returns>A sequence of ConceptMap resources.</returns>
         /// <remarks>Either sourceUri may be null, or targetUri, but not both</remarks>
-        public static async Task<IEnumerable<string>> GetConceptMapsBySourceAndTarget(this PackageContext scope, string? sourceUri, string? targetUri)
+        public static async Task<IEnumerable<string>?> GetConceptMapsBySourceAndTarget(this PackageContext scope, string? sourceUri, string? targetUri)
         {
             if (sourceUri == null && targetUri == null)
                 return null;
 
             var conceptMapReferences = scope.Index.Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
-            return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.getFileContent(i))).ConfigureAwait(false);
+            return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.getFileContent(i).ConfigureAwait(false))).ConfigureAwait(false);
         }
 
         /// <summary>Finds a NamingSystem resource by matching any of a system's UniqueIds.</summary>
@@ -197,9 +206,10 @@ namespace Firely.Fhir.Packages
         public static async Task<string?> GetNamingSystemByUniqueId(this PackageContext scope, string uniqueId)
         {
             var namingSystemIndex = scope.Index.Where(i => i.NamingSystemUniqueId?.Contains(uniqueId) == true).FirstOrDefault();
-            return await scope.getFileContent(namingSystemIndex).ConfigureAwait(false);
+
+            return namingSystemIndex is not null ? await scope.getFileContent(namingSystemIndex).ConfigureAwait(false) : null;
         }
-
-
     }
 }
+
+#nullable restore

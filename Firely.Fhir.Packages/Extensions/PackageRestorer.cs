@@ -1,65 +1,68 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
     public class PackageRestorer
     {
-        private PackageContext context;
-        private PackageClosure closure;
+        private readonly PackageContext _context;
+        private PackageClosure _closure;
 
         public PackageRestorer(PackageContext context)
         {
-            this.context = context;
+            this._context = context;
+            _closure = new PackageClosure();
         }
 
         public async Task<PackageClosure> Restore()
         {
-            closure = new();
-            var manifest = await context.Project.ReadManifest();
+            _closure = new();
+            var manifest = await _context.Project.ReadManifest().ConfigureAwait(false);
             if (manifest is null) throw new Exception("This context does not have a package manifest (package.json)");
 
-            await RestoreManifest(manifest);
-            await SaveClosure();
-            return closure;
+            await restoreManifest(manifest).ConfigureAwait(false);
+            await SaveClosure().ConfigureAwait(false);
+            return _closure;
         }
 
         public async Task SaveClosure()
         {
-            await context.Project.WriteClosure(closure);
+            await _context.Project.WriteClosure(_closure).ConfigureAwait(false);
         }
 
-        private async Task RestoreManifest(PackageManifest manifest)
+        private async Task restoreManifest(PackageManifest manifest)
         {
             foreach (PackageDependency dependency in manifest.GetDependencies())
             {
-                await RestoreDependency(dependency);
+                await restoreDependency(dependency).ConfigureAwait(false);
             }
         }
 
-        private async Task RestoreDependency(PackageDependency dependency)
+        private async Task restoreDependency(PackageDependency dependency)
         {
-            var reference = await context.CacheInstall(dependency);
+            var reference = await _context.CacheInstall(dependency).ConfigureAwait(false);
             if (reference.Found)
             {
-                closure.Add(reference);
-                await RestoreReference(reference);
+                _closure.Add(reference);
+                await restoreReference(reference).ConfigureAwait(false);
             }
             else
             {
-                closure.AddMissing(dependency);
+                _closure.AddMissing(dependency);
             }
         }
 
-        private async Task RestoreReference(PackageReference reference)
+        private async Task restoreReference(PackageReference reference)
         {
-            var manifest = await context.Cache.ReadManifest(reference);
-            if (manifest is object)
+            var manifest = await _context.Cache.ReadManifest(reference);
+            if (manifest is not null)
             {
-                await RestoreManifest(manifest);
+                await restoreManifest(manifest).ConfigureAwait(false);
             }
         }
-
     }
-
 }
+
+#nullable restore

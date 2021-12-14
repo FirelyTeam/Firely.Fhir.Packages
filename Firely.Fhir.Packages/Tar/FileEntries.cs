@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,12 +51,12 @@ namespace Firely.Fhir.Packages
         public static IEnumerable<FileEntry> AddIndexFiles(this IEnumerable<FileEntry> entries)
         {
             var entryList = entries.ToList();
-            var folders = entries.Select(e => Path.GetDirectoryName(e.FilePath)).Distinct();
+            var folders = entries.Select(e => Path.GetDirectoryName(e.FilePath)).Where(f => f is not null).Distinct();
 
             foreach (var folder in folders)
             {
                 var files = entries.Where(e => Path.GetDirectoryName(e.FilePath) == folder);
-                var indexFile = IndexJsonFile.GenerateIndexFile(files, folder);
+                var indexFile = IndexJsonFile.GenerateIndexFile(files, folder!);
                 entryList.Add(indexFile);
             }
 
@@ -64,7 +66,7 @@ namespace Firely.Fhir.Packages
         public static FileEntry ReadFileEntry(string filepath)
         {
             var buffer = File.ReadAllBytes(filepath);
-            var entry = new FileEntry { FilePath = filepath, Buffer = buffer };
+            var entry = new FileEntry(filepath, buffer);
             return entry;
         }
 
@@ -90,7 +92,7 @@ namespace Firely.Fhir.Packages
         }
 
 
-        private static Uri MakeFolderUri(string folder)
+        private static Uri makeFolderUri(string folder)
         {
             if (!folder.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
@@ -102,7 +104,7 @@ namespace Firely.Fhir.Packages
         public static string MakeRelativePath(string path, string root)
         {
             Uri pathUri = new Uri(path);
-            Uri rootUri = MakeFolderUri(root);
+            Uri rootUri = makeFolderUri(root);
             return Uri.UnescapeDataString(rootUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
 
@@ -112,7 +114,7 @@ namespace Firely.Fhir.Packages
             return file;
         }
 
-        static string FOLDER_OTHER = Path.Combine(PackageConsts.PackageFolder, "other");
+        private static readonly string FOLDER_OTHER = Path.Combine(PackageConsts.PACKAGEFOLDER, "other");
 
         /// <summary>
         /// This is a basic implementation to move the package manifest and all resources to the package folder and 
@@ -122,18 +124,18 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public static FileEntry OrganizeToPackageStructure(this FileEntry file)
         {
-            if (file.Match(PackageConsts.Manifest))
-                return file.ChangeFolder(PackageConsts.PackageFolder);
+            if (file.Match(PackageConsts.MANIFEST))
+                return file.ChangeFolder(PackageConsts.PACKAGEFOLDER);
 
             else if (file.HasExtension(".xml", ".json"))
-                return file.ChangeFolder(PackageConsts.PackageFolder);
+                return file.ChangeFolder(PackageConsts.PACKAGEFOLDER);
 
             else
                 return file.ChangeFolder(FOLDER_OTHER);
         }
-
     }
-
 }
+
+#nullable restore
 
 

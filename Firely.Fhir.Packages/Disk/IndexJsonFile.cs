@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,13 +23,10 @@ namespace Firely.Fhir.Packages
         private static FileEntry convertToFileEntry(IndexJson index, string folder)
         {
             var content = Parser.WriteIndexJson(index);
-            return new FileEntry
-            {
-                FilePath = Path.Combine(folder, PackageConsts.IndexJsonFile),
-                Buffer = Encoding.ASCII.GetBytes(content)
-            };
+            return new FileEntry(Path.Combine(folder, PackageConsts.INDEXJSONFILE), Encoding.ASCII.GetBytes(content));
         }
     }
 }
 
 
+#nullable restore

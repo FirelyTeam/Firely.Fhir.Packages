@@ -1,4 +1,6 @@
-﻿namespace Firely.Fhir.Packages
+﻿#nullable enable
+
+namespace Firely.Fhir.Packages
 {
     public static class PackageVersion
     {
@@ -6,3 +8,5 @@
         public const string CURRENT = "current"; // the version used in package.json to indicate the project contents.
     }
 }
+
+#nullable restore

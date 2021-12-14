@@ -27,21 +27,23 @@ namespace Firely.Fhir.Packages.Tests
             var corePat = projectContext.Index.ResolveCanonical(CORE_PAT_URL);
             corePat.Should().NotBeNull();
 
-            corePat.Canonical.Should().Be(CORE_PAT_URL);
-            corePat.FhirVersion.Should().Be("4.0.1");
-            corePat.FileName.Should().Be("StructureDefinition-Patient.json");
-            corePat.FilePath.Should().Be("package/StructureDefinition-Patient.json");
-            corePat.Kind.Should().Be("resource");
-            corePat.ResourceType.Should().Be("StructureDefinition");
-            corePat.Type.Should().Be("Patient");
-            corePat.Version.Should().Be("4.0.1");
+            corePat!.Canonical.Should().Be(CORE_PAT_URL);
+            corePat!.FhirVersion.Should().Be("4.0.1");
+            corePat!.FileName.Should().Be("StructureDefinition-Patient.json");
+            corePat!.FilePath.Should().Be("package/StructureDefinition-Patient.json");
+            corePat!.Kind.Should().Be("resource");
+            corePat!.ResourceType.Should().Be("StructureDefinition");
+            corePat!.Type.Should().Be("Patient");
+            corePat!.Version.Should().Be("4.0.1");
 
             var coreValueSet = projectContext.Index.ResolveCanonical(CORE_VS_URL);
-            coreValueSet.ValueSetCodeSystem = "http://hl7.org/fhir/administrative-gender";
+            coreValueSet.Should().NotBeNull();
+            coreValueSet!.ValueSetCodeSystem = "http://hl7.org/fhir/administrative-gender";
 
             var coreCodeSystem = projectContext.Index.ResolveCanonical(CORE_CS_URL);
-            coreCodeSystem.ConceptMapUris.SourceUri.Should().Be("http://hl7.org/fhir/ValueSet/address-use");
-            coreCodeSystem.ConceptMapUris.TargetUri.Should().Be("http://terminology.hl7.org/ValueSet/v3-AddressUse");
+            coreCodeSystem.Should().NotBeNull();
+            coreCodeSystem!.ConceptMapUris!.SourceUri.Should().Be("http://hl7.org/fhir/ValueSet/address-use");
+            coreCodeSystem!.ConceptMapUris!.TargetUri.Should().Be("http://terminology.hl7.org/ValueSet/v3-AddressUse");
 
             var coreNamingSystem = projectContext.Index.Where(r => r.FilePath == CORE_NS_PATH).FirstOrDefault();
             coreNamingSystem.Should().NotBeNull();

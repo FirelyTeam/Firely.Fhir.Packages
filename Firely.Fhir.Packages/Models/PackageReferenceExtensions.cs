@@ -1,22 +1,25 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
     public static class PackageReferenceExtensions
     {
-        public static Dictionary<string, string> ToDictionary(this IEnumerable<PackageReference> references)
+        public static Dictionary<string, string?> ToDictionary(this IEnumerable<PackageReference> references)
         {
-            var dict = new Dictionary<string, string>();
-            foreach (var reference in references)
+            var dict = new Dictionary<string, string?>();
+            foreach (var reference in references.Where(r => r.Name is not null))
             {
-                dict.Add(reference.Name, reference.Version);
+                dict.Add(reference.Name!, reference.Version);
             }
             return dict;
         }
 
-        public static Dictionary<string, string> ToDictionary(this IEnumerable<PackageDependency> references)
+        public static Dictionary<string, string?> ToDictionary(this IEnumerable<PackageDependency> references)
         {
-            var dict = new Dictionary<string, string>();
+            var dict = new Dictionary<string, string?>();
             foreach (var reference in references)
             {
                 dict.Add(reference.Name, reference.Range);
@@ -24,9 +27,10 @@ namespace Firely.Fhir.Packages
             return dict;
         }
 
-        public static List<PackageReference> ToPackageReferences(this Dictionary<string, string> dict)
+        public static List<PackageReference> ToPackageReferences(this Dictionary<string, string?> dict)
         {
             var list = new List<PackageReference>();
+
             foreach (var item in dict)
             {
                 list.Add(item); // implicit converion
@@ -34,7 +38,7 @@ namespace Firely.Fhir.Packages
             return list;
         }
 
-        public static List<PackageDependency> ToPackageDependencies(this Dictionary<string, string> dict)
+        public static List<PackageDependency> ToPackageDependencies(this Dictionary<string, string?> dict)
         {
             var list = new List<PackageDependency>();
             foreach (var item in dict)
@@ -54,9 +58,11 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public static string GetNpmName(this PackageReference reference)
+        public static string? GetNpmName(this PackageReference reference)
         {
             return (reference.Scope == null) ? reference.Name : $"@{reference.Scope}%2F{reference.Name}";
         }
     }
 }
+
+#nullable restore

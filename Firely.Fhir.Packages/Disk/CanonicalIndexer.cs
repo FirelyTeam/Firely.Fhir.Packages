@@ -1,4 +1,6 @@
-﻿using Hl7.Fhir.ElementModel;
+﻿#nullable enable
+
+using Hl7.Fhir.ElementModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,39 +15,33 @@ namespace Firely.Fhir.Packages
         {
             var option = recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             var paths = Directory.GetFiles(folder, "*.*", option);
-            return EnumerateMetadata(folder, paths).ToList();
+            return enumerateMetadata(folder, paths).ToList();
         }
 
-        private static IEnumerable<ResourceMetadata> EnumerateMetadata(string folder, IEnumerable<string> filepaths)
+        private static IEnumerable<ResourceMetadata> enumerateMetadata(string folder, IEnumerable<string> filepaths)
         {
             return filepaths.Select(p => GetFileMetadata(folder, p)).Where(p => p is not null);
         }
 
-        public static ResourceMetadata? GetFileMetadata(string folder, string filepath)
+        public static ResourceMetadata GetFileMetadata(string folder, string filepath)
         {
             return ElementNavigation.TryParseToSourceNode(filepath, out var node)
-                    ? new ResourceMetadata
+                    ? new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: GetRelativePath(folder, filepath))
                     {
-                        FileName = Path.GetFileName(filepath),
-                        FilePath = GetRelativePath(folder, filepath),
-                        ResourceType = node.Name,
-                        Id = node.GetString("id"),
-                        Canonical = node.GetString("url"),
-                        Version = node.GetString("version"),
-                        Kind = node.GetString("kind"),
-                        Type = node.GetString("type"),
-                        FhirVersion = node.GetString("fhirVersion"),
-                        HasSnapshot = node.checkForSnapshot(),
-                        HasExpansion = node.checkForExpansion(),
-                        ValueSetCodeSystem = node.getCodeSystemFromValueSet(),
-                        NamingSystemUniqueId = node.getUniqueIdsFromNamingSystem(),
-                        ConceptMapUris = node.getConceptMapsSourceAndTarget()
+                        ResourceType = node?.Name,
+                        Id = node?.GetString("id"),
+                        Canonical = node?.GetString("url"),
+                        Version = node?.GetString("version"),
+                        Kind = node?.GetString("kind"),
+                        Type = node?.GetString("type"),
+                        FhirVersion = node?.GetString("fhirVersion"),
+                        HasSnapshot = node?.checkForSnapshot(),
+                        HasExpansion = node?.checkForExpansion(),
+                        ValueSetCodeSystem = node?.getCodeSystemFromValueSet(),
+                        NamingSystemUniqueId = node?.getUniqueIdsFromNamingSystem(),
+                        ConceptMapUris = node?.getConceptMapsSourceAndTarget()
                     }
-                    : new ResourceMetadata
-                    {
-                        FileName = Path.GetFileName(filepath),
-                        FilePath = GetRelativePath(folder, filepath)
-                    };
+                    : new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: GetRelativePath(folder, filepath));
         }
 
         internal static IEnumerable<IndexData> GenerateIndexFile(IEnumerable<FileEntry> entries)
@@ -56,28 +52,24 @@ namespace Firely.Fhir.Packages
         private static IndexData getIndexData(FileEntry entry)
         {
             return ElementNavigation.TryParseToSourceNode(entry.GetStream(), out var node)
-                  ? new IndexData
+                  ? new IndexData(filename: Path.GetFileName(entry.FilePath))
                   {
-                      FileName = Path.GetFileName(entry.FileName),
-                      ResourceType = node.Name,
-                      Id = node.GetString("id"),
-                      Canonical = node.GetString("url"),
-                      Version = node.GetString("version"),
-                      Kind = node.GetString("kind"),
-                      Type = node.GetString("type")
+                      ResourceType = node?.Name,
+                      Id = node?.GetString("id"),
+                      Canonical = node?.GetString("url"),
+                      Version = node?.GetString("version"),
+                      Kind = node?.GetString("kind"),
+                      Type = node?.GetString("type")
                   }
-                : new IndexData
-                {
-                    FileName = entry.FileName
-                };
+                : new IndexData(filename: Path.GetFileName(entry.FilePath));
         }
 
 
-        public static string GetString(this ISourceNode node, string expression)
+        public static string? GetString(this ISourceNode node, string expression)
         {
             if (node is null) return null;
-            node = node.findFirstDescendant(expression);
-            return node?.Text;
+            var decendant = node.findFirstDescendant(expression);
+            return decendant?.Text;
         }
 
         public static IEnumerable<string> GetRelativePaths(string folder, IEnumerable<string> paths)
@@ -86,13 +78,13 @@ namespace Firely.Fhir.Packages
                 yield return GetRelativePath(folder, path);
         }
 
-        private static ISourceNode findFirstDescendant(this ISourceNode node, string expression)
+        private static ISourceNode? findFirstDescendant(this ISourceNode? node, string expression)
         {
             var parts = expression.Split('.');
 
             foreach (var part in parts)
             {
-                node = node.Children(part).FirstOrDefault();
+                node = node?.Children(part).FirstOrDefault();
                 if (node is null) return null;
             }
 
@@ -104,17 +96,17 @@ namespace Firely.Fhir.Packages
             return node.Descendants()?.Where(node => node.Name == name);
         }
 
-        private static string DirectorySeparatorString = $"{Path.DirectorySeparatorChar}";
+        private static readonly string DIRECTORYSEPARATORSTRING = $"{Path.DirectorySeparatorChar}";
 
         public static string GetRelativePath(string relativeTo, string path)
         {
 
             // Require trailing backslash for path
-            if (!relativeTo.EndsWith(DirectorySeparatorString))
-                relativeTo += DirectorySeparatorString;
+            if (!relativeTo.EndsWith(DIRECTORYSEPARATORSTRING))
+                relativeTo += DIRECTORYSEPARATORSTRING;
 
-            Uri baseUri = new Uri(relativeTo);
-            Uri fullUri = new Uri(path);
+            Uri baseUri = new(relativeTo);
+            Uri fullUri = new(path);
 
             Uri relativeUri = baseUri.MakeRelativeUri(fullUri);
 
@@ -139,7 +131,7 @@ namespace Firely.Fhir.Packages
             if (node.isWholeCodeSystemValueSet())
             {
                 var uri = node.GetString("compose.include.system");
-                string version;
+                string? version;
 
                 if (uri is not null)
                     version = node.GetString("compose.include.version");
@@ -163,11 +155,14 @@ namespace Firely.Fhir.Packages
 
         private static string[]? getUniqueIdsFromNamingSystem(this ISourceNode node)
         {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             return node.Name == "NamingSystem"
                 ? node.findDescendants("uniqueId")
-                       .Select(node => node.GetString("value"))
-                       .ToArray()
+                       ?.Select(node => node.GetString("value"))
+                       ?.Where(s => s != null)
+                       ?.ToArray()
                 : null;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         }
 
         private static SourceAndTarget? getConceptMapsSourceAndTarget(this ISourceNode node)
@@ -187,3 +182,4 @@ namespace Firely.Fhir.Packages
 }
 
 
+#nullable restore

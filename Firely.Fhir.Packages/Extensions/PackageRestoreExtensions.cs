@@ -1,15 +1,16 @@
-﻿using System.Threading.Tasks;
+﻿#nullable enable
+
+using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-
     public static class PackageRestoreExtensions
     {
         public static async Task<PackageReference> CacheInstall(this PackageContext context, PackageDependency dependency)
         {
             PackageReference reference;
 
-            if (context.Server is object)
+            if (context.Server is not null)
             {
                 reference = await context.Server.Resolve(dependency);
                 if (!reference.Found) return reference;
@@ -22,7 +23,12 @@ namespace Firely.Fhir.Packages
 
             if (await context.Cache.IsInstalled(reference)) return reference;
 
-            var buffer = await context.Server.GetPackage(reference);
+
+            byte[]? buffer = null;
+
+            if (context.Server is not null)
+                buffer = await context.Server.GetPackage(reference);
+
             if (buffer is null) return PackageReference.None;
 
             await context.Cache.Install(reference, buffer);
@@ -30,13 +36,12 @@ namespace Firely.Fhir.Packages
             return reference;
         }
 
-             
         public static async Task<PackageClosure> Restore(this PackageContext context)
         {
             var restorer = new PackageRestorer(context);
             return await restorer.Restore();
         }
-
     }
-
 }
+
+#nullable restore

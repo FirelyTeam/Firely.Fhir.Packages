@@ -1,4 +1,4 @@
-﻿
+﻿#nullable enable
 
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
@@ -105,17 +105,12 @@ namespace Firely.Fhir.Packages
             {
                 if (predicate(tarEntry.Name))
                 {
-                    var fileEntry = new FileEntry
-                    {
-                        FilePath = tarEntry.Name
-                    };
+                    using var output = new MemoryStream();
+                    string filePath = tarEntry.Name;
+                    tar.CopyEntryContents(output);
+                    var buffer = output.ToArray();
 
-                    using (var output = new MemoryStream())
-                    {
-                        tar.CopyEntryContents(output);
-                        fileEntry.Buffer = output.ToArray();
-                    }
-                    yield return fileEntry;
+                    yield return new FileEntry(filePath, buffer);
                 }
             }
         }
@@ -187,14 +182,12 @@ namespace Firely.Fhir.Packages
         [CLSCompliant(false)]
         public static void Write(this TarOutputStream tar, string path, string content)
         {
-            var entry = new FileEntry
-            {
-                FilePath = path,
-                Buffer = Encoding.UTF8.GetBytes(content)
-            };
+            var entry = new FileEntry(path, Encoding.UTF8.GetBytes(content));
             Write(tar, entry);
         }
     }
 }
+
+#nullable restore  
 
 

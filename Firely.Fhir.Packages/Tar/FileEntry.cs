@@ -1,9 +1,17 @@
-﻿using System.IO;
+﻿#nullable enable
+
+using System.IO;
 
 namespace Firely.Fhir.Packages
 {
     public class FileEntry
     {
+        public FileEntry(string filePath, byte[] buffer)
+        {
+            FilePath = filePath;
+            Buffer = buffer;
+        }
+
         public string FilePath;
         public byte[] Buffer;
 
@@ -13,9 +21,8 @@ namespace Firely.Fhir.Packages
         }
 
         public string FileName => Path.GetFileName(FilePath);
-
     }
-
 }
 
+#nullable restore
 

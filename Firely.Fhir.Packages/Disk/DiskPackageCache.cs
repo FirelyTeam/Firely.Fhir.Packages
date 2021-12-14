@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,15 +19,15 @@ namespace Firely.Fhir.Packages
 
         public Task<bool> IsInstalled(PackageReference reference)
         {
-            string target = PackageContentFolder(reference);
+            var target = PackageContentFolder(reference);
             return Task.FromResult(Directory.Exists(target));
         }
 
         public async Task Install(PackageReference reference, byte[] buffer)
         {
-            var folder = PackageRootFolder(reference);
+            var folder = packageRootFolder(reference);
             await Packaging.UnpackToFolder(buffer, folder);
-            CreateIndexFile(reference);
+            createIndexFile(reference);
         }
 
         public Task<PackageManifest?> ReadManifest(PackageReference reference)
@@ -34,48 +36,38 @@ namespace Firely.Fhir.Packages
 
             return Directory.Exists(folder)
                 ? Task.FromResult(ManifestFile.ReadFromFolder(folder))
-                : null;
+                : Task.FromResult<PackageManifest?>(null);
         }
 
         public Task<CanonicalIndex> GetCanonicalIndex(PackageReference reference)
         {
-            var rootFolder = PackageRootFolder(reference);
+            var rootFolder = packageRootFolder(reference);
             return Task.FromResult(CanonicalIndexFile.GetFromFolder(rootFolder, recurse: true));
         }
 
         public string PackageContentFolder(PackageReference reference)
         {
-            //// for backwards compatibility:
-            //{
-            //    var pkgfolder = PackageFolderName(reference, '-');
-            //    var folder = Path.Combine(Root, pkgfolder, PackageConsts.PackageFolder);
-            //    if (Directory.Exists(folder)) return folder;
-            //}
-
-            // the new way:
-            {
-                var pkgfolder = PackageFolderName(reference);
-                var folder = Path.Combine(Root, pkgfolder, PackageConsts.PackageFolder);
-                return folder;
-            }
+            var pkgfolder = packageFolderName(reference);
+            var folder = Path.Combine(Root, pkgfolder, PackageConsts.PACKAGEFOLDER);
+            return folder;
         }
 
-        private string PackageRootFolder(PackageReference reference)
+        private string packageRootFolder(PackageReference reference)
         {
-            var pkgfolder = PackageFolderName(reference);
+            var pkgfolder = packageFolderName(reference);
             string target = Path.Combine(Root, pkgfolder);
             return target;
         }
 
         public Task<IEnumerable<PackageReference>> GetPackageReferences()
         {
-            var folders = GetPackageRootFolders();
+            var folders = getPackageRootFolders();
             var references = new List<PackageReference>(folders.Count());
 
             foreach (var folder in folders)
             {
                 var name = Disk.GetFolderName(folder);
-                
+
                 var reference = ParseFoldernameToReference(name);
                 references.Add(reference);
             }
@@ -85,7 +77,7 @@ namespace Firely.Fhir.Packages
 
         public static PackageReference ParseFoldernameToReference(string foldername)
         {
-            var idx = foldername.IndexOf('#'); 
+            var idx = foldername.IndexOf('#');
 
             return new PackageReference
             {
@@ -97,7 +89,7 @@ namespace Firely.Fhir.Packages
         public Task<string> GetFileContent(PackageReference reference, string filename)
         {
 
-            var folder = PackageRootFolder(reference);
+            var folder = packageRootFolder(reference);
             string path = Path.Combine(folder, filename);
 
             string content;
@@ -112,11 +104,15 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public async Task<Versions> GetVersions(string name)
+        public async Task<Versions?> GetVersions(string name)
         {
             var references = await GetPackageReferences();
             var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
-            var versions = new Versions(vlist);
+
+            if (vlist == null || !vlist.Any())
+                return null;
+
+            var versions = new Versions(vlist!);
 
             return versions;
         }
@@ -127,32 +123,22 @@ namespace Firely.Fhir.Packages
             throw new NotImplementedException();
         }
 
-        private void CreateIndexFile(PackageReference reference)
+        private void createIndexFile(PackageReference reference)
         {
-            var rootFolder = PackageRootFolder(reference);
+            var rootFolder = packageRootFolder(reference);
             CanonicalIndexFile.Create(rootFolder, recurse: true);
         }
 
-        private static string PackageFolderName(PackageReference reference, char glue = '#')
+        private static string packageFolderName(PackageReference reference, char glue = '#')
         {
             return reference.Name + glue + reference.Version;
         }
 
-        private IEnumerable<string> GetPackageRootFolders()
+        private IEnumerable<string> getPackageRootFolders()
         {
-            if (Directory.Exists(Root))
-            {
-                return Directory.GetDirectories(Root);
-            }
-            else
-            {
-                return Enumerable.Empty<string>();
-            }
+            return Directory.Exists(Root) ? Directory.GetDirectories(Root) : Enumerable.Empty<string>();
         }
-
-
     }
-
-
 }
 
+#nullable restore

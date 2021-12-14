@@ -13,7 +13,7 @@ namespace Firely.Fhir.Packages.Tests
         public void FolderOrganization()
         {
             var file =
-                new FileEntry { FilePath = @"C:\random\project\subfolder\subfolder\myresource.txt" }
+                new FileEntry(@"C:\random\project\subfolder\subfolder\myresource.txt", System.Array.Empty<byte>())
                 .MakeRelativePath(@"C:\random\project\")
                 .OrganizeToPackageStructure();
 
@@ -21,7 +21,7 @@ namespace Firely.Fhir.Packages.Tests
 
 
             file =
-                new FileEntry { FilePath = @"C:\random\project\subfolder\subfolder\patient.xml" }
+                new FileEntry(@"C:\random\project\subfolder\subfolder\patient.xml", System.Array.Empty<byte>())
                 .MakeRelativePath(@"C:\random\project\")
                 .OrganizeToPackageStructure();
 
@@ -48,10 +48,6 @@ namespace Firely.Fhir.Packages.Tests
 
         }
 
-        private FileEntry createFileEntry(string content, string path) => new()
-        {
-            FilePath = path,
-            Buffer = Encoding.ASCII.GetBytes(content)
-        };
+        private static FileEntry createFileEntry(string content, string path) => new(path, Encoding.ASCII.GetBytes(content));
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+
+using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
 {
@@ -9,7 +11,7 @@ namespace Firely.Fhir.Packages
     public struct PackageDependency
     {
         public string Name;
-        public string Range;  // 3.x, 3.1 - 3.3, 1.1 | 1.2
+        public string? Range;  // 3.x, 3.1 - 3.3, 1.1 | 1.2
 
         public PackageDependency(string name, string? range = null)
         {
@@ -17,7 +19,7 @@ namespace Firely.Fhir.Packages
             this.Range = range;
         }
 
-        public static implicit operator PackageDependency(KeyValuePair<string, string> pair)
+        public static implicit operator PackageDependency(KeyValuePair<string, string?> pair)
         {
             return new PackageDependency(pair.Key, pair.Value);
         }
@@ -29,8 +31,10 @@ namespace Firely.Fhir.Packages
 
         public override string ToString()
         {
-            string range = string.IsNullOrEmpty(Range) ? "(latest)" : Range;
+            string? range = string.IsNullOrEmpty(Range) ? "(latest)" : Range;
             return $"{Name} {range}";
         }
     }
 }
+
+#nullable restore

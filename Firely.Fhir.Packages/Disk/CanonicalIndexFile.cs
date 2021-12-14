@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.IO;
 
 namespace Firely.Fhir.Packages
@@ -12,7 +14,7 @@ namespace Firely.Fhir.Packages
             if (existsIn(folder))
             {
                 var index = ReadFromFolder(folder);
-                if (index.Version == VERSION) return index;
+                if (index?.Version == VERSION) return index;
             }
             // otherwise:
             return Create(folder, recurse);
@@ -26,13 +28,13 @@ namespace Firely.Fhir.Packages
             return index;
         }
 
-        public static CanonicalIndex ReadFromFolder(string folder)
+        public static CanonicalIndex? ReadFromFolder(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
+            var path = Path.Combine(folder, PackageConsts.CANONICALINDEXFILE);
             return Read(path);
         }
 
-        public static CanonicalIndex Read(string path)
+        public static CanonicalIndex? Read(string path)
         {
             if (File.Exists(path))
             {
@@ -51,21 +53,18 @@ namespace Firely.Fhir.Packages
 
         private static bool existsIn(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
+            var path = Path.Combine(folder, PackageConsts.CANONICALINDEXFILE);
             return File.Exists(path);
         }
 
         private static void writeToFolder(CanonicalIndex index, string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
+            var path = Path.Combine(folder, PackageConsts.CANONICALINDEXFILE);
             write(index, path);
         }
-
-
-
-
-
     }
 }
 
+
+#nullable restore
 

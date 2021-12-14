@@ -1,4 +1,6 @@
-﻿namespace Firely.Fhir.Packages
+﻿#nullable enable
+
+namespace Firely.Fhir.Packages
 {
 
     public enum PublishMode
@@ -22,3 +24,5 @@
 
 
 }
+
+#nullable restore

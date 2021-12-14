@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿#nullable enable    
+
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Firely.Fhir.Packages
@@ -25,3 +27,4 @@ namespace Firely.Fhir.Packages
 }
 
 
+#nullable restore
