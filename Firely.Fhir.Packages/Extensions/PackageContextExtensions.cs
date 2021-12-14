@@ -61,7 +61,7 @@ namespace Firely.Fhir.Packages
         {
             var manifest = await scope.Project.ReadManifest();
             manifest ??= ManifestFile.Create(name, fhirVersion);
-            await scope.Project.WriteManifest(manifest).ConfigureAwait(false); ;
+            await scope.Project.WriteManifest(manifest).ConfigureAwait(false);
         }
 
 
@@ -196,7 +196,7 @@ namespace Firely.Fhir.Packages
                 return null;
 
             var conceptMapReferences = scope.Index.Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
-            return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.getFileContent(i))).ConfigureAwait(false);
+            return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.getFileContent(i).ConfigureAwait(false))).ConfigureAwait(false);
         }
 
         /// <summary>Finds a NamingSystem resource by matching any of a system's UniqueIds.</summary>
@@ -209,8 +209,6 @@ namespace Firely.Fhir.Packages
 
             return namingSystemIndex is not null ? await scope.getFileContent(namingSystemIndex).ConfigureAwait(false) : null;
         }
-
-
     }
 }
 

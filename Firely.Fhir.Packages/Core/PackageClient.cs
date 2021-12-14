@@ -39,7 +39,7 @@ namespace Firely.Fhir.Packages
 
         public async ValueTask<string?> DownloadListingRawAsync(string? pkgname)
         {
-            if (pkgname == null)
+            if (pkgname is null)
             {
                 return null;
             }

@@ -185,11 +185,9 @@ namespace Firely.Fhir.Packages
                 ? type
                 : null;
         }
-
     }
-
-
-
 }
+
+#nullable restore
 
 

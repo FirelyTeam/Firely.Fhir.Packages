@@ -29,12 +29,12 @@ namespace Firely.Fhir.Packages
                     ? new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: GetRelativePath(folder, filepath))
                     {
                         ResourceType = node?.Name,
-                        Id = node.GetString("id"),
-                        Canonical = node.GetString("url"),
-                        Version = node.GetString("version"),
-                        Kind = node.GetString("kind"),
-                        Type = node.GetString("type"),
-                        FhirVersion = node.GetString("fhirVersion"),
+                        Id = node?.GetString("id"),
+                        Canonical = node?.GetString("url"),
+                        Version = node?.GetString("version"),
+                        Kind = node?.GetString("kind"),
+                        Type = node?.GetString("type"),
+                        FhirVersion = node?.GetString("fhirVersion"),
                         HasSnapshot = node?.checkForSnapshot(),
                         HasExpansion = node?.checkForExpansion(),
                         ValueSetCodeSystem = node?.getCodeSystemFromValueSet(),
@@ -55,21 +55,21 @@ namespace Firely.Fhir.Packages
                   ? new IndexData(filename: Path.GetFileName(entry.FilePath))
                   {
                       ResourceType = node?.Name,
-                      Id = node.GetString("id"),
-                      Canonical = node.GetString("url"),
-                      Version = node.GetString("version"),
-                      Kind = node.GetString("kind"),
-                      Type = node.GetString("type")
+                      Id = node?.GetString("id"),
+                      Canonical = node?.GetString("url"),
+                      Version = node?.GetString("version"),
+                      Kind = node?.GetString("kind"),
+                      Type = node?.GetString("type")
                   }
                 : new IndexData(filename: Path.GetFileName(entry.FilePath));
         }
 
 
-        public static string? GetString(this ISourceNode? node, string expression)
+        public static string? GetString(this ISourceNode node, string expression)
         {
             if (node is null) return null;
-            node = node.findFirstDescendant(expression);
-            return node?.Text;
+            var decendant = node.findFirstDescendant(expression);
+            return decendant?.Text;
         }
 
         public static IEnumerable<string> GetRelativePaths(string folder, IEnumerable<string> paths)

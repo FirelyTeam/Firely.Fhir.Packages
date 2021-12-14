@@ -19,7 +19,7 @@ namespace Firely.Fhir.Packages
         public static async Task<CanonicalIndex> ReadCanonicalIndex(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
-            return await cache.GetCanonicalIndex(reference);
+            return await cache.GetCanonicalIndex(reference).ConfigureAwait(false);
         }
 
         public static IEnumerable<PackageReference> WithName(this IEnumerable<PackageReference> refs, string name)
@@ -46,7 +46,7 @@ namespace Firely.Fhir.Packages
 
             var reference = manifest.GetPackageReference();
 
-            await cache.Install(reference, path);
+            await cache.Install(reference, path).ConfigureAwait(false);
 
             return reference;
         }
@@ -78,12 +78,7 @@ namespace Firely.Fhir.Packages
             var m = await cache.ReadManifest(reference).ConfigureAwait(false);
             var fhirVersion = m?.GetFhirVersion();
 
-            if (fhirVersion is null)
-            {
-                throw new ArgumentException($"FHIR Version {reference.Version} from package {reference.Name} is invalid");
-            }
-
-            return fhirVersion;
+            return fhirVersion ?? throw new ArgumentException($"FHIR Version {reference.Version} from package {reference.Name} is invalid");
         }
 
     }
