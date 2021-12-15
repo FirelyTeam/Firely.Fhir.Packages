@@ -7,18 +7,8 @@ namespace Firely.Fhir.Packages
     {
         public static async Task<PackageReference> CacheInstall(this PackageContext context, PackageDependency dependency)
         {
-            PackageReference reference;
 
-            if (context.Server is object)
-            {
-                reference = await context.Server.Resolve(dependency);
-                if (!reference.Found) return reference;
-            }
-            else
-            {
-                reference = await context.Cache.Resolve(dependency);
-                if (!reference.Found) return reference;
-            }
+            PackageReference reference = await context.Resolve(dependency);
 
             if (await context.Cache.IsInstalled(reference)) return reference;
 
@@ -30,7 +20,19 @@ namespace Firely.Fhir.Packages
             return reference;
         }
 
-             
+        public static async Task<PackageReference> Resolve(this PackageContext context, PackageDependency dependency)
+        {
+            if (context.Server is object)
+            {
+                PackageReference reference = await context.Server.Resolve(dependency);
+                if (reference.Found) return reference;
+            }
+            
+            return await context.Cache.Resolve(dependency);
+        }
+
+
+
         public static async Task<PackageClosure> Restore(this PackageContext context)
         {
             var restorer = new PackageRestorer(context);
