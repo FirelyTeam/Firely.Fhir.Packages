@@ -10,6 +10,9 @@ namespace Firely.Fhir.Packages
 
             PackageReference reference = await context.Resolve(dependency);
 
+            if (reference.NotFound) 
+                return PackageReference.None;
+
             if (await context.Cache.IsInstalled(reference)) return reference;
 
             var buffer = await context.Server.GetPackage(reference);

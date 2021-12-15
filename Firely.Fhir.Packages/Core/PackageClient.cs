@@ -19,7 +19,6 @@ namespace Firely.Fhir.Packages
             return new PackageClient(urlprovider, httpClient);
             
         }
-
         public static PackageClient Create()
         {
             var provider = PackageUrlProviders.Simplifier;
