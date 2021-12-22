@@ -4,9 +4,14 @@ using System.IO;
 
 namespace Firely.Fhir.Packages
 {
-    internal static class Disk
+    public static class Disk
     {
-        internal static string GetFolderName(string path)
+        /// <summary>
+        /// Get name of a folder
+        /// </summary>
+        /// <param name="path">the path of the folder</param>
+        /// <returns>the name of the folder</returns>
+        public static string GetFolderName(string path)
         {
             return new DirectoryInfo(path).Name;
         }

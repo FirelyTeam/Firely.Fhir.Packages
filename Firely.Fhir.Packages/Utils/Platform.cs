@@ -54,7 +54,7 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Return the FHIR packages folder location
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The path of the package root</returns>
         public static string GetFhirPackageRoot()
         {
             string root = getGenericDataLocation();

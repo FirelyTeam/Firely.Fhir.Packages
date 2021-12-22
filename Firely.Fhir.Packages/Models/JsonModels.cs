@@ -591,7 +591,12 @@ namespace Firely.Fhir.Packages
 
         }
 
-        internal static string? GetFhirVersion(this PackageManifest manifest)
+        /// <summary>
+        /// Get the FHIR version from a package manifest
+        /// </summary>
+        /// <param name="manifest"></param>
+        /// <returns>The FHIR version declared in the package manifest</returns>
+        public static string? GetFhirVersion(this PackageManifest manifest)
         {
             string? version =
                 manifest.FhirVersions?.FirstOrDefault()
