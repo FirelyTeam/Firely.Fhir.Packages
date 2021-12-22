@@ -16,12 +16,12 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="path">The full path to the file containing the manifest.</param>
         /// <returns></returns>
-        public static PackageManifest? Read(string path)
+        private static PackageManifest? read(string path)
         {
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                return Parser.ReadManifest(content);
+                return PackageParser.ReadManifest(content);
             }
             else
             {
@@ -55,17 +55,17 @@ namespace Firely.Fhir.Packages
         /// <param name="path">The full path to the file to write the manifest to.</param>
         /// <param name="merge">Whether to first merge the contents of the file at the given path before writing it.</param>
         /// <returns></returns>
-        public static void Write(PackageManifest manifest, string path, bool merge = false)
+        private static void write(PackageManifest manifest, string path, bool merge = false)
         {
             if (File.Exists(path) && merge)
             {
                 var content = File.ReadAllText(path);
-                var result = Parser.JsonMergeManifest(manifest, content);
+                var result = PackageParser.JsonMergeManifest(manifest, content);
                 File.WriteAllText(path, result);
             }
             else
             {
-                var content = Parser.WriteManifest(manifest);
+                var content = PackageParser.WriteManifest(manifest);
                 File.WriteAllText(path, content);
             }
         }
@@ -78,8 +78,8 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public static PackageManifest? ReadFromFolder(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.MANIFEST);
-            var manifest = Read(path);
+            var path = Path.Combine(folder, PackageFileNames.MANIFEST);
+            var manifest = read(path);
             return manifest;
         }
 
@@ -147,10 +147,15 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public static void WriteToFolder(PackageManifest manifest, string folder, bool merge = false)
         {
-            string path = Path.Combine(folder, PackageConsts.MANIFEST);
-            Write(manifest, path, merge);
+            string path = Path.Combine(folder, PackageFileNames.MANIFEST);
+            write(manifest, path, merge);
         }
 
+        /// <summary>
+        /// Checks whether a package name is valid  
+        /// </summary>
+        /// <param name="name">Package name to be checked</param>
+        /// <returns>whether a package name is valid  </returns>
         public static bool ValidPackageName(string name)
         {
             char[] invalidchars = new char[] { '/', '\\' };
@@ -176,6 +181,11 @@ namespace Firely.Fhir.Packages
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Gets the package type of a certain package, based on the manifest
+        /// </summary>
+        /// <param name="manifest">The manifest file</param>
+        /// <returns>The package type</returns>
         public static PackageManifestType? TryGetPackageType(this PackageManifest manifest)
         {
             if (manifest?.Type is null)

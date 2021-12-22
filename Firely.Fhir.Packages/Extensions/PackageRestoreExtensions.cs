@@ -6,7 +6,7 @@ namespace Firely.Fhir.Packages
 {
     public static class PackageRestoreExtensions
     {
-        public static async Task<PackageReference> CacheInstall(this PackageContext context, PackageDependency dependency)
+        internal static async Task<PackageReference> CacheInstall(this PackageContext context, PackageDependency dependency)
         {
             PackageReference reference;
 
@@ -36,6 +36,11 @@ namespace Firely.Fhir.Packages
             return reference;
         }
 
+        /// <summary>
+        /// Restores a package
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns>Package lock file</returns>
         public static async Task<PackageClosure> Restore(this PackageContext context)
         {
             var restorer = new PackageRestorer(context);

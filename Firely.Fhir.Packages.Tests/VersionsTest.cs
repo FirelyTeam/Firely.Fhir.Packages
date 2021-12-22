@@ -8,13 +8,13 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void ParseReferences()
         {
-            var reference = PackageReference.Parse("hl7.fhir.r4.core@4.0.1");
-            
+            var reference = (PackageReference)"hl7.fhir.r4.core@4.0.1";
+
             Assert.AreEqual(null, reference.Scope);
             Assert.AreEqual("hl7.fhir.r4.core", reference.Name);
             Assert.AreEqual("4.0.1", reference.Version);
 
-            reference = PackageReference.Parse("hl7.fhir.r4.core@4.0.1");
+            reference = "hl7.fhir.r4.core@4.0.1";
 
             Assert.AreEqual(null, reference.Scope);
             Assert.AreEqual("hl7.fhir.r4.core", reference.Name);
@@ -22,13 +22,13 @@ namespace Firely.Fhir.Packages.Tests
         }
     }
 
-        [TestClass]
+    [TestClass]
     public class VersionsTest
     {
         [TestMethod]
         public void Resolve_PackageDependencyExistsInVersionList_FixedVersionSearchFindsVersion()
         {
-            var target = new Versions(new string[]{"1.0.0", "2.0.0"});
+            var target = new Versions(new string[] { "1.0.0", "2.0.0" });
 
             PackageReference result = target.Resolve(new PackageDependency("SomeName", "1.0.0"));
 

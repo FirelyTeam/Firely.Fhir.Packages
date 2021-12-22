@@ -10,8 +10,7 @@ namespace Firely.Fhir.Packages
     {
         private readonly List<Version> _list = new();
 
-        [System.CLSCompliant(false)]
-        public IReadOnlyCollection<Version> Items => _list;
+        internal IReadOnlyCollection<Version> Items => _list;
 
         public Versions() { }
 
@@ -20,6 +19,10 @@ namespace Firely.Fhir.Packages
             Append(versions);
         }
 
+        /// <summary>
+        /// Add an array of version to the current list of versions.
+        /// </summary>
+        /// <param name="versions">List of versions to be added</param>
         public void Append(IEnumerable<string> versions)
         {
             foreach (var s in versions)
@@ -33,14 +36,14 @@ namespace Firely.Fhir.Packages
             _list.Sort();
         }
 
-        [System.CLSCompliant(false)]
-        public Version? Latest()
+
+        internal Version? Latest()
         {
             return _list.LastOrDefault();
         }
 
-        [System.CLSCompliant(false)]
-        public static bool TryParseVersion(string s, out Version? v)
+
+        internal static bool TryParseVersion(string s, out Version? v)
         {
             try
             {
@@ -56,15 +59,13 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        [System.CLSCompliant(false)]
-        public Version Resolve(Range range)
+        internal Version Resolve(Range range)
         {
 
             return range.MaxSatisfying(_list);
         }
 
-        [System.CLSCompliant(false)]
-        public bool Has(Version version)
+        internal bool Has(Version version)
         {
             foreach (var item in _list)
             {
@@ -73,6 +74,9 @@ namespace Firely.Fhir.Packages
             return false;
         }
 
+        /// <summary>
+        /// Boolean that indicated if there are any versions present in this <see cref="Versions"/> object.
+        /// </summary>
         public bool IsEmpty => _list is null || _list.Count == 0;
     }
 }

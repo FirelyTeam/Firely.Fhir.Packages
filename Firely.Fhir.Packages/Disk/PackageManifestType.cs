@@ -35,6 +35,11 @@ namespace Firely.Fhir.Packages
             return ok;
         }
 
+        /// <summary>
+        /// Checks packages of certain type require a FHIR version
+        /// </summary>
+        /// <param name="type">Package type</param>
+        /// <returns>Whether is the required to declare the FHIR version in the manifest file</returns>
         public static bool FhirVersionRequired(PackageManifestType type) => !NOFHIRVERSIONREQUIREDTYPES.Contains(type);
 
 

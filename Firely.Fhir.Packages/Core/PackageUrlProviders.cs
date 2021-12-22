@@ -20,9 +20,6 @@ namespace Firely.Fhir.Packages
         public static IPackageUrlProvider Localhost => new FhirPackageUrlProvider("http://packages.simplifier.ro/");
 
     }
-
-
-
 }
 
 #nullable restore

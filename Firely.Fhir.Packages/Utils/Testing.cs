@@ -4,9 +4,9 @@ using System.Net.Http;
 
 namespace Firely.Fhir.Packages
 {
-    public static class Testing
+    internal static class Testing
     {
-        public static HttpClient GetInsecureClient()
+        internal static HttpClient GetInsecureClient()
         {
             // for testing without proper certificate
 #if !NET452

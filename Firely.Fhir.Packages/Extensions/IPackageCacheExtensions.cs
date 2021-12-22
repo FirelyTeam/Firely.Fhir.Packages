@@ -10,18 +10,38 @@ namespace Firely.Fhir.Packages
 {
     public static class IPackageCacheExtensions
     {
-        public static async Task<PackageManifest?> ReadManifest(this IPackageCache cache, string name, string version)
+        /// <summary>
+        /// Reads manifest file
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="name">Package name</param>
+        /// <param name="version">package version</param>
+        /// <returns>The package manifest</returns>
+        internal static async Task<PackageManifest?> ReadManifest(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
             return await cache.ReadManifest(reference).ConfigureAwait(false);
         }
 
-        public static async Task<CanonicalIndex> ReadCanonicalIndex(this IPackageCache cache, string name, string version)
+        /// <summary>
+        /// Read the firely specific index file from the package
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="name">name of the package</param>
+        /// <param name="version">version of the package</param>
+        /// <returns></returns>
+        internal static async Task<CanonicalIndex> ReadCanonicalIndex(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
             return await cache.GetCanonicalIndex(reference).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Get packages with a certain name
+        /// </summary>
+        /// <param name="refs"></param>
+        /// <param name="name">Package name</param>
+        /// <returns>List of package references of packages with a certain name</returns>
         public static IEnumerable<PackageReference> WithName(this IEnumerable<PackageReference> refs, string name)
         {
             return refs.Where(r => string.Compare(r.Name, name, ignoreCase: true) == 0);
@@ -46,7 +66,7 @@ namespace Firely.Fhir.Packages
 
             var reference = manifest.GetPackageReference();
 
-            await cache.Install(reference, path).ConfigureAwait(false);
+            await cache.install(reference, path).ConfigureAwait(false);
 
             return reference;
         }
@@ -58,7 +78,7 @@ namespace Firely.Fhir.Packages
         /// <param name="reference">Reference of the package to be installed</param>
         /// <param name="path">file path of the package to be installed</param>
         /// <returns></returns>
-        public static async Task Install(this IPackageCache cache, PackageReference reference, string path)
+        private static async Task install(this IPackageCache cache, PackageReference reference, string path)
         {
             if (!await cache.IsInstalled(reference))
             {
@@ -68,12 +88,12 @@ namespace Firely.Fhir.Packages
         }
 
 
-        public static async Task<string> GetFileContent(this IPackageCache cache, PackageFileReference reference)
+        internal static async Task<string> GetFileContent(this IPackageCache cache, PackageFileReference reference)
         {
             return await cache.GetFileContent(reference.Package, reference.FilePath).ConfigureAwait(false);
         }
 
-        public static async Task<string> ReadPackageFhirVersion(this IPackageCache cache, PackageReference reference)
+        internal static async Task<string> ReadPackageFhirVersion(this IPackageCache cache, PackageReference reference)
         {
             var m = await cache.ReadManifest(reference).ConfigureAwait(false);
             var fhirVersion = m?.GetFhirVersion();

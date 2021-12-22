@@ -34,8 +34,8 @@ namespace Firely.Fhir.Packages.Tests
                 Jurisdiction = "urn:iso:std:iso:3166#US"
             };
 
-            var json = Parser.WriteManifest(manif);
-            var manif2 = Parser.ReadManifest(json);
+            var json = PackageParser.WriteManifest(manif);
+            var manif2 = PackageParser.ReadManifest(json);
 
             manif2.Should().BeEquivalentTo(manif);
         }
@@ -59,8 +59,8 @@ namespace Firely.Fhir.Packages.Tests
             var manifest1 = new PackageManifest("a-b-c", "4.0.1");
             var manifest2 = new PackageManifest("a-b-c", "4.0.1") { Author = "Turing" };
 
-            var serialized1 = Parser.WriteManifest(manifest1);
-            var serialized2 = Parser.JsonMergeManifest(manifest2, serialized1);
+            var serialized1 = PackageParser.WriteManifest(manifest1);
+            var serialized2 = PackageParser.JsonMergeManifest(manifest2, serialized1);
 
             var roundtrip = JObject.Parse(serialized2);
 
@@ -76,7 +76,7 @@ namespace Firely.Fhir.Packages.Tests
             FolderProject proj = new(tempDir);
             proj.WriteManifest(manif);
 
-            return File.ReadAllText(Path.Combine(tempDir, PackageConsts.MANIFEST));
+            return File.ReadAllText(Path.Combine(tempDir, PackageFileNames.MANIFEST));
         }
 
         private static string createTempDir()

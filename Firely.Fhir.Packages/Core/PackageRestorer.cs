@@ -10,12 +10,21 @@ namespace Firely.Fhir.Packages
         private readonly PackageContext _context;
         private PackageClosure _closure;
 
+        /// <summary>
+        /// Restores package dependencies
+        /// </summary>
+        /// <param name="context">Package context of the package to be restored</param>
         public PackageRestorer(PackageContext context)
         {
             this._context = context;
             _closure = new PackageClosure();
         }
 
+        /// <summary>
+        /// Restore packages dependencies
+        /// </summary>
+        /// <returns>Package closure</returns>
+        /// <exception cref="Exception">Exeption thrown when a package doesn't have a manifest file</exception>
         public async Task<PackageClosure> Restore()
         {
             _closure = new();
@@ -27,6 +36,10 @@ namespace Firely.Fhir.Packages
             return _closure;
         }
 
+        /// <summary>
+        /// Save closure file to disk
+        /// </summary>
+        /// <returns></returns>
         public async Task SaveClosure()
         {
             await _context.Project.WriteClosure(_closure).ConfigureAwait(false);

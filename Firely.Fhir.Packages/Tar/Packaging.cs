@@ -15,15 +15,20 @@ namespace Firely.Fhir.Packages
     {
         private const string PACKAGE = "package";
 
-        public static PackageManifest? ExtractManifestFromPackageFile(string path)
+        /// <summary>
+        /// Extracts a manifest from a FHIR package file
+        /// </summary>
+        /// <param name="path">Path of the package file</param>
+        /// <returns>The package manifest</returns>
+        internal static PackageManifest? ExtractManifestFromPackageFile(string path)
         {
-            string file = Path.Combine(PACKAGE, PackageConsts.MANIFEST);
+            string file = Path.Combine(PACKAGE, PackageFileNames.MANIFEST);
             var entry = Tar.ExtractMatchingFiles(path, file).FirstOrDefault();
 
             if (entry is null)
                 return null;
 
-            return Parser.ReadManifest(entry.Buffer);
+            return PackageParser.ReadManifest(entry.Buffer);
         }
 
 
@@ -34,6 +39,12 @@ namespace Firely.Fhir.Packages
             Tar.Write(tar, entry);
         }
 
+        /// <summary>
+        /// Create a package file from a folder
+        /// </summary>
+        /// <param name="name">Name of the newly created package</param>
+        /// <param name="folder">Path of the folder to be packaged</param>
+        /// <returns>Path of the newly created package</returns>
         public static string PackFolder(string name, string folder)
         {
             var files = FileEntries
@@ -45,6 +56,13 @@ namespace Firely.Fhir.Packages
             return Tar.PackToDisk(name, files);
         }
 
+        /// <summary>
+        /// Create a package file from a folder
+        /// </summary>
+        /// <param name="name">Name of the newly created package</param>
+        /// <param name="folder">Path of the folder to be packaged</param>
+        /// <param name="organize">Add a custome folder organization structure for your package</param>
+        /// <returns>Path of the newly created package</returns>
         public static string PackFolder(string name, string folder, Func<FileEntry, FileEntry> organize)
         {
             var files = FileEntries
@@ -56,30 +74,47 @@ namespace Firely.Fhir.Packages
             return Tar.PackToDisk(name, files);
         }
 
-        public static byte[] ToByteArray(this PackageManifest manifest)
+        private static byte[] toByteArray(this PackageManifest manifest)
         {
-            var content = Parser.WriteManifest(manifest);
+            var content = PackageParser.WriteManifest(manifest);
             return Encoding.ASCII.GetBytes(content);
         }
 
-        public static FileEntry ToFileEntry(this PackageManifest manifest)
+        private static FileEntry toFileEntry(this PackageManifest manifest)
         {
-            return new FileEntry(Path.Combine(PACKAGE, PackageConsts.MANIFEST), manifest.ToByteArray());
+            return new FileEntry(Path.Combine(PACKAGE, PackageFileNames.MANIFEST), manifest.toByteArray());
         }
 
+        /// <summary>
+        /// Create a package
+        /// </summary>
+        /// <param name="manifest">Package manifest</param>
+        /// <param name="entries">Package files</param>
+        /// <returns>The actual newly created FHIR package</returns>
         public static byte[] CreatePackage(PackageManifest manifest, IEnumerable<FileEntry> entries)
         {
-            var entry = manifest.ToFileEntry();
+            var entry = manifest.toFileEntry();
             entries = entries.ChangeFolder(PACKAGE);
             return Tar.Pack(entry, entries);
         }
 
+        /// <summary>
+        /// Create a package
+        /// </summary>
+        /// <param name="entries">Package files</param>
+        /// <returns>The actual newly created FHIR package</returns>
         public static byte[] CreatePackage(IEnumerable<FileEntry> entries)
         {
             entries = entries.ChangeFolder(PACKAGE);
             return Tar.Pack(entries);
         }
 
+        /// <summary>
+        /// Unpack a FHIR package
+        /// </summary>
+        /// <param name="buffer">The fhir package file</param>
+        /// <param name="folder">destination folder</param>
+        /// <returns></returns>
         public static async Task UnpackToFolder(byte[] buffer, string folder)
         {
             await Task.Run(() =>
@@ -89,6 +124,11 @@ namespace Firely.Fhir.Packages
             });
         }
 
+        /// <summary>
+        /// Returns a summary of the package files
+        /// </summary>
+        /// <param name="entries">package files</param>
+        /// <returns>a package manifest, and a list of file names</returns>
         public static (PackageManifest manifest, IEnumerable<string> files) GetPackageSummary(this IEnumerable<FileEntry> entries)
         {
             var files = new List<string>();
@@ -96,9 +136,9 @@ namespace Firely.Fhir.Packages
             foreach (var entry in entries)
             {
                 var filename = Path.GetFileName(entry.FilePath);
-                if (filename == PackageConsts.MANIFEST)
+                if (filename == PackageFileNames.MANIFEST)
                 {
-                    manifest = Parser.ReadManifest(entry.Buffer);
+                    manifest = PackageParser.ReadManifest(entry.Buffer);
                 }
                 else
                 {
@@ -109,11 +149,21 @@ namespace Firely.Fhir.Packages
             return (manifest, files);
         }
 
+        /// <summary>
+        /// Extract a files from a specific path (folder) to a list of <see cref="FileEntry"/> objects.
+        /// </summary>
+        /// <param name="path">File location</param>
+        /// <returns>a list of <see cref="FileEntry"/> objects.</returns>
         public static IEnumerable<FileEntry> ExtractFiles(string path)
         {
             return Tar.ExtractFiles(path, _ => true);
         }
 
+        /// <summary>
+        /// Extract a files from a stream to a list of <see cref="FileEntry"/> objects.
+        /// </summary>
+        /// <param name="stream">File stream</param>
+        /// <returns>a list of <see cref="FileEntry"/> objects.</returns>
         public static IEnumerable<FileEntry> ExtractFiles(Stream stream)
         {
             return Tar.ExtractFiles(stream, _ => true);

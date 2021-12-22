@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
-
     public class PackageListing
     {
         [JsonProperty(PropertyName = "_id")]
@@ -27,14 +26,26 @@ namespace Firely.Fhir.Packages
         public Dictionary<string, PackageRelease>? Versions;
     }
 
+    /// <summary>
+    /// Representation of a package release
+    /// </summary>
     public class PackageRelease
     {
+        /// <summary>
+        /// Name of the package
+        /// </summary>
         [JsonProperty(PropertyName = "name")]
         public string? Name;
 
+        /// <summary>
+        /// Version of the package
+        /// </summary>
         [JsonProperty(PropertyName = "version")]
         public string? Version;
 
+        /// <summary>
+        /// Description of the package
+        /// </summary>
         [JsonProperty(PropertyName = "description")]
         public string? Description;
 
@@ -46,9 +57,15 @@ namespace Firely.Fhir.Packages
         //[JsonProperty(PropertyName = "author")]
         //public string? Author;
 
+        /// <summary>
+        /// FHIR version 
+        /// </summary>
         [JsonProperty(PropertyName = "fhirVersion")]
         public string? FhirVersion;
 
+        /// <summary>
+        /// PackageUrl
+        /// </summary>
         [JsonProperty(PropertyName = "url")]
         public string? Url;
 
@@ -67,6 +84,11 @@ namespace Firely.Fhir.Packages
 
     public class PackageManifest
     {
+        /// <summary>
+        /// Initialize a new packagemanifest
+        /// </summary>
+        /// <param name="name">Package name </param>
+        /// <param name="version">Version of the package</param>
         public PackageManifest(string name, string version)
         {
             Name = name;
@@ -210,14 +232,26 @@ namespace Firely.Fhir.Packages
         public string? Jurisdiction;
     }
 
+    /// <summary>
+    /// Representation of a package lock file
+    /// </summary>
     public class LockFileJson
     {
+        /// <summary>
+        /// Last updated
+        /// </summary>
         [JsonProperty(PropertyName = "updated")]
         public DateTime Updated;
 
+        /// <summary>
+        /// Package Dependencies
+        /// </summary>
         [JsonProperty(PropertyName = "dependencies")]
         public Dictionary<string, string?>? PackageReferences;
 
+        /// <summary>
+        /// Dependencies that are missing
+        /// </summary>
         [JsonProperty(PropertyName = "missing")]
         public Dictionary<string, string?>? MissingDependencies;
     }
@@ -230,11 +264,20 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public class IndexJson
     {
+        /// <summary>
+        /// Date/Time the index was created
+        /// </summary>
         public DateTimeOffset date;
 
+        /// <summary>
+        /// Version of the index.json specification this file adheres to
+        /// </summary>
         [JsonProperty(PropertyName = "index-version")]
         public int Version;
 
+        /// <summary>
+        /// List of metadata of the files
+        /// </summary>
         [JsonProperty(PropertyName = "files")]
         public List<IndexData>? Files; // canonical -> file
     }
@@ -244,32 +287,61 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public class IndexData
     {
+        /// <summary>
+        /// Initialization of an entry of index.json
+        /// </summary>
+        /// <param name="filename">name of the file</param>
         public IndexData(string filename)
         {
             FileName = filename;
         }
 
+        /// <summary>
+        /// name of the file
+        /// </summary>
         [JsonProperty("filename", Required = Required.Always)]
         public string FileName;
 
+        /// <summary>
+        /// FHIR resource type
+        /// </summary>
         [JsonProperty("resourceType")]
         public string? ResourceType;
 
+        /// <summary>
+        /// FHIR resource id
+        /// </summary>
         [JsonProperty("id")]
         public string? Id;
 
+        /// <summary>
+        /// FHIR canonical url (only of conformance resources)
+        /// </summary>
         [JsonProperty("url")]
         public string? Canonical;
 
+        /// <summary>
+        /// Version of the resource (only of conformance resources)
+        /// </summary>
         [JsonProperty("version")]
         public string? Version;
 
+        /// <summary>
+        /// the value of a the "kind" property in the resource, if it has one and it's a primitive
+        /// </summary>
         [JsonProperty("kind")]
         public string? Kind;
 
+        /// <summary>
+        /// the value of a the "type" property in the resource, if it has one and it's a primitive
+        /// </summary>
         [JsonProperty("type")]
         public string? Type;
 
+        /// <summary>
+        /// Copy this instance
+        /// </summary>
+        /// <param name="other"><see cref="IndexData"/> instance the properties are copied to </param>
         public void CopyTo(IndexData other)
         {
             other.FileName = FileName;
@@ -287,11 +359,20 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public class CanonicalIndex
     {
+        /// <summary>
+        /// Date/time the index file was created
+        /// </summary>
         public DateTimeOffset date;
 
+        /// <summary>
+        /// Version of the .firely.index.json file format this instance adheres to.
+        /// </summary>
         [JsonProperty(PropertyName = "index-version")]
         public int Version;
 
+        /// <summary>
+        /// List of metadata of the files
+        /// </summary>
         [JsonProperty(PropertyName = "files")]
         public List<ResourceMetadata>? Files; // canonical -> file
     }
@@ -301,35 +382,70 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public class ResourceMetadata : IndexData
     {
+        /// <summary>
+        /// Instantiates a new metadata entry for .firely.index.json
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="filepath"></param>
         public ResourceMetadata(string filename, string filepath) : base(filename)
         {
             FileName = filename;
             FilePath = filepath;
         }
 
-
+        /// <summary>
+        /// Relative filepath of a file to the package root.
+        /// </summary>
         [JsonProperty("filepath", Required = Required.Always)]
         public string FilePath;
 
+        /// <summary>
+        /// The FHIR version of a file
+        /// </summary>
         [JsonProperty("fhirVersion")]
         public string? FhirVersion;
 
+        /// <summary>
+        /// True, if the file is a StructureDefinition resource, which has a snapshot.
+        /// False if the file is a StructureDefinition resource and doesn't contain a snapshot.
+        /// Null if the file isn't a StructureDefinition
+        /// </summary>
         [JsonProperty("hasSnapshot")]
         public bool? HasSnapshot;
 
+        /// <summary>
+        /// True, if the file is an expanded ValueSet resource
+        /// False, if the file is non-expanded ValueSet resource
+        /// Null, if the file isn't a snapshot
+        /// </summary>
         [JsonProperty("hasExpansion")]
         public bool? HasExpansion;
 
+        /// <summary>
+        /// The CodeSystem canonical url of which this valueset is an direct representation.
+        /// This property is null if this file isn't a ValueSet resource, or a ValueSet resource that doesn't describe a full single CodeSystem.
+        /// </summary>
         [JsonProperty("valuesetCodeSystem")]
         public string? ValueSetCodeSystem;
 
+        /// <summary>
+        /// Source and Target URL of a ConceptMap resource
+        /// Null of this file isn't a ConceptMap resource
+        /// </summary>
         [JsonProperty("conceptMapUris")]
         public SourceAndTarget? ConceptMapUris;
 
+        /// <summary>
+        /// List of defined UniqueIds in this NamingSystem resource
+        /// Null if this file isn't a NamingSystem resource.
+        /// </summary>
         [JsonProperty("namingSystemUniqueId")]
         public string[]? NamingSystemUniqueId;
 
-
+        /// <summary>
+        /// Copy this instance
+        /// </summary>
+        /// <param name="other"><see cref="ResourceMetadata"/> instance the properties are copied to </param>
         public void CopyTo(ResourceMetadata other)
         {
             other.FileName = FileName;
@@ -349,17 +465,41 @@ namespace Firely.Fhir.Packages
         }
     }
 
+    /// <summary>
+    /// Entry of a package catalog
+    /// </summary>
     public class PackageCatalogEntry
     {
+        /// <summary>
+        /// Package name
+        /// </summary>
         public string? Name;
+
+        /// <summary>
+        /// Package Description
+        /// </summary>
         public string? Description;
+
+        /// <summary>
+        /// FHIR version
+        /// </summary>
         public string? FhirVersion;
     }
 
+    /// <summary>
+    /// Source and target of a ConceptMap resource
+    /// </summary>
     public class SourceAndTarget
     {
+        /// <summary>
+        /// Target Uri of a ConceptMap resource
+        /// </summary>
         [JsonProperty("targetUri")]
         public string? TargetUri;
+
+        /// <summary>
+        /// Source Uri of a ConceptMap resource
+        /// </summary>
         [JsonProperty("sourceUri")]
         public string? SourceUri;
     }
@@ -367,12 +507,22 @@ namespace Firely.Fhir.Packages
 
     public static class JsonModelExtensions
     {
+        /// <summary>
+        /// Generates a <see cref="PackageReference"/> object from this package manifest
+        /// </summary>
+        /// <param name="manifest"></param>
+        /// <returns>The <see cref="PackageReference"/> object that is generated from a package manifest </returns>
         public static PackageReference GetPackageReference(this PackageManifest manifest)
         {
             var reference = new PackageReference(manifest.Name, manifest.Version);
             return reference;
         }
 
+        /// <summary>
+        /// Generates a <see cref="PackageReference"/> object from this lock file
+        /// </summary>
+        /// <param name="manifest"></param>
+        /// <returns>The <see cref="PackageReference"/> object that is generated from a lock file </returns>
         public static IEnumerable<PackageReference> GetPackageReferences(this LockFileJson dto)
         {
             return dto.PackageReferences == null
@@ -380,7 +530,7 @@ namespace Firely.Fhir.Packages
                 : dto.PackageReferences.Select(i => (PackageReference)i);
         }
 
-        public static void AddDependency(this PackageManifest manifest, string name, string? version)
+        internal static void AddDependency(this PackageManifest manifest, string name, string? version)
         {
             if (version is null) version = "latest";
             if (manifest.Dependencies is null) manifest.Dependencies = new Dictionary<string, string?>();
@@ -394,17 +544,22 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        /// <summary>
+        /// Adds a package dependendy to this manifest
+        /// </summary>
+        /// <param name="manifest"></param>
+        /// <param name="dependency">Package dependency</param>
         public static void AddDependency(this PackageManifest manifest, PackageDependency dependency)
         {
             manifest.AddDependency(dependency.Name, dependency.Range);
         }
 
-        public static void AddDependency(this PackageManifest manifest, PackageManifest dependency)
+        internal static void AddDependency(this PackageManifest manifest, PackageManifest dependency)
         {
             manifest.AddDependency(dependency.Name, dependency.Version);
         }
 
-        public static bool HasDependency(this PackageManifest manifest, string pkgname)
+        internal static bool HasDependency(this PackageManifest manifest, string pkgname)
         {
             if (manifest?.Dependencies?.Keys is null)
                 return false;
@@ -419,7 +574,7 @@ namespace Firely.Fhir.Packages
             return false;
         }
 
-        public static bool RemoveDependency(this PackageManifest manifest, string pkgname)
+        internal static bool RemoveDependency(this PackageManifest manifest, string pkgname)
         {
             if (manifest?.Dependencies?.Keys is null)
                 return false;
@@ -436,7 +591,7 @@ namespace Firely.Fhir.Packages
 
         }
 
-        public static string? GetFhirVersion(this PackageManifest manifest)
+        internal static string? GetFhirVersion(this PackageManifest manifest)
         {
             string? version =
                 manifest.FhirVersions?.FirstOrDefault()
@@ -445,7 +600,7 @@ namespace Firely.Fhir.Packages
             return version;
         }
 
-        public static void SetFhirVersion(this PackageManifest manifest, string version)
+        internal static void SetFhirVersion(this PackageManifest manifest, string version)
         {
             manifest.FhirVersions = new List<string> { version };
         }

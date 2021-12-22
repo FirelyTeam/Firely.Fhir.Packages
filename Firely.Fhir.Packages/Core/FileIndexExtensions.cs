@@ -7,11 +7,17 @@ namespace Firely.Fhir.Packages
 {
     public static class FileIndexExtensions
     {
-        public static void Add(this FileIndex index, PackageReference reference, CanonicalIndex cindex)
+        /// <summary>
+        /// Adds multiple files to the fileindex    
+        /// </summary>
+        /// <param name="index">The index the file entry is added ti</param>
+        /// <param name="package">Package that is indexed</param>
+        /// <param name="cindex">List of metadata of files to be added to the index</param>
+        public static void Add(this FileIndex index, PackageReference package, CanonicalIndex cindex)
         {
             if (cindex.Files is not null)
             {
-                index.Add(reference, cindex.Files);
+                index.Add(package, cindex.Files);
             }
         }
 
@@ -44,6 +50,12 @@ namespace Firely.Fhir.Packages
             index.Add(PackageReference.None, entries);
         }
 
+        /// <summary>
+        /// Adds a file entry to the file index
+        /// </summary>
+        /// <param name="index">The index the file entry is added ti</param>
+        /// <param name="package">Package that is indexed</param>
+        /// <param name="metadata">Metadata of the file that's added to the index</param>
         public static void Add(this FileIndex index, PackageReference package, ResourceMetadata metadata)
         {
             var reference = new PackageFileReference(metadata.FileName, metadata.FilePath) { Package = package };

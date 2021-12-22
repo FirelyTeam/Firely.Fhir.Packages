@@ -10,26 +10,48 @@ namespace Firely.Fhir.Packages
 {
     public static class PackageContextExtensions
     {
+        /// <summary>
+        /// Retrieve file content from a package by canonical uri
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="uri">Canonical uri of the resource</param>
+        /// <param name="version">Version of the conformance resource</param>
+        /// <param name="resolveBestCandidate">If there are multiple candidates, try to resolve the best instead of the first</param>
+        /// <returns>File content of the conformance resource</returns>
         public static async Task<string?> GetFileContentByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = false)
         {
             var reference = resolveBestCandidate
-                ? scope.Index.ResolveBestCandidateByCanonical(uri, version)
-                : scope.Index.ResolveCanonical(uri, version);
+                ? scope.GetIndex().ResolveBestCandidateByCanonical(uri, version)
+                : scope.GetIndex().ResolveCanonical(uri, version);
 
             return reference is not null ? await scope.getFileContent(reference).ConfigureAwait(false) : null;
         }
 
+        /// <summary>
+        /// Install the package
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="name">Name of the package</param>
+        /// <param name="range">Version range</param>
+        /// <returns>Paxckage reference of the installed package</returns>
         public static async Task<PackageReference> Install(this PackageContext scope, string name, string range)
         {
             var dependency = new PackageDependency(name, range);
             return await scope.CacheInstall(dependency).ConfigureAwait(false);
         }
-
+        /// <summary>
+        /// Retrieve file content from a package by canonical uri
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="uri">Canonical uri of the resource</param>
+        /// <param name="version">Version of the conformance resource</param>
+        /// <param name="resolveBestCandidate">If there are multiple candidates, try to resolve the best instead of the first</param>
+        /// <returns>File content of the conformance resource</returns>
         public static PackageFileReference? GetFileReferenceByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = false)
         {
             return resolveBestCandidate
-                ? scope.Index.ResolveBestCandidateByCanonical(uri, version)
-                : scope.Index.ResolveCanonical(uri, version);
+                ? scope.GetIndex().ResolveBestCandidateByCanonical(uri, version)
+                : scope.GetIndex().ResolveCanonical(uri, version);
         }
 
         private static async Task<string> getFileContent(this PackageContext scope, PackageFileReference reference)
@@ -39,15 +61,26 @@ namespace Firely.Fhir.Packages
                 : await scope.Cache.GetFileContent(reference).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Read all files from a package
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <returns>List of file content, represented as string</returns>
         public static IEnumerable<string> ReadAllFiles(this PackageContext scope)
         {
-            foreach (var reference in scope.Index)
+            foreach (var reference in scope.GetIndex())
             {
                 var content = TaskHelper.Await(() => scope.getFileContent(reference));
                 yield return content;
             }
         }
 
+        /// <summary>
+        /// Get content for multiple files
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="references">File references representing multiple files</param>
+        /// <returns>A list of file contents</returns>
         public static IEnumerable<string> GetContentsForRange(this PackageContext scope, IEnumerable<PackageFileReference> references)
         {
             foreach (var item in references)
@@ -57,7 +90,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public static async Task EnsureManifest(this PackageContext scope, string name, string fhirVersion)
+        private static async Task ensureManifest(this PackageContext scope, string name, string fhirVersion)
         {
             var manifest = await scope.Project.ReadManifest();
             manifest ??= ManifestFile.Create(name, fhirVersion);
@@ -78,6 +111,13 @@ namespace Firely.Fhir.Packages
             public PackageReference Reference;
         }
 
+        /// <summary>
+        /// Installs a package
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="dependency">Package dependendies</param>
+        /// <returns>Install result</returns>
+        /// <exception cref="Exception">Exception thrown when a dependency can't be found</exception>
         public static async Task<InstallResult> Install(this PackageContext scope, PackageDependency dependency)
         {
             var reference = await scope.CacheInstall(dependency);
@@ -86,7 +126,7 @@ namespace Firely.Fhir.Packages
             if (!await scope.Project.HasManifest())
             {
                 var fhirVersion = await scope.Cache.ReadPackageFhirVersion(reference);
-                await scope.EnsureManifest("project", fhirVersion).ConfigureAwait(false);
+                await scope.ensureManifest("project", fhirVersion).ConfigureAwait(false);
             }
 
             await scope.Project.AddDependency(dependency).ConfigureAwait(false);
@@ -97,25 +137,30 @@ namespace Firely.Fhir.Packages
 
         private static PackageFileReference? getFileReference(this PackageContext scope, string resourceType, string id)
         {
-            return scope.Index.Where(i => i.ResourceType == resourceType && i.Id == id).FirstOrDefault();
+            return scope.GetIndex().Where(i => i.ResourceType == resourceType && i.Id == id).FirstOrDefault();
         }
 
         /// <summary>
-        /// 
+        /// Get file content by resource type and Id
         /// </summary>
         /// <param name="scope"></param>
-        /// <param name="resourceType"></param>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="resourceType">The FHIR resource type of the file</param>
+        /// <param name="id">The id of the FHIR resource</param>
+        /// <returns>The file content represented as string</returns>
         public static async Task<string?> GetFileContentById(this PackageContext scope, string resourceType, string id)
         {
             var reference = scope.getFileReference(resourceType, id);
             return reference is null ? null : await scope.getFileContent(reference).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Get the list of filenames from a Package
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <returns>List of file names</returns>
         public static IEnumerable<string> GetFileNames(this PackageContext scope)
         {
-            return scope.Index.Select(i => i.FileName);
+            return scope.GetIndex().Select(i => i.FileName);
         }
 
         /// <summary>
@@ -126,7 +171,7 @@ namespace Firely.Fhir.Packages
         /// <returns>the content of a file, represented as string by filepath</returns>
         public static async Task<string?> GetFileContentByFileName(this PackageContext scope, string fileName)
         {
-            var reference = scope.Index.Where(i => i.FileName == fileName).FirstOrDefault();
+            var reference = scope.GetIndex().Where(i => i.FileName == fileName).FirstOrDefault();
             if (reference is null) return null;
 
             var content = await scope.getFileContent(reference).ConfigureAwait(false);
@@ -141,7 +186,7 @@ namespace Firely.Fhir.Packages
         /// <returns>the content of a file, represented as string by filepath</returns>
         public static async Task<string?> GetFileContentByFilePath(this PackageContext scope, string filePath)
         {
-            var reference = scope.Index.Where(i => i.FilePath == filePath).FirstOrDefault();
+            var reference = scope.GetIndex().Where(i => i.FilePath == filePath).FirstOrDefault();
             if (reference is null) return null;
 
             var content = await scope.getFileContent(reference).ConfigureAwait(false);
@@ -157,8 +202,8 @@ namespace Firely.Fhir.Packages
         public static IEnumerable<string> ListCanonicalUris(this PackageContext scope, string? resourceType = null)
         {
             return (resourceType is not null)
-                ? scope.Index.Where(i => i.ResourceType == resourceType && i.Canonical is not null).Select(i => i.Canonical!)
-                : scope.Index.Where(i => i.Canonical is not null).Select(i => i.Canonical!);
+                ? scope.GetIndex().Where(i => i.ResourceType == resourceType && i.Canonical is not null).Select(i => i.Canonical!)
+                : scope.GetIndex().Where(i => i.Canonical is not null).Select(i => i.Canonical!);
         }
 
 
@@ -174,7 +219,7 @@ namespace Firely.Fhir.Packages
         /// </remarks>
         public static async Task<string?> GetCodeSystemByValueSet(this PackageContext scope, string valueSetUri)
         {
-            var vsReference = scope.Index.Where(i => i.Canonical == valueSetUri).FirstOrDefault();
+            var vsReference = scope.GetIndex().Where(i => i.Canonical == valueSetUri).FirstOrDefault();
             if (vsReference?.ValueSetCodeSystem is null) return null;
             else
             {
@@ -195,7 +240,7 @@ namespace Firely.Fhir.Packages
             if (sourceUri == null && targetUri == null)
                 return null;
 
-            var conceptMapReferences = scope.Index.Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
+            var conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
             return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.getFileContent(i).ConfigureAwait(false))).ConfigureAwait(false);
         }
 
@@ -205,7 +250,7 @@ namespace Firely.Fhir.Packages
         /// <returns>A NamingSystem resource, or <c>null</c>.</returns>
         public static async Task<string?> GetNamingSystemByUniqueId(this PackageContext scope, string uniqueId)
         {
-            var namingSystemIndex = scope.Index.Where(i => i.NamingSystemUniqueId?.Contains(uniqueId) == true).FirstOrDefault();
+            var namingSystemIndex = scope.GetIndex().Where(i => i.NamingSystemUniqueId?.Contains(uniqueId) == true).FirstOrDefault();
 
             return namingSystemIndex is not null ? await scope.getFileContent(namingSystemIndex).ConfigureAwait(false) : null;
         }

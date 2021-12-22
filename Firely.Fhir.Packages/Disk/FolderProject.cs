@@ -10,11 +10,19 @@ namespace Firely.Fhir.Packages
     {
         public string Folder { get; private set; }
 
+        /// <summary>
+        /// Represents a folder on disk containing FHIR artifacts
+        /// </summary>
+        /// <param name="folder"></param>
         public FolderProject(string folder)
         {
             this.Folder = folder;
         }
 
+        /// <summary>
+        /// Indexes all files in the folder, including subfolders.
+        /// </summary>
+        /// <returns>A list of metadata of all files</returns>
         public Task<List<ResourceMetadata>> GetIndex()
         {
             // this should be cached, but we need to bust it on changes.
@@ -25,7 +33,7 @@ namespace Firely.Fhir.Packages
         /// Reads the raw contents of the given file.
         /// </summary>
         /// <param name="filePath">The relative filePath compared to the given <see cref="Folder"/>.</param>
-        /// <returns></returns>
+        /// <returns>the file content represented as a string</returns>
         public Task<string> GetFileContent(string filePath)
         {
             var path = Path.Combine(Folder, filePath);
@@ -35,7 +43,7 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Reads and parses a <see cref="PackageClosure"/> from the <see cref="Folder"/>.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A package closure</returns>
         public Task<PackageClosure?> ReadClosure()
         {
             var closure = LockFile.ReadFromFolder(Folder);
@@ -45,13 +53,18 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Reads and parses a <see cref="PackageManifest"/> from the <see cref="Folder"/>.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>the package manifest</returns>
         public Task<PackageManifest?> ReadManifest()
         {
             var manifest = ManifestFile.ReadFromFolder(Folder);
             return Task.FromResult(manifest); ;
         }
 
+        /// <summary>
+        /// Writes a package closure to the folder
+        /// </summary>
+        /// <param name="closure">Package closure</param>
+        /// <returns></returns>
         public Task WriteClosure(PackageClosure closure)
         {
             LockFile.WriteToFolder(closure, Folder);
@@ -59,6 +72,11 @@ namespace Firely.Fhir.Packages
             return Task.FromResult(0); //because in net45 there is no Task.CompletedTask (Paul)
         }
 
+        /// <summary>
+        /// Writes a package manifest to a folder
+        /// </summary>
+        /// <param name="manifest"></param>
+        /// <returns></returns>
         public Task WriteManifest(PackageManifest manifest)
         {
             ManifestFile.WriteToFolder(manifest, Folder, merge: true);

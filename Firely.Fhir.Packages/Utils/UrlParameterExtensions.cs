@@ -7,15 +7,15 @@ using System.Text;
 
 namespace Firely.Fhir.Packages
 {
-    public static class UrlParameterExtensions
+    internal static class UrlParameterExtensions
     {
-        public static void AddWhenValued(this NameValueCollection collection, string name, string? value)
+        internal static void AddWhenValued(this NameValueCollection collection, string name, string? value)
         {
             if (!string.IsNullOrEmpty(value))
                 collection.Add(name, value);
         }
 
-        public static string ToQueryString(this NameValueCollection collection)
+        internal static string ToQueryString(this NameValueCollection collection)
         {
             var builder = new StringBuilder();
 
