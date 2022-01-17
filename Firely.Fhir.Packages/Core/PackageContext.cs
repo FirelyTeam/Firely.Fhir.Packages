@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 namespace Firely.Fhir.Packages
 {
 
+    /// <summary>
+    /// A PackageContext gives access to the full scope of a project or package.
+    /// It also provides a single FileIndex to all files in scope, including
+    /// the full dependency closure.
+    /// </summary>
     public class PackageContext
     {
         public readonly IPackageCache Cache;
@@ -16,6 +21,13 @@ namespace Firely.Fhir.Packages
 
         private FileIndex? _index;
 
+        /// <summary>
+        /// Creates a package context. 
+        /// </summary>
+        /// <param name="cache">The cache from where to reference packages and consume dependency resources</param>
+        /// <param name="project">The project or main package at the root of a dependency tree</param>
+        /// <param name="server">The server from where to install packages into the cache</param>
+        /// <param name="onInstalled">Event that responds to succesfull package installs</param>
         public PackageContext(IPackageCache cache, IProject project, IPackageServer server, Action<PackageReference>? onInstalled = null)
         {
             this.Cache = cache;
@@ -30,13 +42,15 @@ namespace Firely.Fhir.Packages
             return closure is null ? throw new ArgumentException("The folder does not contain a package lock file.") : closure;
         }
 
-        //MS 2021-12-15:  This used to be a variable, but you can't have async variables in .NET, changed to a getter
+        /// <summary>
+        /// Read's the the full FileIndex from the current scope. This includes all resource files from all dependencies.
+        /// </summary>
         public FileIndex GetIndex()
         {
             return _index ??= TaskHelper.Await(() => BuildIndex());
         }
-
-        public async Task<FileIndex> BuildIndex()
+        
+        private async Task<FileIndex> BuildIndex()
         {
             var closure = await readClosure();
 

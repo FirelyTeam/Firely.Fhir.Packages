@@ -5,8 +5,15 @@ using System.Text;
 
 namespace Firely.Fhir.Packages
 {
+    /// <summary>
+    /// A package server that serves packages, needs to provide a checksum in the package listing.
+    /// </summary>
     public static class CheckSum
     {
+        /// <summary>
+        /// A package server that serves packages, needs to provide a checksum in the package listing.
+        /// This method can be used for that purpose.
+        /// </summary>
         public static byte[] ShaSum(byte[] buffer)
         {
             using var sha = SHA1.Create();
@@ -14,6 +21,9 @@ namespace Firely.Fhir.Packages
             return hash;
         }
 
+        /// <summary>
+        /// Create a Hexadecimal string of a binary hash.
+        /// </summary>
         public static string HashToHexString(byte[] hash)
         {
             var builder = new StringBuilder();

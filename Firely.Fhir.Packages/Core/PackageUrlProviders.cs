@@ -2,7 +2,12 @@
 
 namespace Firely.Fhir.Packages
 {
-
+    /// <summary>
+    /// PublishMode is used to prevent accidental publication
+    /// of package under a new name. If with package a new name is published 
+    /// with mode Existing, or an existing package is published with mode New, the
+    /// package server will return an error.
+    /// </summary>
     public enum PublishMode
     {
         New,

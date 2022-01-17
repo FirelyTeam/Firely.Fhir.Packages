@@ -8,6 +8,10 @@ using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
+    /// <summary>
+    /// A FHIR server publishes a package and it's available versions through a package listing
+    /// This class provides a JSON (de)serializable package listing..
+    /// </summary>
     public class PackageListing
     {
         [JsonProperty(PropertyName = "_id")]
@@ -27,7 +31,7 @@ namespace Firely.Fhir.Packages
     }
 
     /// <summary>
-    /// Representation of a package release
+    /// A JSON formatted package listing contains package information for each version
     /// </summary>
     public class PackageRelease
     {
@@ -49,6 +53,9 @@ namespace Firely.Fhir.Packages
         [JsonProperty(PropertyName = "description")]
         public string? Description;
 
+        /// <summary>
+        /// The dist sub document conforms to NPM 7, providing a shasum and tarball 
+        /// </summary>
         [JsonProperty(PropertyName = "dist")]
         public Dist? Dist;
 
@@ -64,17 +71,25 @@ namespace Firely.Fhir.Packages
         public string? FhirVersion;
 
         /// <summary>
-        /// PackageUrl
+        /// The URL where a package can be downloaded
         /// </summary>
         [JsonProperty(PropertyName = "url")]
         public string? Url;
 
+        /// <summary>
+        /// If a package is unlisted, it should no longer be used except for
+        /// backward compatible installations.
+        /// </summary>
         [JsonProperty(PropertyName = "unlisted")]
         public string? Unlisted;
     }
 
+
     public class Dist
     {
+        /// <summary>
+        /// NPM 7.0 will not install packages without this checksum
+        /// </summary>
         [JsonProperty(PropertyName = "shasum")]
         public string? Shasum;
 
@@ -82,6 +97,9 @@ namespace Firely.Fhir.Packages
         public string? Tarball;
     }
 
+    /// <summary>
+    /// The class JSON (de)serializable representation of a package.json 
+    /// </summary>
     public class PackageManifest
     {
         /// <summary>
@@ -234,6 +252,7 @@ namespace Firely.Fhir.Packages
 
     /// <summary>
     /// Representation of a package lock file
+    /// This file is FHIR / Firely specific
     /// </summary>
     public class LockFileJson
     {
@@ -260,6 +279,8 @@ namespace Firely.Fhir.Packages
 
 
     /// <summary>
+    /// IndexJson contains a JSON (de)serializable representation of index.JSON. Which
+    /// is generated for every package in a package cache, listing all resources and their metadata
     /// Index.json, should stay conformant to the spec here: https://confluence.hl7.org/display/FHIR/NPM+Package+Specification#NPMPackageSpecification-.index.json
     /// </summary>
     public class IndexJson
