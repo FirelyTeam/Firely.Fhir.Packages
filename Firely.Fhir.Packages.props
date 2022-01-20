@@ -10,7 +10,7 @@
         <Copyright>Copyright 2013-2020 Firely</Copyright>
         <RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>
-        <FhirNetSdkVersion>4.0.0-alpha-20211103.7</FhirNetSdkVersion>
+        <FhirNetSdkVersion>4.0.*</FhirNetSdkVersion>
 		<PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>
     </PropertyGroup>
 
