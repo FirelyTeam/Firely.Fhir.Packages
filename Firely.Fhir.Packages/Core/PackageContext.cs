@@ -47,10 +47,10 @@ namespace Firely.Fhir.Packages
         /// </summary>
         public FileIndex GetIndex()
         {
-            return _index ??= TaskHelper.Await(() => BuildIndex());
+            return _index ??= TaskHelper.Await(() => buildIndex());
         }
-        
-        private async Task<FileIndex> BuildIndex()
+
+        private async Task<FileIndex> buildIndex()
         {
             var closure = await readClosure();
 

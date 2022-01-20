@@ -78,7 +78,7 @@ namespace Firely.Fhir.Packages
         /// <param name="kvp"><see cref="KeyValuePair"/> where the key is the package name, and the value is the version</param>
         public static implicit operator PackageReference(string reference)
         {
-            return Parse(reference);
+            return parse(reference);
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Firely.Fhir.Packages
             return (Name, Version).GetHashCode();
         }
 
-        private static PackageReference Parse(string reference)
+        private static PackageReference parse(string reference)
         {
             var (scope, name, version) = parseReference(reference);
             return new PackageReference(scope, name, version);
