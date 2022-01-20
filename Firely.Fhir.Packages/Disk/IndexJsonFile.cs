@@ -12,7 +12,7 @@ namespace Firely.Fhir.Packages
     {
         public const int VERSION = 1;
 
-        public static FileEntry GenerateIndexFile(IEnumerable<FileEntry> entries, string folder)
+        internal static FileEntry GenerateIndexFile(IEnumerable<FileEntry> entries, string folder)
         {
             var files = CanonicalIndexer.GenerateIndexFile(entries);
             var index = new IndexJson { Files = files.ToList(), Version = VERSION, date = DateTimeOffset.Now };
@@ -22,8 +22,8 @@ namespace Firely.Fhir.Packages
 
         private static FileEntry convertToFileEntry(IndexJson index, string folder)
         {
-            var content = Parser.WriteIndexJson(index);
-            return new FileEntry(Path.Combine(folder, PackageConsts.INDEXJSONFILE), Encoding.ASCII.GetBytes(content));
+            var content = PackageParser.WriteIndexJson(index);
+            return new FileEntry(Path.Combine(folder, PackageFileNames.INDEXJSONFILE), Encoding.ASCII.GetBytes(content));
         }
     }
 }

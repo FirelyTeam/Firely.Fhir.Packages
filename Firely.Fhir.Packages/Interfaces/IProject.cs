@@ -8,12 +8,44 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public interface IProject
     {
+        /// <summary>
+        /// Reads and parses a <see cref="PackageManifest"/> from the <see cref="Folder"/>.
+        /// </summary>
+        /// <returns>the package manifest</returns>
         Task<PackageManifest?> ReadManifest();
+
+        /// <summary>
+        /// Writes a package manifest file
+        /// </summary>
+        /// <param name="manifest"></param>
+        /// <returns></returns>
         Task WriteManifest(PackageManifest manifest);
+
+        /// <summary>
+        /// Reads and parses a <see cref="PackageClosure"/>
+        /// </summary>
+        /// <returns>A package closure</returns>
         Task<PackageClosure?> ReadClosure();
+
+        /// <summary>
+        /// Writes a package closure
+        /// </summary>
+        /// <param name="closure">Package closure</param>
+        /// <returns></returns>
         Task WriteClosure(PackageClosure closure);
 
+
+        /// <summary>
+        /// Reads the raw contents of the given file.
+        /// </summary>
+        /// <param name="filename">the name of the file to be read</param>
+        /// <returns>the file content represented as a string</returns>
         public Task<string> GetFileContent(string filename);
+
+        /// <summary>
+        /// Indexes all files of the project.
+        /// </summary>
+        /// <returns>A list of metadata of all files</returns>
         public Task<List<ResourceMetadata>> GetIndex();
     }
 }

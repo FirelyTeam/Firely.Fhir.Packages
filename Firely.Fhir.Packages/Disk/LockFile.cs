@@ -8,12 +8,12 @@ namespace Firely.Fhir.Packages
 {
     public static class LockFile
     {
-        public static PackageClosure? Read(string path)
+        private static PackageClosure? read(string path)
         {
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                var dto = Parser.ReadLockFileJson(content);
+                var dto = PackageParser.ReadLockFileJson(content);
 
                 return dto is null
                     ? null
@@ -26,39 +26,59 @@ namespace Firely.Fhir.Packages
             else return null;
         }
 
+        /// <summary>
+        /// Check if the lock file of a folder is outdated
+        /// </summary>
+        /// <param name="folder">The folder path</param>
+        /// <returns>whether the lock file is outdated</returns>
         public static bool IsOutdated(string folder)
         {
-            var man_path = Path.Combine(folder, PackageConsts.MANIFEST);
+            var man_path = Path.Combine(folder, PackageFileNames.MANIFEST);
             var man_time = File.GetLastWriteTimeUtc(man_path);
 
-            var asset_path = Path.Combine(folder, PackageConsts.LOCKFILE);
+            var asset_path = Path.Combine(folder, PackageFileNames.LOCKFILE);
             var asset_time = File.GetLastWriteTimeUtc(asset_path);
             return asset_time < man_time;
         }
 
+        /// <summary>
+        /// Reads lock file from folder
+        /// </summary>
+        /// <param name="folder">The folder path</param>
+        /// <returns>The lock file</returns>
         public static PackageClosure? ReadFromFolder(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.LOCKFILE);
-            return Read(path);
+            var path = Path.Combine(folder, PackageFileNames.LOCKFILE);
+            return read(path);
         }
 
+        /// <summary>
+        /// Reads or creates the lock file of a folder      
+        /// </summary>
+        /// <param name="folder">the folder path</param>
+        /// <returns>The lock file</returns>
         public static PackageClosure? ReadFromFolderOrCreate(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.LOCKFILE);
-            return File.Exists(path) ? Read(path) : new PackageClosure();
+            var path = Path.Combine(folder, PackageFileNames.LOCKFILE);
+            return File.Exists(path) ? read(path) : new PackageClosure();
         }
 
+        /// <summary>
+        /// Writes a lock file to a folder
+        /// </summary>
+        /// <param name="closure">The lock file</param>
+        /// <param name="folder">The folder path</param>
         public static void WriteToFolder(PackageClosure closure, string folder)
         {
             var dto = createLockFileJson(closure);
-            var path = Path.Combine(folder, PackageConsts.LOCKFILE);
+            var path = Path.Combine(folder, PackageFileNames.LOCKFILE);
             write(dto, path);
         }
 
         private static void write(LockFileJson json, string path)
         {
             json.Updated = DateTime.Now;
-            var content = Parser.WriteLockFileDto(json);
+            var content = PackageParser.WriteLockFileDto(json);
             File.WriteAllText(path, content);
         }
 

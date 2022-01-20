@@ -9,16 +9,16 @@ namespace Firely.Fhir.Packages
 {
     public static class Platform
     {
-        public enum OperatingSystem { Windows, Linux, OSX, Unknown };
+        private enum OperatingSystem { Windows, Linux, OSX, Unknown };
 
 
-        public static OperatingSystem GetPlatform()
+        private static OperatingSystem getPlatform()
         {
 #if !NET452
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return OperatingSystem.Windows;
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return OperatingSystem.Linux;
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return OperatingSystem.OSX;
-            else return OperatingSystem.Unknown;
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? OperatingSystem.Windows
+                : RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? OperatingSystem.Linux
+                : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? OperatingSystem.OSX
+                : OperatingSystem.Unknown;
 #else
             // RuntimeInformation needs NET471
             switch (Environment.OSVersion.Platform)
@@ -32,9 +32,9 @@ namespace Firely.Fhir.Packages
 #endif
         }
 
-        public static string GetGenericDataLocation()
+        private static string getGenericDataLocation()
         {
-            string? path = GetPlatform() switch
+            string? path = getPlatform() switch
             {
                 OperatingSystem.Windows =>
                     Environment.GetEnvironmentVariable("UserProfile"),
@@ -51,9 +51,13 @@ namespace Firely.Fhir.Packages
             return path == null ? throw new Exception("Cannot determine rootpath of operating system") : path;
         }
 
+        /// <summary>
+        /// Return the FHIR packages folder location
+        /// </summary>
+        /// <returns>The path of the package root</returns>
         public static string GetFhirPackageRoot()
         {
-            string root = GetGenericDataLocation();
+            string root = getGenericDataLocation();
 
             return Path.Combine(root, ".fhir", "packages");
         }

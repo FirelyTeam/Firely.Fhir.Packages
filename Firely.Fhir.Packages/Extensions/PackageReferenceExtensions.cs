@@ -7,7 +7,7 @@ namespace Firely.Fhir.Packages
 {
     public static class PackageReferenceExtensions
     {
-        public static Dictionary<string, string?> ToDictionary(this IEnumerable<PackageReference> references)
+        internal static Dictionary<string, string?> ToDictionary(this IEnumerable<PackageReference> references)
         {
             var dict = new Dictionary<string, string?>();
             foreach (var reference in references.Where(r => r.Name is not null))
@@ -17,7 +17,7 @@ namespace Firely.Fhir.Packages
             return dict;
         }
 
-        public static Dictionary<string, string?> ToDictionary(this IEnumerable<PackageDependency> references)
+        internal static Dictionary<string, string?> ToDictionary(this IEnumerable<PackageDependency> references)
         {
             var dict = new Dictionary<string, string?>();
             foreach (var reference in references)
@@ -27,7 +27,7 @@ namespace Firely.Fhir.Packages
             return dict;
         }
 
-        public static List<PackageReference> ToPackageReferences(this Dictionary<string, string?> dict)
+        internal static List<PackageReference> ToPackageReferences(this Dictionary<string, string?> dict)
         {
             var list = new List<PackageReference>();
 
@@ -38,7 +38,7 @@ namespace Firely.Fhir.Packages
             return list;
         }
 
-        public static List<PackageDependency> ToPackageDependencies(this Dictionary<string, string?> dict)
+        internal static List<PackageDependency> ToPackageDependencies(this Dictionary<string, string?> dict)
         {
             var list = new List<PackageDependency>();
             foreach (var item in dict)
@@ -48,6 +48,11 @@ namespace Firely.Fhir.Packages
             return list;
         }
 
+        /// <summary>
+        /// Get dependencies from a package manifest
+        /// </summary>
+        /// <param name="manifest">Package manifest from which the dependencies are being retrieved</param>
+        /// <returns>A list of package dependencies</returns>
         public static IEnumerable<PackageDependency> GetDependencies(this PackageManifest manifest)
         {
             if (manifest.Dependencies is null) yield break;
@@ -58,6 +63,11 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        /// <summary>
+        /// Get the NPM name of a package
+        /// </summary>
+        /// <param name="reference">Package of which the NPM name is to be retrieved</param>
+        /// <returns>NPM name of the package</returns>
         public static string? GetNpmName(this PackageReference reference)
         {
             return (reference.Scope == null) ? reference.Name : $"@{reference.Scope}%2F{reference.Name}";

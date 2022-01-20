@@ -5,22 +5,22 @@ using System.IO;
 
 namespace Firely.Fhir.Packages
 {
-    public static class CanonicalIndexFile
+    internal static class CanonicalIndexFile
     {
-        public const int VERSION = 7;
+        internal const int VERSION = 7;
 
-        public static CanonicalIndex GetFromFolder(string folder, bool recurse)
+        internal static CanonicalIndex GetFromFolder(string folder, bool recurse)
         {
             if (existsIn(folder))
             {
-                var index = ReadFromFolder(folder);
+                var index = readFromFolder(folder);
                 if (index?.Version == VERSION) return index;
             }
             // otherwise:
             return Create(folder, recurse);
         }
 
-        public static CanonicalIndex Create(string folder, bool recurse)
+        internal static CanonicalIndex Create(string folder, bool recurse)
         {
             var entries = CanonicalIndexer.IndexFolder(folder, recurse);
             var index = new CanonicalIndex { Files = entries, Version = VERSION, date = DateTimeOffset.Now };
@@ -28,18 +28,18 @@ namespace Firely.Fhir.Packages
             return index;
         }
 
-        public static CanonicalIndex? ReadFromFolder(string folder)
+        private static CanonicalIndex? readFromFolder(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CANONICALINDEXFILE);
-            return Read(path);
+            var path = Path.Combine(folder, PackageFileNames.CANONICALINDEXFILE);
+            return read(path);
         }
 
-        public static CanonicalIndex? Read(string path)
+        private static CanonicalIndex? read(string path)
         {
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                return Parser.ReadCanonicalIndex(content);
+                return PackageParser.ReadCanonicalIndex(content);
 
             }
             else return null;
@@ -47,19 +47,19 @@ namespace Firely.Fhir.Packages
 
         private static void write(CanonicalIndex index, string path)
         {
-            var content = Parser.WriteCanonicalIndex(index);
+            var content = PackageParser.WriteCanonicalIndex(index);
             File.WriteAllText(path, content);
         }
 
         private static bool existsIn(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CANONICALINDEXFILE);
+            var path = Path.Combine(folder, PackageFileNames.CANONICALINDEXFILE);
             return File.Exists(path);
         }
 
         private static void writeToFolder(CanonicalIndex index, string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CANONICALINDEXFILE);
+            var path = Path.Combine(folder, PackageFileNames.CANONICALINDEXFILE);
             write(index, path);
         }
     }

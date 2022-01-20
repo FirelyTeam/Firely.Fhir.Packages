@@ -7,11 +7,12 @@ namespace Firely.Fhir.Packages
 {
     public static class FileIndexExtensions
     {
-        public static void Add(this FileIndex index, PackageReference reference, CanonicalIndex cindex)
+
+        private static void add(this FileIndex index, PackageReference reference, CanonicalIndex cindex)
         {
             if (cindex.Files is not null)
             {
-                index.Add(reference, cindex.Files);
+                index.add(reference, cindex.Files);
             }
         }
 
@@ -19,18 +20,18 @@ namespace Firely.Fhir.Packages
         {
             foreach (var reference in closure.References)
             {
-                await index.Index(cache, reference);
+                await index.index(cache, reference);
             }
         }
 
-        internal static async Task Index(this FileIndex index, IPackageCache cache, PackageReference reference)
+        private static async Task index(this FileIndex index, IPackageCache cache, PackageReference reference)
         {
             var idx = await cache.GetCanonicalIndex(reference);
 
-            index.Add(reference, idx);
+            index.add(reference, idx);
         }
 
-        internal static void Add(this FileIndex index, PackageReference reference, IEnumerable<ResourceMetadata> cindex)
+        private static void add(this FileIndex index, PackageReference reference, IEnumerable<ResourceMetadata> cindex)
         {
             foreach (var item in cindex)
             {
@@ -41,9 +42,15 @@ namespace Firely.Fhir.Packages
         internal static async Task Index(this FileIndex index, IProject project)
         {
             var entries = await project.GetIndex();
-            index.Add(PackageReference.None, entries);
+            index.add(PackageReference.None, entries);
         }
 
+        /// <summary>
+        /// Add a file to the index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="package">Package that the file belongs to</param>
+        /// <param name="metadata">Metadata of the file to be added</param>
         public static void Add(this FileIndex index, PackageReference package, ResourceMetadata metadata)
         {
             var reference = new PackageFileReference(metadata.FileName, metadata.FilePath) { Package = package };
@@ -52,14 +59,14 @@ namespace Firely.Fhir.Packages
         }
 
         /// <summary>
-        /// This method is currently used by Firely Terminal, to create ad hoc scopes.
-        /// Not that it is the same as the Index(index, cache, ref) above. 
-        /// Let's re-evaluate what to make public.
+        /// Adds all items of package of a package reference to a file index
         /// </summary>
+        /// <param name="index">Index the files are added to</param>
+        /// <param name="metadata">Metadata of the file to be added</param>
         public static async Task AddToFileIndex(this IPackageCache cache, FileIndex index, PackageReference reference)
         {
             var canonicals = await cache.GetCanonicalIndex(reference);
-            index.Add(reference, canonicals);
+            index.add(reference, canonicals);
         }
     }
 }

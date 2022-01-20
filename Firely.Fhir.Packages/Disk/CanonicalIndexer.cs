@@ -9,9 +9,9 @@ using System.Linq;
 namespace Firely.Fhir.Packages
 {
 
-    public static class CanonicalIndexer
+    internal static class CanonicalIndexer
     {
-        public static List<ResourceMetadata> IndexFolder(string folder, bool recurse)
+        internal static List<ResourceMetadata> IndexFolder(string folder, bool recurse)
         {
             var option = recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             var paths = Directory.GetFiles(folder, "*.*", option);
@@ -20,28 +20,28 @@ namespace Firely.Fhir.Packages
 
         private static IEnumerable<ResourceMetadata> enumerateMetadata(string folder, IEnumerable<string> filepaths)
         {
-            return filepaths.Select(p => GetFileMetadata(folder, p)).Where(p => p is not null);
+            return filepaths.Select(p => getFileMetadata(folder, p)).Where(p => p is not null);
         }
 
-        public static ResourceMetadata GetFileMetadata(string folder, string filepath)
+        private static ResourceMetadata getFileMetadata(string folder, string filepath)
         {
             return ElementNavigation.TryParseToSourceNode(filepath, out var node)
-                    ? new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: GetRelativePath(folder, filepath))
+                    ? new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: getRelativePath(folder, filepath))
                     {
                         ResourceType = node?.Name,
-                        Id = node?.GetString("id"),
-                        Canonical = node?.GetString("url"),
-                        Version = node?.GetString("version"),
-                        Kind = node?.GetString("kind"),
-                        Type = node?.GetString("type"),
-                        FhirVersion = node?.GetString("fhirVersion"),
+                        Id = node?.getString("id"),
+                        Canonical = node?.getString("url"),
+                        Version = node?.getString("version"),
+                        Kind = node?.getString("kind"),
+                        Type = node?.getString("type"),
+                        FhirVersion = node?.getString("fhirVersion"),
                         HasSnapshot = node?.checkForSnapshot(),
                         HasExpansion = node?.checkForExpansion(),
                         ValueSetCodeSystem = node?.getCodeSystemFromValueSet(),
                         NamingSystemUniqueId = node?.getUniqueIdsFromNamingSystem(),
                         ConceptMapUris = node?.getConceptMapsSourceAndTarget()
                     }
-                    : new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: GetRelativePath(folder, filepath));
+                    : new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: getRelativePath(folder, filepath));
         }
 
         internal static IEnumerable<IndexData> GenerateIndexFile(IEnumerable<FileEntry> entries)
@@ -55,27 +55,27 @@ namespace Firely.Fhir.Packages
                   ? new IndexData(filename: Path.GetFileName(entry.FilePath))
                   {
                       ResourceType = node?.Name,
-                      Id = node?.GetString("id"),
-                      Canonical = node?.GetString("url"),
-                      Version = node?.GetString("version"),
-                      Kind = node?.GetString("kind"),
-                      Type = node?.GetString("type")
+                      Id = node?.getString("id"),
+                      Canonical = node?.getString("url"),
+                      Version = node?.getString("version"),
+                      Kind = node?.getString("kind"),
+                      Type = node?.getString("type")
                   }
                 : new IndexData(filename: Path.GetFileName(entry.FilePath));
         }
 
 
-        public static string? GetString(this ISourceNode node, string expression)
+        private static string? getString(this ISourceNode node, string expression)
         {
             if (node is null) return null;
             var decendant = node.findFirstDescendant(expression);
             return decendant?.Text;
         }
 
-        public static IEnumerable<string> GetRelativePaths(string folder, IEnumerable<string> paths)
+        private static IEnumerable<string> getRelativePaths(string folder, IEnumerable<string> paths)
         {
             foreach (var path in paths)
-                yield return GetRelativePath(folder, path);
+                yield return getRelativePath(folder, path);
         }
 
         private static ISourceNode? findFirstDescendant(this ISourceNode? node, string expression)
@@ -98,7 +98,7 @@ namespace Firely.Fhir.Packages
 
         private static readonly string DIRECTORYSEPARATORSTRING = $"{Path.DirectorySeparatorChar}";
 
-        public static string GetRelativePath(string relativeTo, string path)
+        private static string getRelativePath(string relativeTo, string path)
         {
 
             // Require trailing backslash for path
@@ -130,11 +130,11 @@ namespace Firely.Fhir.Packages
         {
             if (node.isWholeCodeSystemValueSet())
             {
-                var uri = node.GetString("compose.include.system");
+                var uri = node.getString("compose.include.system");
                 string? version;
 
                 if (uri is not null)
-                    version = node.GetString("compose.include.version");
+                    version = node.getString("compose.include.version");
                 else
                     return null;
 
@@ -158,7 +158,7 @@ namespace Firely.Fhir.Packages
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             return node.Name == "NamingSystem"
                 ? node.findDescendants("uniqueId")
-                       ?.Select(node => node.GetString("value"))
+                       ?.Select(node => node.getString("value"))
                        ?.Where(s => s != null)
                        ?.ToArray()
                 : null;
@@ -170,8 +170,8 @@ namespace Firely.Fhir.Packages
             return node.Name == "ConceptMap"
                 ? new SourceAndTarget
                 {
-                    TargetUri = node.GetString("targetCanonical") ?? node.GetString("targetUri") ?? node.GetString("targetReference.reference"),
-                    SourceUri = node.GetString("sourceCanonical") ?? node.GetString("sourceUri") ?? node.GetString("sourceReference.reference")
+                    TargetUri = node.getString("targetCanonical") ?? node.getString("targetUri") ?? node.getString("targetReference.reference"),
+                    SourceUri = node.getString("sourceCanonical") ?? node.getString("sourceUri") ?? node.getString("sourceReference.reference")
                 }
                 : null;
         }

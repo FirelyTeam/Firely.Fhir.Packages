@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Firely.Fhir.Packages
 {
-    public static class Parser
+    public static class PackageParser
     {
-        public static T? Deserialize<T>(string content)
+        internal static T? Deserialize<T>(string content)
         {
             try
             {
@@ -35,7 +35,7 @@ namespace Firely.Fhir.Packages
         public static PackageManifest? ReadManifest(byte[] buffer)
         {
             string contents = Encoding.UTF8.GetString(buffer);
-            return Parser.ReadManifest(contents);
+            return PackageParser.ReadManifest(contents);
         }
 
         public static string WriteManifest(PackageManifest manifest)
@@ -55,22 +55,22 @@ namespace Firely.Fhir.Packages
             return jcontent.ToString() + "\n";
         }
 
-        public static LockFileJson? ReadLockFileJson(string content)
+        internal static LockFileJson? ReadLockFileJson(string content)
         {
             return JsonConvert.DeserializeObject<LockFileJson>(content);
         }
 
-        public static string WriteLockFileDto(LockFileJson dto)
+        internal static string WriteLockFileDto(LockFileJson dto)
         {
             return JsonConvert.SerializeObject(dto, Formatting.Indented) + "\n";
         }
 
-        public static CanonicalIndex? ReadCanonicalIndex(string content)
+        internal static CanonicalIndex? ReadCanonicalIndex(string content)
         {
             return JsonConvert.DeserializeObject<CanonicalIndex>(content);
         }
 
-        public static string WriteCanonicalIndex(CanonicalIndex references)
+        internal static string WriteCanonicalIndex(CanonicalIndex references)
         {
             return JsonConvert.SerializeObject(references, Formatting.Indented);
         }

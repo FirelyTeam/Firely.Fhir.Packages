@@ -14,7 +14,7 @@ namespace Firely.Fhir.Packages.Tests
         public void ResolveBestCandidateTest()
         {
             var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, EXPANSIONS_PACKAGE);
-            var adm_gender = context.Index.ResolveBestCandidateByCanonical("http://hl7.org/fhir/ValueSet/administrative-gender");
+            var adm_gender = context.GetIndex().ResolveBestCandidateByCanonical("http://hl7.org/fhir/ValueSet/administrative-gender");
             adm_gender.Should().NotBeNull();
             adm_gender!.HasExpansion.Should().BeTrue();
         }

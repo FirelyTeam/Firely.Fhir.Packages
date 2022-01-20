@@ -17,12 +17,22 @@ namespace Firely.Fhir.Packages
             this.Root = root ?? Platform.GetFhirPackageRoot();
         }
 
+        /// <summary>
+        /// Check whether the package is already installed on disk
+        /// </summary>
+        /// <param name="reference">the package that is to be checked</param>
+        /// <returns>whether a package is already installed</returns>
         public Task<bool> IsInstalled(PackageReference reference)
         {
             var target = PackageContentFolder(reference);
             return Task.FromResult(Directory.Exists(target));
         }
 
+        /// <summary>
+        /// Install a package on disk
+        /// </summary>
+        /// <param name="reference">Package reference of the package to be installed</param>
+        /// <param name="buffer">File content of the package</param>
         public async Task Install(PackageReference reference, byte[] buffer)
         {
             var folder = packageRootFolder(reference);
@@ -30,6 +40,11 @@ namespace Firely.Fhir.Packages
             createIndexFile(reference);
         }
 
+        /// <summary>
+        /// Read the manifest file of a package
+        /// </summary>
+        /// <param name="reference">Package of which the manifest file is to be read</param>
+        /// <returns>Package manifest</returns>
         public Task<PackageManifest?> ReadManifest(PackageReference reference)
         {
             var folder = PackageContentFolder(reference);
@@ -39,16 +54,26 @@ namespace Firely.Fhir.Packages
                 : Task.FromResult<PackageManifest?>(null);
         }
 
+        /// <summary>
+        /// Retrieve the index file that contains metadata of all files in the package
+        /// </summary>
+        /// <param name="reference">Package of which the index file is to be read</param>
+        /// <returns>Index file</returns>
         public Task<CanonicalIndex> GetCanonicalIndex(PackageReference reference)
         {
             var rootFolder = packageRootFolder(reference);
             return Task.FromResult(CanonicalIndexFile.GetFromFolder(rootFolder, recurse: true));
         }
 
+        /// <summary>
+        /// Returns the folder path of a given package
+        /// </summary>
+        /// <param name="reference">Package of which the folder is to be returned</param>
+        /// <returns>The package folder path</returns>
         public string PackageContentFolder(PackageReference reference)
         {
             var pkgfolder = packageFolderName(reference);
-            var folder = Path.Combine(Root, pkgfolder, PackageConsts.PACKAGEFOLDER);
+            var folder = Path.Combine(Root, pkgfolder, PackageFileNames.PACKAGEFOLDER);
             return folder;
         }
 
@@ -59,6 +84,10 @@ namespace Firely.Fhir.Packages
             return target;
         }
 
+        /// <summary>
+        /// Returns all package references currently installed on disk
+        /// </summary>
+        /// <returns>all package references currently installed on disk</returns>
         public Task<IEnumerable<PackageReference>> GetPackageReferences()
         {
             var folders = getPackageRootFolders();
@@ -68,14 +97,14 @@ namespace Firely.Fhir.Packages
             {
                 var name = Disk.GetFolderName(folder);
 
-                var reference = ParseFoldernameToReference(name);
+                var reference = parseFoldernameToReference(name);
                 references.Add(reference);
             }
 
             return Task.FromResult(references.AsEnumerable());
         }
 
-        public static PackageReference ParseFoldernameToReference(string foldername)
+        private static PackageReference parseFoldernameToReference(string foldername)
         {
             var idx = foldername.IndexOf('#');
 
@@ -86,6 +115,13 @@ namespace Firely.Fhir.Packages
             };
         }
 
+        /// <summary>
+        /// Returns the content of a specific file in the package
+        /// </summary>
+        /// <param name="reference">package that contains the file</param>
+        /// <param name="filename">file name of the file that is to be read</param>
+        /// <returns>File content represented as a string</returns>
+        /// <exception cref="Exception">Throws an exception when a file is now found</exception>
         public Task<string> GetFileContent(PackageReference reference, string filename)
         {
 
@@ -104,6 +140,11 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        /// <summary>
+        /// Gets a list of versions of a specific package
+        /// </summary>
+        /// <param name="name">name of the package</param>
+        /// <returns>list of versions</returns>
         public async Task<Versions?> GetVersions(string name)
         {
             var references = await GetPackageReferences();

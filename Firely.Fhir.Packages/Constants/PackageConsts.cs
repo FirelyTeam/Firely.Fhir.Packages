@@ -2,7 +2,7 @@
 
 namespace Firely.Fhir.Packages
 {
-    public static class PackageConsts
+    public static class PackageFileNames
     {
         public const string MANIFEST = "package.json";
         public const string LOCKFILE = "fhirpkg.lock.json";
