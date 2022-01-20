@@ -66,7 +66,7 @@ namespace Firely.Fhir.Packages
 
             var reference = manifest.GetPackageReference();
 
-            await cache.install(reference, path).ConfigureAwait(false);
+            await cache.Install(reference, path).ConfigureAwait(false);
 
             return reference;
         }
@@ -78,7 +78,7 @@ namespace Firely.Fhir.Packages
         /// <param name="reference">Reference of the package to be installed</param>
         /// <param name="path">file path of the package to be installed</param>
         /// <returns></returns>
-        public static async Task install(this IPackageCache cache, PackageReference reference, string path)
+        public static async Task Install(this IPackageCache cache, PackageReference reference, string path)
         {
             if (!await cache.IsInstalled(reference))
             {
