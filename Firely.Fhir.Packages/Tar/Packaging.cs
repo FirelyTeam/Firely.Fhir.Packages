@@ -20,7 +20,7 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="path">Path of the package file</param>
         /// <returns>The package manifest</returns>
-        internal static PackageManifest? ExtractManifestFromPackageFile(string path)
+        public static PackageManifest? ExtractManifestFromPackageFile(string path)
         {
             string file = Path.Combine(PACKAGE, PackageFileNames.MANIFEST);
             var entry = Tar.ExtractMatchingFiles(path, file).FirstOrDefault();
