@@ -131,7 +131,7 @@ namespace Firely.Fhir.Packages
         /// <param name="fhirRelease">The FHIR version of the package contents.</param>
         /// <returns></returns>
         [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
-        public static PackageManifest Create(string name, FhirRelease fhirRelease)
+        internal static PackageManifest Create(string name, FhirRelease fhirRelease)
         {
             var fhirVersion = FhirReleaseParser.FhirVersionFromRelease(fhirRelease);
             return Create(name, fhirVersion);
