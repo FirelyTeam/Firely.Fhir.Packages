@@ -18,5 +18,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Firely.Fhir.Packages\Firely.Fhir.Packages.csproj" />
   </ItemGroup>
+<ItemGroup>
+	<PackageReference Include="Hl7.Fhir.Support" Version="$(FhirNetSdkVersion)"/>
+	<PackageReference Include="Hl7.Fhir.Serialization" Version="$(FhirNetSdkVersion)"/>
+</ItemGroup>
 
 </Project>
