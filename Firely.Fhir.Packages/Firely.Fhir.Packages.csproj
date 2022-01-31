@@ -28,12 +28,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Hl7.Fhir.Support" Version="$(FhirNetSdkVersion)">
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="Hl7.Fhir.Serialization" Version="$(FhirNetSdkVersion)">
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
+		<PackageReference Include="Hl7.Fhir.Support" Version="$(FhirNetSdkVersion)"/>
+		<PackageReference Include="Hl7.Fhir.Serialization" Version="$(FhirNetSdkVersion)"/>
 	</ItemGroup>
 
 </Project>

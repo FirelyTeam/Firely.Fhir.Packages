@@ -1,8 +1,6 @@
 ﻿#nullable enable
 
-using Hl7.Fhir.Specification;
 using Hl7.Fhir.Utility;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -123,19 +121,6 @@ namespace Firely.Fhir.Packages
         //        Dependencies = new Dictionary<string, string>()
         //    };
         //}
-
-        /// <summary>
-        /// Creates a new <see cref="PackageManifest"/> initialized with sensible default values.
-        /// </summary>
-        /// <param name="name">A name for the package</param>
-        /// <param name="fhirRelease">The FHIR version of the package contents.</param>
-        /// <returns></returns>
-        [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
-        internal static PackageManifest Create(string name, FhirRelease fhirRelease)
-        {
-            var fhirVersion = FhirReleaseParser.FhirVersionFromRelease(fhirRelease);
-            return Create(name, fhirVersion);
-        }
 
         /// <summary>
         /// Serializes the manifest to json and writes it to the package.json file in the given folder, 

@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
-using Hl7.Fhir.Specification;
+using Hl7.Fhir.Utility;
+using System;
 
 namespace Firely.Fhir.Packages
 {
@@ -40,13 +41,19 @@ namespace Firely.Fhir.Packages
         /// Get the publish URL
         /// </summary>
         /// <param name="release">FHIR release version</param>
-        /// <param name="reference">Package url</param>
         /// <param name="mode">Publish mode</param>
         /// <returns>A URL used for publishing packages</returns>
-        public string GetPublishUrl(FhirRelease release, PackageReference reference, PublishMode mode)
+        public string GetPublishUrl(string fhirVersion, PackageReference reference, PublishMode mode)
         {
-            string url = $"{Root}/{release}?publishMode={mode}";
-            return url;
+            if (FhirReleaseParser.TryParse(fhirVersion, out var release))
+            {
+                string url = $"{Root}/{release}?publishMode={mode}";
+                return url;
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown FHIR version {fhirVersion}");
+            }
         }
     }
 }

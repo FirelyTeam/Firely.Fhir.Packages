@@ -1,6 +1,8 @@
 ﻿#nullable enable
 
-using Hl7.Fhir.Specification;
+
+using Hl7.Fhir.Utility;
+using System;
 
 namespace Firely.Fhir.Packages
 {
@@ -56,10 +58,17 @@ namespace Firely.Fhir.Packages
         /// <param name="reference">Package url</param>
         /// <param name="mode">Publish mode</param>
         /// <returns>A URL used for publishing packages</returns>
-        public string GetPublishUrl(FhirRelease release, PackageReference reference, PublishMode mode)
+        public string GetPublishUrl(string fhirVersion, PackageReference reference, PublishMode mode)
         {
-            // this is not yet made NPM compliant. 
-            return $"{Root}/{release}/{reference.Name}";
+            if (FhirReleaseParser.TryParse(fhirVersion, out var release))
+            {
+                // this is not yet made NPM compliant. 
+                return $"{Root}/{release}/{reference.Name}";
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown FHIR version {fhirVersion}");
+            }
         }
 
         public override string ToString() => $"(NPM) {Root}";

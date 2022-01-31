@@ -1,6 +1,5 @@
 ﻿#nullable enable
 
-using Hl7.Fhir.Specification;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -133,12 +132,12 @@ namespace Firely.Fhir.Packages
         /// Publish a package to the package source
         /// </summary>
         /// <param name="reference">PackageReference of the package to be published</param>
-        /// <param name="release">FHIR Release that is used by the package</param>
+        /// <param name="fhirRelease">FHIR Release that is used by the package</param>
         /// <param name="buffer">package content</param>
         /// <returns>Http response whether the package has been succesfully published</returns>
-        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, FhirRelease release, byte[] buffer)
+        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, string fhirVersion, byte[] buffer)
         {
-            string url = _urlProvider.GetPublishUrl(release, reference, PublishMode.Any);
+            string url = _urlProvider.GetPublishUrl(fhirVersion, reference, PublishMode.Any);
             var content = new ByteArrayContent(buffer);
             var response = await _httpClient.PostAsync(url, content).ConfigureAwait(false);
 
