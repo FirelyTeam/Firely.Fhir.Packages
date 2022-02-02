@@ -39,7 +39,8 @@ stages:
         nuGetSources: --source https://nuget.pkg.github.com/FirelyTeam/index.json
         pool: 
           vmImage: $(vmImage)
-   - ${{ if startswith(variables['Build.SourceBranch'], 'refs/tags/v') }}:  # release mode
+    
+  - ${{ if startswith(variables['Build.SourceBranch'], 'refs/tags/v') }}:  # release mode
     - template: build.yml@templates  # Template reference
       parameters:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
@@ -51,12 +52,12 @@ stages:
 
 - stage: deploy
   dependsOn: build
-  displayName: Deploy packages to GitHub
+  displayName: Deploy packages
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest')) # not a PR
   jobs:
   - ${{ if not(startswith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:  # 'normal' build 
     - deployment: gitHub
-      displayName: GitHub Packages
+      displayName: Deploy Packages to GitHub
       environment: GitHub
       strategy:
         runOnce:
@@ -67,6 +68,7 @@ stages:
                 artifact: 'NuGet Packages'
                 source: https://nuget.pkg.github.com/FirelyTeam/index.json
                 apiKey: $(GITHUB_PACKAGES_APIKEY)
+                
   - ${{ if startswith(variables['Build.SourceBranch'], 'refs/tags/v') }}:  # release mode
     - deployment: NuGet
       displayName: Publish to Nuget
