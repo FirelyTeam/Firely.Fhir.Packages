@@ -14,7 +14,7 @@ variables:
   vmImage: 'windows-latest'
   DOTNET_CORE_SDK: '6.0.x'
   GITHUB_PACKAGES_APIKEY: $(GitHubPushPackagesAPIKey) # key is set in UI of Azure Devops
-  NUGET_APIKEY: $(NuGet) 
+  NUGET_APIKEY: $(NuGetAPIKey) 
 
 pool: 
   vmImage: $(vmImage)
@@ -24,6 +24,7 @@ trigger:
     include:
     - develop*
     - release*
+    - refs/tags/v*
 
 stages:
 - stage: build
@@ -55,30 +56,29 @@ stages:
   displayName: Deploy packages
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest')) # not a PR
   jobs:
-  - ${{ if not(startswith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:  # 'normal' build 
-    - deployment: gitHub
-      displayName: Deploy Packages to GitHub
-      environment: GitHub
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - template: push-nuget-package.yml@templates
-              parameters:
-                artifact: 'NuGet Packages'
-                source: https://nuget.pkg.github.com/FirelyTeam/index.json
-                apiKey: $(GITHUB_PACKAGES_APIKEY)
-                
-  - ${{ if startswith(variables['Build.SourceBranch'], 'refs/tags/v') }}:  # release mode
-    - deployment: NuGet
-      displayName: Publish to Nuget
-      environment: NuGet
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - template: push-nuget-package.yml@templates
-              parameters:
-                artifact: 'NuGet Packages'
-                source: https://api.nuget.org/v3/index.json
-                apiKey: $(NUGET_APIKEY)
+  - deployment: gitHub
+    displayName: Deploy Packages to GitHub
+    environment: GitHub
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: push-nuget-package.yml@templates
+            parameters:
+              artifact: 'NuGet Packages'
+              source: https://nuget.pkg.github.com/FirelyTeam/index.json
+              apiKey: $(GITHUB_PACKAGES_APIKEY)                
+
+  - deployment: NuGet
+    condition: and(succeeded(), startswith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    displayName: Publish to Nuget      
+    environment: NuGet
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: push-nuget-package.yml@templates
+            parameters:
+              artifact: 'NuGet Packages'
+              source: https://api.nuget.org/v3/index.json
+              apiKey: $(NUGET_APIKEY)
