@@ -23,6 +23,10 @@ namespace Firely.Fhir.Packages
             return reference;
         }
 
+        /// <summary>
+        /// Resolve asks the configured server of this context to resolve a package and if it can't find it, fallback to the 
+        /// configured cache to resolve it.
+        /// </summary>
         public static async Task<PackageReference> Resolve(this PackageContext context, PackageDependency dependency)
         {
             if (context.Server is object)
