@@ -24,12 +24,12 @@ namespace Firely.Fhir.Packages
                 : $"{Root}/@{reference.Scope}/{reference.Name}/-/{reference.Name}-{reference.Version}.tgz";
         }
 
-        public string GetPublishUrl(FhirRelease release, PackageReference reference, PublishMode mode)
-        { 
-            // this is not yet made NPM compliant. 
-            return $"{Root}/{release}/{reference.Name}";
+        public string GetPublishUrl(PackageReference reference, PublishMode mode)
+        {
+            // This is not NPM compliant, but Simplifier doesn't have an NPM compliant endpoint yet anyway.
+            string url = $"{Root}/publish?publishMode={mode}";
+            return url;
         }
-
         public override string ToString() => $"(NPM) {Root}";
         
     }

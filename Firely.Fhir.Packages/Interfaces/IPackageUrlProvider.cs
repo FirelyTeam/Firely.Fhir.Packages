@@ -8,7 +8,7 @@ namespace Firely.Fhir.Packages
         string Root { get; }
         string GetPackageListingUrl(string name);
         string GetPackageUrl(PackageReference reference);
-        string GetPublishUrl(FhirRelease release, PackageReference reference, PublishMode mode);
+        string GetPublishUrl(PackageReference reference, PublishMode mode);
     }
 
 }
