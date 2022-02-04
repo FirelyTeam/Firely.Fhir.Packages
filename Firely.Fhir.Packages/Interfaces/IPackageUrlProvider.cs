@@ -30,7 +30,7 @@
         /// <param name="reference">Package url</param>
         /// <param name="mode">Publish mode</param>
         /// <returns>A URL used for publishing packages</returns>
-        string GetPublishUrl(string fhirVersion, PackageReference reference, PublishMode mode);
+        string GetPublishUrl(PackageReference reference, PublishMode mode);
     }
 
 }

@@ -43,17 +43,10 @@ namespace Firely.Fhir.Packages
         /// <param name="release">FHIR release version</param>
         /// <param name="mode">Publish mode</param>
         /// <returns>A URL used for publishing packages</returns>
-        public string GetPublishUrl(string fhirVersion, PackageReference reference, PublishMode mode)
+        public string GetPublishUrl(PackageReference reference, PublishMode mode)
         {
-            if (FhirReleaseParser.TryParse(fhirVersion, out var release))
-            {
-                string url = $"{Root}/{release}?publishMode={mode}";
-                return url;
-            }
-            else
-            {
-                throw new ArgumentException($"Unknown FHIR version {fhirVersion}");
-            }
+            string url = $"{Root}/publish?publishMode={mode}";               
+            return url;           
         }
     }
 }

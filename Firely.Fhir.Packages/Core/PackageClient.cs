@@ -135,9 +135,9 @@ namespace Firely.Fhir.Packages
         /// <param name="fhirRelease">FHIR Release that is used by the package</param>
         /// <param name="buffer">package content</param>
         /// <returns>Http response whether the package has been succesfully published</returns>
-        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, string fhirVersion, byte[] buffer)
+        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, byte[] buffer)
         {
-            string url = _urlProvider.GetPublishUrl(fhirVersion, reference, PublishMode.Any);
+            string url = _urlProvider.GetPublishUrl(reference, PublishMode.Any);
             var content = new ByteArrayContent(buffer);
             var response = await _httpClient.PostAsync(url, content).ConfigureAwait(false);
 

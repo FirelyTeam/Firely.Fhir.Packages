@@ -8,27 +8,15 @@ namespace Firely.Fhir.Packages
     {
         internal static async Task<PackageReference> CacheInstall(this PackageContext context, PackageDependency dependency)
         {
-            PackageReference reference;
 
-            if (context.Server is not null)
-            {
-                reference = await context.Server.Resolve(dependency);
-                if (!reference.Found) return reference;
-            }
-            else
-            {
-                reference = await context.Cache.Resolve(dependency);
-                if (!reference.Found) return reference;
-            }
+            PackageReference reference = await context.Resolve(dependency);
+
+            if (reference.NotFound) 
+                return PackageReference.None;
 
             if (await context.Cache.IsInstalled(reference)) return reference;
 
-
-            byte[]? buffer = null;
-
-            if (context.Server is not null)
-                buffer = await context.Server.GetPackage(reference);
-
+            var buffer = await context.Server.GetPackage(reference);
             if (buffer is null) return PackageReference.None;
 
             await context.Cache.Install(reference, buffer);
@@ -37,6 +25,22 @@ namespace Firely.Fhir.Packages
         }
 
         /// <summary>
+        /// Resolve asks the configured server of this context to resolve a package and if it can't find it, fallback to the 
+        /// configured cache to resolve it.
+        /// </summary>
+        public static async Task<PackageReference> Resolve(this PackageContext context, PackageDependency dependency)
+        {
+            if (context.Server is object)
+            {
+                PackageReference reference = await context.Server.Resolve(dependency);
+                if (reference.Found) return reference;
+            }
+            
+            return await context.Cache.Resolve(dependency);
+        }
+
+
+		/// <summary>
         /// Restores a package
         /// </summary>
         /// <param name="context"></param>
