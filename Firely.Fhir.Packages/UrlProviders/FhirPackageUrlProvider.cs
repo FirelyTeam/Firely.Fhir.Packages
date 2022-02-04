@@ -17,7 +17,7 @@ namespace Firely.Fhir.Packages
 
         public override string ToString() => $"(FHIR) {Root}";
 
-        public string GetPublishUrl(FhirRelease release, PackageReference reference, PublishMode mode)
+        public string GetPublishUrl(PackageReference reference, PublishMode mode)
         {
             string url = $"{Root}/publish?publishMode={mode}";
             return url;

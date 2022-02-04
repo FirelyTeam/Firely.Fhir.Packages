@@ -101,9 +101,11 @@ namespace Firely.Fhir.Packages
             return await httpClient.GetByteArrayAsync(url);
         }
 
-        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, FhirRelease release, byte[] buffer)
+        
+
+        public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, byte[] buffer)
         {
-            string url = urlProvider.GetPublishUrl(release, reference, PublishMode.Any);
+            string url = urlProvider.GetPublishUrl(reference, PublishMode.Any);
             var content = new ByteArrayContent(buffer);
             var response = await httpClient.PostAsync(url, content);
 
