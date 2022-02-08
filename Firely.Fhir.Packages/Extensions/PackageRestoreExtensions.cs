@@ -11,12 +11,12 @@ namespace Firely.Fhir.Packages
 
             PackageReference reference = await context.Resolve(dependency);
 
-            if (reference.NotFound) 
+            if (reference.NotFound)
                 return PackageReference.None;
 
             if (await context.Cache.IsInstalled(reference)) return reference;
 
-            var buffer = await context.Server.GetPackage(reference);
+            var buffer = (context.Server != null) ? await context.Server.GetPackage(reference) : null;
             if (buffer is null) return PackageReference.None;
 
             await context.Cache.Install(reference, buffer);
@@ -35,12 +35,12 @@ namespace Firely.Fhir.Packages
                 PackageReference reference = await context.Server.Resolve(dependency);
                 if (reference.Found) return reference;
             }
-            
+
             return await context.Cache.Resolve(dependency);
         }
 
 
-		/// <summary>
+        /// <summary>
         /// Restores a package
         /// </summary>
         /// <param name="context"></param>

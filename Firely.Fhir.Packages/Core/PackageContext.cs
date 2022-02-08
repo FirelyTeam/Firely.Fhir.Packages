@@ -16,7 +16,7 @@ namespace Firely.Fhir.Packages
     {
         public readonly IPackageCache Cache;
         public readonly IProject Project;
-        public readonly IPackageServer Server;
+        public readonly IPackageServer? Server;
         internal readonly Action<PackageReference>? onInstalled;
 
         private FileIndex? _index;
@@ -28,7 +28,7 @@ namespace Firely.Fhir.Packages
         /// <param name="project">The project or main package at the root of a dependency tree</param>
         /// <param name="server">The server from where to install packages into the cache</param>
         /// <param name="onInstalled">Event that responds to succesfull package installs</param>
-        public PackageContext(IPackageCache cache, IProject project, IPackageServer server, Action<PackageReference>? onInstalled = null)
+        public PackageContext(IPackageCache cache, IProject project, IPackageServer? server, Action<PackageReference>? onInstalled = null)
         {
             this.Cache = cache;
             this.Project = project;
