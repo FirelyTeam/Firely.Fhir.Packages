@@ -6,14 +6,28 @@ using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
+    /// <summary>
+    /// List of SemVer versions
+    /// </summary>
     public class Versions
     {
         private readonly List<Version> _list = new();
 
-        internal IReadOnlyCollection<Version> Items => _list;
+        /// <summary>
+        /// Return the versions from the list
+        /// </summary>
+        [System.CLSCompliant(false)]
+        public IReadOnlyCollection<Version> Items => _list;
 
+        /// <summary>
+        /// Create an empty list if versions
+        /// </summary>
         public Versions() { }
 
+        /// <summary>
+        /// Create a list of versions
+        /// </summary>
+        /// <param name="versions">versions from a list has to be created</param>
         public Versions(IEnumerable<string> versions)
         {
             Append(versions);
@@ -36,14 +50,24 @@ namespace Firely.Fhir.Packages
             _list.Sort();
         }
 
-
-        internal Version? Latest()
+        /// <summary>
+        /// Get the latest version from the list
+        /// </summary>
+        /// <returns>the latest version from the list</returns>
+        [System.CLSCompliant(false)]
+        public Version? Latest()
         {
             return _list.LastOrDefault();
         }
 
-
-        internal static bool TryParseVersion(string s, out Version? v)
+        /// <summary>
+        /// Try to parse a SemVer version from a string
+        /// </summary>
+        /// <param name="s">string to be parsed</param>
+        /// <param name="v">Semver version object</param>
+        /// <returns>Whether the string was succesfully parsed to a SemVer version object</returns>
+        [System.CLSCompliant(false)]
+        public static bool TryParseVersion(string s, out Version? v)
         {
             try
             {
@@ -59,13 +83,25 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        internal Version Resolve(Range range)
+        /// <summary>
+        /// Resolve the best mathing version from a range
+        /// </summary>
+        /// <param name="range">Range of versions to be used during the resolving</param>
+        /// <returns>Semver Version object if the best matching version</returns>
+        [System.CLSCompliant(false)]
+        public Version Resolve(Range range)
         {
 
             return range.MaxSatisfying(_list);
         }
 
-        internal bool Has(Version version)
+        /// <summary>
+        /// Check whether the list of SemVer version objects contains a specific version    
+        /// </summary>
+        /// <param name="version">verison to be checked for</param>
+        /// <returns>Whether the list of SemVer version objects contains a specific version</returns>
+        [System.CLSCompliant(false)]
+        public bool Has(Version version)
         {
             foreach (var item in _list)
             {

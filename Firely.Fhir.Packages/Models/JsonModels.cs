@@ -583,12 +583,24 @@ namespace Firely.Fhir.Packages
             manifest.AddDependency(dependency.Name, dependency.Range);
         }
 
-        internal static void AddDependency(this PackageManifest manifest, PackageManifest dependency)
+        /// <summary>
+        /// Add a specific dependency
+        /// </summary>
+        /// <param name="manifest">The manifest of the package the dependency is to be added to</param>
+        /// <param name="pkgname">The name of the dependency to be added</param>
+        /// <returns>Whether the dependency has been added</returns>
+        public static void AddDependency(this PackageManifest manifest, PackageManifest dependency)
         {
             manifest.AddDependency(dependency.Name, dependency.Version);
         }
 
-        internal static bool HasDependency(this PackageManifest manifest, string pkgname)
+        /// <summary>
+        /// Check whether a package has a specific dependency
+        /// </summary>
+        /// <param name="manifest">The manifest of the package to be checked</param>
+        /// <param name="pkgname">The name of the dependency to be checked for</param>
+        /// <returns>Whether a package has a specific dependency</returns>
+        public static bool HasDependency(this PackageManifest manifest, string pkgname)
         {
             if (manifest?.Dependencies?.Keys is null)
                 return false;
@@ -603,7 +615,13 @@ namespace Firely.Fhir.Packages
             return false;
         }
 
-        internal static bool RemoveDependency(this PackageManifest manifest, string pkgname)
+        /// <summary>
+        /// Remove a specific dependency
+        /// </summary>
+        /// <param name="manifest">The manifest of the package the dependency is to be removed from</param>
+        /// <param name="pkgname">The name of the dependency to be removed</param>
+        /// <returns>Whether the dependency has been removed</returns>
+        public static bool RemoveDependency(this PackageManifest manifest, string pkgname)
         {
             if (manifest?.Dependencies?.Keys is null)
                 return false;
