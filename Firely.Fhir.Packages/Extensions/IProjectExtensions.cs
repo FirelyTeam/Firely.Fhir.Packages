@@ -29,7 +29,7 @@ namespace Firely.Fhir.Packages
         /// <param name="project"></param>
         /// <param name="dependency">Dependency to be removed</param>
         /// <returns>Whether to removal was successful</returns>
-        public static async Task<bool> RemoveDependency(this IProject project, PackageReference dependency)
+        public static async Task<bool> RemoveDependency(this IProject project, PackageDependency dependency)
         {
             if (dependency.Name is null)
                 return false;
