@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
     public static class CanonicalIndexFile
     {
-        public const int VERSION = 5;
+
 
         public static CanonicalIndex GetFromFolder(string folder, bool recurse)
         {
             if (ExistsIn(folder))
             {
                 var index = ReadFromFolder(folder);
-                if (index.Version == VERSION) return index;
+                if (index.Version == CanonicalIndexer.VERSION) return index;
             }
             // otherwise:
             return Create(folder, recurse);
@@ -21,10 +23,12 @@ namespace Firely.Fhir.Packages
         public static CanonicalIndex Create(string folder, bool recurse)
         {
             var entries = CanonicalIndexer.IndexFolder(folder, recurse);
-            var index = new CanonicalIndex { Files = entries, Version = VERSION, date = DateTimeOffset.Now };
+            var index = CanonicalIndexer.BuildCanonicalIndex(entries);
             WriteToFolder(index, folder);
             return index;
         }
+
+       
 
         public static CanonicalIndex ReadFromFolder(string folder)
         {

@@ -9,6 +9,14 @@ namespace Firely.Fhir.Packages
 
     public static class CanonicalIndexer
     {
+        public const int VERSION = 5;
+
+        public static CanonicalIndex BuildCanonicalIndex(IEnumerable<ResourceMetadata> entries)
+        {
+            var files = entries.ToList();
+            return new CanonicalIndex { Files = files, Version = VERSION, date = DateTimeOffset.Now };
+        }
+
         public static List<ResourceMetadata> IndexFolder(string folder, bool recurse)
         {
             var option = recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -51,6 +59,21 @@ namespace Firely.Fhir.Packages
             {
                 return null;
             }
+        }
+
+        public static ResourceMetadata BuildResourceMetadata(string filename, ISourceNode resource)
+        { 
+            return new ResourceMetadata
+            {
+                FileName = filename,
+                ResourceType = resource.Name,
+                Id = resource.GetString("id"),
+                Canonical = resource.GetString("url"),
+                Version = resource.GetString("version"),
+                Kind = resource.GetString("kind"),
+                Type = resource.GetString("type"),
+                FhirVersion = resource.GetString("fhirVersion")
+            };
         }
 
 
