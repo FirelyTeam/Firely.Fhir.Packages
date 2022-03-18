@@ -23,12 +23,6 @@ trigger:
     - develop*
     - release*
 
-pr:
-  branches:
-    include: 
-    - develop*
-    - hotfix/*
-
 stages:
 - stage: build
   jobs:
