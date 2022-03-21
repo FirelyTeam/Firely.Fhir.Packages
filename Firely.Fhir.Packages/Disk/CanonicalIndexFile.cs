@@ -41,7 +41,7 @@ namespace Firely.Fhir.Packages
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                return Parser.ReadCanonicalIndex(content);
+                return Parser.ParseCanonicalIndex(content);
 
             }
             else return null;
@@ -49,7 +49,7 @@ namespace Firely.Fhir.Packages
 
         private static void Write(CanonicalIndex index, string path)
         {
-            var content = Parser.WriteCanonicalIndex(index);
+            var content = Parser.SerializeCanonicalIndex(index);
             File.WriteAllText(path, content);
         }
 

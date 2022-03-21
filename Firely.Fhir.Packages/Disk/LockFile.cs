@@ -10,7 +10,7 @@ namespace Firely.Fhir.Packages
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                var dto = Parser.ReadLockFileJson(content);
+                var dto = Parser.ParseLockFileJson(content);
                 return new PackageClosure
                 {
                     References = dto.PackageReferences.ToPackageReferences(),
@@ -60,7 +60,7 @@ namespace Firely.Fhir.Packages
         private static void Write(LockFileJson json, string path)
         {
             json.Updated = DateTime.Now;
-            var content = Parser.WriteLockFileDto(json);
+            var content = Parser.SerializeLockFileDto(json);
             File.WriteAllText(path, content);
         }
 

@@ -26,18 +26,18 @@ namespace Firely.Fhir.Packages
 
 
 
-        public static PackageManifest ReadManifest(string content)
+        public static PackageManifest ParseManifest(string content)
         {
             return JsonConvert.DeserializeObject<PackageManifest>(content);
         }
 
-        public static PackageManifest ReadManifest(byte[] buffer)
+        public static PackageManifest ParseManifest(byte[] buffer)
         {
             string contents = Encoding.UTF8.GetString(buffer);
-            return Parser.ReadManifest(contents);
+            return Parser.ParseManifest(contents);
         }
 
-        public static string WriteManifest(PackageManifest manifest)
+        public static string SerializeManifest(PackageManifest manifest)
         {
             return JsonConvert.SerializeObject(manifest, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore } )+"\n";
             //return JsonConvert.SerializeObject(manifest, Formatting.Indented )+"\n";
@@ -54,22 +54,22 @@ namespace Firely.Fhir.Packages
             return jcontent.ToString()+"\n";
         }
 
-        public static LockFileJson ReadLockFileJson(string content)
+        public static LockFileJson ParseLockFileJson(string content)
         {
             return JsonConvert.DeserializeObject<LockFileJson>(content);
         }
 
-        public static string WriteLockFileDto(LockFileJson dto)
+        public static string SerializeLockFileDto(LockFileJson dto)
         {
             return JsonConvert.SerializeObject(dto, Formatting.Indented)+"\n";
         }
 
-        public static CanonicalIndex ReadCanonicalIndex(string content)
+        public static CanonicalIndex ParseCanonicalIndex(string content)
         {
             return JsonConvert.DeserializeObject<CanonicalIndex>(content);
         } 
 
-        public static string WriteCanonicalIndex(CanonicalIndex references)
+        public static string SerializeCanonicalIndex(CanonicalIndex references)
         {
             return JsonConvert.SerializeObject(references, Formatting.Indented);
         }
