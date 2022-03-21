@@ -13,7 +13,7 @@ namespace Firely.Fhir.Packages
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                var dto = PackageParser.ReadLockFileJson(content);
+                var dto = PackageParser.ParseLockFileJson(content);
 
                 return dto is null
                     ? null
@@ -22,6 +22,7 @@ namespace Firely.Fhir.Packages
                         References = dto.PackageReferences?.ToPackageReferences() ?? new List<PackageReference>(),
                         Missing = dto.MissingDependencies?.ToPackageDependencies() ?? new List<PackageDependency>(),
                     };
+
             }
             else return null;
         }
@@ -78,7 +79,7 @@ namespace Firely.Fhir.Packages
         private static void write(LockFileJson json, string path)
         {
             json.Updated = DateTime.Now;
-            var content = PackageParser.WriteLockFileDto(json);
+            var content = PackageParser.SerializeLockFileDto(json);
             File.WriteAllText(path, content);
         }
 

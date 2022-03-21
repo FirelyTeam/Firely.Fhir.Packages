@@ -9,8 +9,59 @@ using System.Linq;
 namespace Firely.Fhir.Packages
 {
 
-    internal static class CanonicalIndexer
+    public static class CanonicalIndexer
     {
+        public const int FIRELY_INDEX_VERSION = 7;
+        public const int INDEX_JSON_VERSION = 1;
+
+        /// <summary>
+        /// Builds a canonical index (.firely.index.json) from a list of metadata entries.
+        /// </summary>
+        public static CanonicalIndex BuildCanonicalIndex(IEnumerable<ResourceMetadata> entries)
+        {
+            var index = new CanonicalIndex { Files = new(), Version = FIRELY_INDEX_VERSION, date = DateTimeOffset.Now };
+            return index.Append(entries);
+        }
+
+        /// <summary>
+        /// Appends Metadata to a canonical index.
+        /// </summary>
+        public static CanonicalIndex Append(this CanonicalIndex index, IEnumerable<ResourceMetadata> entries)
+        {
+            if (index.Files == null)
+                index.Files = new();
+
+            index.Files.AddRange(entries);
+            return index;
+        }
+
+        /// <summary>
+        /// Builds a index.json (.index.json) from a list of metadata entries.
+        /// </summary>
+        public static IndexJson BuildIndexJson(IEnumerable<IndexData> entries)
+        {
+            var index = new IndexJson { Files = new(), Version = INDEX_JSON_VERSION, date = DateTimeOffset.Now };
+            return index.Append(entries);
+        }
+
+        /// <summary>
+        /// Appends index data to a index json
+        /// </summary>
+        public static IndexJson Append(this IndexJson index, IEnumerable<IndexData> entries)
+        {
+            if (index.Files == null)
+                index.Files = new();
+
+            index.Files.AddRange(entries);
+            return index;
+        }
+
+        /// <summary>
+        /// Creates the metadata entries for a CanonicalIndex for a folder
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="recurse"></param>
+        /// <returns></returns>
         internal static List<ResourceMetadata> IndexFolder(string folder, bool recurse)
         {
             var option = recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -25,22 +76,8 @@ namespace Firely.Fhir.Packages
 
         private static ResourceMetadata getFileMetadata(string folder, string filepath)
         {
-            return ElementNavigation.TryParseToSourceNode(filepath, out var node)
-                    ? new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: getRelativePath(folder, filepath))
-                    {
-                        ResourceType = node?.Name,
-                        Id = node?.getString("id"),
-                        Canonical = node?.getString("url"),
-                        Version = node?.getString("version"),
-                        Kind = node?.getString("kind"),
-                        Type = node?.getString("type"),
-                        FhirVersion = node?.getString("fhirVersion"),
-                        HasSnapshot = node?.checkForSnapshot(),
-                        HasExpansion = node?.checkForExpansion(),
-                        ValueSetCodeSystem = node?.getCodeSystemFromValueSet(),
-                        NamingSystemUniqueId = node?.getUniqueIdsFromNamingSystem(),
-                        ConceptMapUris = node?.getConceptMapsSourceAndTarget()
-                    }
+            return FhirParser.TryParseToSourceNode(filepath, out var node)
+                    ? BuildResourceMetadata(getRelativePath(folder, filepath), node!)
                     : new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: getRelativePath(folder, filepath));
         }
 
@@ -51,17 +88,53 @@ namespace Firely.Fhir.Packages
 
         private static IndexData getIndexData(FileEntry entry)
         {
-            return ElementNavigation.TryParseToSourceNode(entry.GetStream(), out var node)
-                  ? new IndexData(filename: Path.GetFileName(entry.FilePath))
-                  {
-                      ResourceType = node?.Name,
-                      Id = node?.getString("id"),
-                      Canonical = node?.getString("url"),
-                      Version = node?.getString("version"),
-                      Kind = node?.getString("kind"),
-                      Type = node?.getString("type")
-                  }
+            return FhirParser.TryParseToSourceNode(entry.GetStream(), out var node)
+                  ? BuildIndex(Path.GetFileName(entry.FilePath), node!)
                 : new IndexData(filename: Path.GetFileName(entry.FilePath));
+        }
+
+        /// <summary>
+        /// Builds Firely specific metadata for a Package File Index for a single file.
+        /// </summary>
+        /// <param name="filepath">relative path of the file</param>
+        /// <param name="resource">Resource to be indexed</param>
+        /// <returns>An entry to .firely.index.json</returns>
+        public static ResourceMetadata BuildResourceMetadata(string filepath, ISourceNode resource)
+        {
+            return new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: filepath)
+            {
+                ResourceType = resource?.Name,
+                Id = resource?.getString("id"),
+                Canonical = resource?.getString("url"),
+                Version = resource?.getString("version"),
+                Kind = resource?.getString("kind"),
+                Type = resource?.getString("type"),
+                FhirVersion = resource?.getString("fhirVersion"),
+                HasSnapshot = resource?.checkForSnapshot(),
+                HasExpansion = resource?.checkForExpansion(),
+                ValueSetCodeSystem = resource?.getCodeSystemFromValueSet(),
+                NamingSystemUniqueId = resource?.getUniqueIdsFromNamingSystem(),
+                ConceptMapUris = resource?.getConceptMapsSourceAndTarget()
+            };
+        }
+
+        /// <summary>
+        /// Builds index data for a Package File Index for a single file.
+        /// </summary>
+        /// <param name="filename">Name of the file</param>
+        /// <param name="resource">Resource to be indexed</param>
+        /// <returns>An entry to .index.json</returns>
+        public static IndexData BuildIndex(string filename, ISourceNode resource)
+        {
+            return new IndexData(filename)
+            {
+                ResourceType = resource.Name,
+                Id = resource.getString("id"),
+                Canonical = resource.getString("url"),
+                Version = resource.getString("version"),
+                Kind = resource.getString("kind"),
+                Type = resource.getString("type")
+            };
         }
 
 

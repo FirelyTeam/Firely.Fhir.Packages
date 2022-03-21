@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Firely.Fhir.Packages
 {
-    internal static class ElementNavigation
+    internal static class FhirParser
     {
         private static readonly FhirJsonParsingSettings _jsonParsingSettings = new FhirJsonParsingSettings()
         {
@@ -22,7 +22,7 @@ namespace Firely.Fhir.Packages
             ValidateFhirXhtml = false
         };
 
-        internal static ISourceNode? ParseToSourceNode(string filepath)
+        internal static ISourceNode? ParseFileToSourceNode(string filepath)
         {
             if (FhirFileFormats.HasXmlExtension(filepath))
             {
@@ -60,7 +60,7 @@ namespace Firely.Fhir.Packages
         {
             try
             {
-                node = ParseToSourceNode(filepath);
+                node = ParseFileToSourceNode(filepath);
                 if (node is null)
                 {
                     return false;

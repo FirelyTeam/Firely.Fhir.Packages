@@ -25,10 +25,7 @@ namespace Firely.Fhir.Packages
             string file = Path.Combine(PACKAGE, PackageFileNames.MANIFEST);
             var entry = Tar.ExtractMatchingFiles(path, file).FirstOrDefault();
 
-            if (entry is null)
-                return null;
-
-            return PackageParser.ReadManifest(entry.Buffer);
+            return entry is null ? null : PackageParser.ParseManifest(entry.Buffer);
         }
 
 
@@ -76,7 +73,7 @@ namespace Firely.Fhir.Packages
 
         private static byte[] toByteArray(this PackageManifest manifest)
         {
-            var content = PackageParser.WriteManifest(manifest);
+            var content = PackageParser.SerializeManifest(manifest);
             return Encoding.ASCII.GetBytes(content);
         }
 
@@ -138,7 +135,7 @@ namespace Firely.Fhir.Packages
                 var filename = Path.GetFileName(entry.FilePath);
                 if (filename == PackageFileNames.MANIFEST)
                 {
-                    manifest = PackageParser.ReadManifest(entry.Buffer);
+                    manifest = PackageParser.ParseManifest(entry.Buffer);
                 }
                 else
                 {

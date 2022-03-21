@@ -19,7 +19,7 @@ namespace Firely.Fhir.Packages
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                return PackageParser.ReadManifest(content);
+                return PackageParser.ParseManifest(content);
             }
             else
             {
@@ -63,7 +63,7 @@ namespace Firely.Fhir.Packages
             }
             else
             {
-                var content = PackageParser.WriteManifest(manifest);
+                var content = PackageParser.SerializeManifest(manifest);
                 File.WriteAllText(path, content);
             }
         }

@@ -25,20 +25,18 @@ namespace Firely.Fhir.Packages
             MissingMemberHandling = MissingMemberHandling.Ignore
         };
 
-
-
-        public static PackageManifest? ReadManifest(string content)
+        public static PackageManifest? ParseManifest(string content)
         {
             return JsonConvert.DeserializeObject<PackageManifest>(content);
         }
 
-        public static PackageManifest? ReadManifest(byte[] buffer)
+        public static PackageManifest? ParseManifest(byte[] buffer)
         {
             string contents = Encoding.UTF8.GetString(buffer);
-            return PackageParser.ReadManifest(contents);
+            return ParseManifest(contents);
         }
 
-        public static string WriteManifest(PackageManifest manifest)
+        public static string SerializeManifest(PackageManifest manifest)
         {
             return JsonConvert.SerializeObject(manifest, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }) + "\n";
             //return JsonConvert.SerializeObject(manifest, Formatting.Indented )+"\n";
@@ -55,22 +53,22 @@ namespace Firely.Fhir.Packages
             return jcontent.ToString() + "\n";
         }
 
-        internal static LockFileJson? ReadLockFileJson(string content)
+        internal static LockFileJson? ParseLockFileJson(string content)
         {
             return JsonConvert.DeserializeObject<LockFileJson>(content);
         }
 
-        internal static string WriteLockFileDto(LockFileJson dto)
+        internal static string SerializeLockFileDto(LockFileJson dto)
         {
             return JsonConvert.SerializeObject(dto, Formatting.Indented) + "\n";
         }
 
-        internal static CanonicalIndex? ReadCanonicalIndex(string content)
+        internal static CanonicalIndex? ParseCanonicalIndex(string content)
         {
             return JsonConvert.DeserializeObject<CanonicalIndex>(content);
         }
 
-        internal static string WriteCanonicalIndex(CanonicalIndex references)
+        internal static string SerializeCanonicalIndex(CanonicalIndex references)
         {
             return JsonConvert.SerializeObject(references, Formatting.Indented);
         }

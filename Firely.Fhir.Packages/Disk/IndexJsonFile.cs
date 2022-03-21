@@ -10,12 +10,10 @@ namespace Firely.Fhir.Packages
 {
     public static class IndexJsonFile
     {
-        public const int VERSION = 1;
-
         internal static FileEntry GenerateIndexFile(IEnumerable<FileEntry> entries, string folder)
         {
             var files = CanonicalIndexer.GenerateIndexFile(entries);
-            var index = new IndexJson { Files = files.ToList(), Version = VERSION, date = DateTimeOffset.Now };
+            var index = new IndexJson { Files = files.ToList(), Version = CanonicalIndexer.INDEX_JSON_VERSION, date = DateTimeOffset.Now };
             return convertToFileEntry(index, folder);
 
         }
