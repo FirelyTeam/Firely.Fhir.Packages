@@ -9,14 +9,40 @@ namespace Firely.Fhir.Packages
 
     public static class CanonicalIndexer
     {
+        public const int VERSION = 5;
+
+        /// <summary>
+        /// Builds a canonical index from a list of metadata entries.
+        /// </summary>
+        public static CanonicalIndex BuildCanonicalIndex(IEnumerable<ResourceMetadata> entries)
+        {
+            var index = new CanonicalIndex { Files = new(), Version = VERSION, date = DateTimeOffset.Now };
+            return index.Append(entries);
+        }
+
+        /// <summary>
+        /// Appends Metadata to a canonical index.
+        /// </summary>
+        public static CanonicalIndex Append(this CanonicalIndex index, IEnumerable<ResourceMetadata> entries)
+        {
+            index.Files.AddRange(entries);
+            return index;
+        }
+
+        /// <summary>
+        /// Creates the metadata entries for a CanonicalIndex for a folder
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="recurse"></param>
+        /// <returns></returns>
         public static List<ResourceMetadata> IndexFolder(string folder, bool recurse)
         {
             var option = recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             var paths = Directory.GetFiles(folder, "*.*", option);
-            return EnumerateMetadata(folder, paths).ToList();
+            return EnumerateFolderMetadata(folder, paths).ToList();
         }
 
-        private static IEnumerable<ResourceMetadata> EnumerateMetadata(string folder, IEnumerable<string> filepaths)
+        private static IEnumerable<ResourceMetadata> EnumerateFolderMetadata(string folder, IEnumerable<string> filepaths)
         {
             foreach (var filepath in filepaths)
             {
@@ -26,11 +52,15 @@ namespace Firely.Fhir.Packages
             }
         }
 
+
+        /// <summary>
+        /// Builds the CanonicalIndex Resource metadata for a single file on disk
+        /// </summary>
         public static ResourceMetadata? GetFileMetadata(string folder, string filepath)
         {
             try
             {
-                var node = ElementNavigation.ParseToSourceNode(filepath);
+                var node = FhirParser.ParseFileToSourceNode(filepath);
                 if (node is null) return null;
 
                 string? canonical = node.GetString("url"); // node.Children("url").FirstOrDefault()?.Text;
@@ -53,6 +83,23 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        /// <summary>
+        /// Builds Metadata for a Package File Index for a single file.
+        /// </summary>
+        public static ResourceMetadata BuildResourceMetadata(string filename, ISourceNode resource)
+        { 
+            return new ResourceMetadata
+            {
+                FileName = filename,
+                ResourceType = resource.Name,
+                Id = resource.GetString("id"),
+                Canonical = resource.GetString("url"),
+                Version = resource.GetString("version"),
+                Kind = resource.GetString("kind"),
+                Type = resource.GetString("type"),
+                FhirVersion = resource.GetString("fhirVersion")
+            };
+        }
 
         public static string GetString(this ISourceNode node, string expression)
         {

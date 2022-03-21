@@ -36,8 +36,8 @@ namespace Firely.Fhir.Packages.Tests
                 Jurisdiction = "urn:iso:std:iso:3166#US"
             };
 
-            var json = Parser.WriteManifest(manif);
-            var manif2 = Parser.ReadManifest(json);
+            var json = Parser.SerializeManifest(manif);
+            var manif2 = Parser.ParseManifest(json);
 
             manif2.Should().BeEquivalentTo(manif);
         }
@@ -61,7 +61,7 @@ namespace Firely.Fhir.Packages.Tests
             var manifest1 = new PackageManifest { Name = "a-b-c", Version = "4.0.1" };
             var manifest2 = new PackageManifest { Name = "a-b-c", Version = "4.0.1", Author = "Turing" };
             
-            var serialized1 = Parser.WriteManifest(manifest1);
+            var serialized1 = Parser.SerializeManifest(manifest1);
             var serialized2 = Parser.JsonMergeManifest(manifest2, serialized1);
 
             var roundtrip = JObject.Parse(serialized2);
