@@ -30,7 +30,7 @@ stages:
 - stage: build
   jobs:
   - ${{ if not(startswith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:  # 'normal' build 
-    - template: build.yml@templates  # Template reference
+    - template: templates/build.yml  # Template reference
       parameters:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
         useVersionSuffix: true
@@ -50,13 +50,6 @@ stages:
         restoreDependencies: true
         pool: 
           vmImage: $(vmImage)
-
-- stage: sign 
-  dependsOn: build
-  displayName: "Sign .dll's"
-  condition: "succeeded()"
-  jobs:
-    - template: templates/sign-dlls-template.yml
 
 - stage: deployToGitHub
   dependsOn: sign 
