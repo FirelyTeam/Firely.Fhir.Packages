@@ -28,7 +28,7 @@ jobs:
       submodules: true
 
   - ${{ if eq(parameters.restoreDependencies, 'true') }}:
-    - template: restore.yml
+    - template: restore.yml@templates
       parameters:
         nuGetServiceConnections: ${{ parameters.nuGetServiceConnections }}
         nuGetSources: ${{ parameters.nuGetSources }}
@@ -55,12 +55,12 @@ jobs:
   - template: sign-dlls-template.yml
 
   - ${{ if eq(parameters.packageArtifacts, 'true') }}:
-    - template: package.yml
+    - template: package.yml@templates
       parameters:
         useVersionSuffix: ${{ parameters.useVersionSuffix }}
   
   - ${{ if eq(parameters.publishArtifacts, 'true') }}:
-    - template: publish.yml
+    - template: publish.yml@templates
       parameters:
         useVersionSuffix: ${{ parameters.useVersionSuffix }}
         publishWebProjects: ${{ parameters.publishWebProjects }}
