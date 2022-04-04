@@ -50,13 +50,16 @@ stages:
         restoreDependencies: true
         pool: 
           vmImage: $(vmImage)
-  - template: templates/sign-dlls-template.yml
-    
-  
 
+- stage: sign 
+  dependsOn: build
+  displayName: "Sign .dll's"
+  condition: "succeeded()"
+  jobs:
+    - template: templates/sign-dlls-template.yml
 
 - stage: deployToGitHub
-  dependsOn: build
+  dependsOn: sign 
   displayName: Deploy packages To Github
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest')) # not a PR
   jobs:
