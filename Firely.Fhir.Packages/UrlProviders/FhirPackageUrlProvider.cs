@@ -1,7 +1,14 @@
-﻿#nullable enable
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
 
-using Hl7.Fhir.Utility;
-using System;
+
+#nullable enable
+
 
 namespace Firely.Fhir.Packages
 {
@@ -45,8 +52,8 @@ namespace Firely.Fhir.Packages
         /// <returns>A URL used for publishing packages</returns>
         public string GetPublishUrl(PackageReference reference, PublishMode mode)
         {
-            string url = $"{Root}/publish?publishMode={mode}";               
-            return url;           
+            string url = $"{Root}/publish?publishMode={mode}";
+            return url;
         }
     }
 }

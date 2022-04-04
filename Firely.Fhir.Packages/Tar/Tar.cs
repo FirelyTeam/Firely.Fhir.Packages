@@ -1,4 +1,13 @@
-﻿#nullable enable
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
 
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
@@ -18,7 +27,7 @@ namespace Firely.Fhir.Packages
 
             using var file = File.Create(packagefile);
             using var gzip = new GZipOutputStream(file);
-            using TarOutputStream tar = new TarOutputStream(gzip);
+            using TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default);
 
             Write(tar, entries);
 
@@ -32,7 +41,7 @@ namespace Firely.Fhir.Packages
 
             using (var file = File.Create(packagefile))
             using (var gzip = new GZipOutputStream(file))
-            using (TarOutputStream tar = new TarOutputStream(gzip))
+            using (TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default))
             {
                 Write(tar, single);
                 Write(tar, entries);
@@ -44,7 +53,7 @@ namespace Firely.Fhir.Packages
         {
             var stream = new LateDisposalMemoryStream();
             using (var gzip = new GZipOutputStream(stream))
-            using (TarOutputStream tar = new TarOutputStream(gzip))
+            using (TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default))
             {
                 tar.Write(single);
                 tar.Write(entries);
@@ -59,7 +68,7 @@ namespace Firely.Fhir.Packages
         {
             var stream = new LateDisposalMemoryStream();
             using (var gzip = new GZipOutputStream(stream))
-            using (TarOutputStream tar = new TarOutputStream(gzip))
+            using (TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default))
             {
                 tar.Write(entries);
             }
@@ -81,7 +90,7 @@ namespace Firely.Fhir.Packages
             Directory.CreateDirectory(folder);
             var stream = new MemoryStream(buffer);
 
-            using var archive = TarArchive.CreateInputTarArchive(stream);
+            using var archive = TarArchive.CreateInputTarArchive(stream, Encoding.Default);
 
             archive.ExtractContents(folder);
         }
@@ -99,7 +108,7 @@ namespace Firely.Fhir.Packages
         internal static IEnumerable<FileEntry> ExtractFiles(Stream stream, Predicate<string> predicate)
         {
             using var gzip = new GZipInputStream(stream);
-            using var tar = new TarInputStream(gzip);
+            using var tar = new TarInputStream(gzip, Encoding.Default);
 
             for (TarEntry tarEntry = tar.GetNextEntry(); tarEntry != null; tarEntry = tar.GetNextEntry())
             {
@@ -139,7 +148,7 @@ namespace Firely.Fhir.Packages
         internal static void PackToStream(IEnumerable<FileEntry> entries, Stream stream)
         {
             using var gzip = new GZipOutputStream(stream);
-            using TarOutputStream tar = new TarOutputStream(gzip);
+            using TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default);
 
             Tar.Write(tar, entries);
         }
