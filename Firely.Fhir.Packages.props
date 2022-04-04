@@ -17,5 +17,14 @@
     <PropertyGroup Condition="$(FhirNetSdkVersion.StartsWith('1'))">
         <DefineConstants>BUILDFHIRRELEASEENUM</DefineConstants>
     </PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<SignAssembly>True</SignAssembly>
+		<DelaySign>true</DelaySign>
+		<AssemblyOriginatorKeyFile>..\FirelyPackages-publickey.snk</AssemblyOriginatorKeyFile>
+		<IncludeSymbols>True</IncludeSymbols>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
     
 </Project>
