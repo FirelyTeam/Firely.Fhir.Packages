@@ -335,3 +335,4 @@ ASALocalRun/
 
 # Strong name signing keys
 *.snk
+!FirelyPackages-publickey.snk
