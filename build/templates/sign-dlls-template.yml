@@ -1,5 +1,5 @@
 jobs:
-- job: sign-dlls
+- job: sign_dlls
   displayName: 'Sign dlls'
   steps:
     - task: DownloadSecureFile@1
