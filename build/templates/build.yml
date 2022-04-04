@@ -52,9 +52,7 @@ jobs:
       projects: '**/*Tests/*Tests.csproj'
       arguments: '--configuration $(buildConfiguration) --no-restore'
 
-  - task: SignDlls
-    displayName: 'sign dlls'
-    -template: sign-dlls-template.yml
+  - template: sign-dlls-template.yml
 
   - ${{ if eq(parameters.packageArtifacts, 'true') }}:
     - template: package.yml
