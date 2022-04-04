@@ -50,6 +50,10 @@ stages:
         restoreDependencies: true
         pool: 
           vmImage: $(vmImage)
+  - template: templates/sign-dlls-template.yml
+    
+  
+
 
 - stage: deployToGitHub
   dependsOn: build
