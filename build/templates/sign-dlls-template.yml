@@ -1,6 +1,7 @@
 jobs:
 - job: sign_dlls
   displayName: 'Sign dlls'
+  condition: succeeded()
   steps:
     - task: DownloadSecureFile@1
       displayName: Download Signing key file
