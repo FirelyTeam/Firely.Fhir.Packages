@@ -16,6 +16,6 @@
 
     <PropertyGroup Condition="$(FhirNetSdkVersion.StartsWith('1'))">
         <DefineConstants>BUILDFHIRRELEASEENUM</DefineConstants>
-    </PropertyGroup>
+    </PropertyGroup>	
     
 </Project>
