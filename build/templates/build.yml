@@ -33,15 +33,15 @@ jobs:
         nuGetServiceConnections: ${{ parameters.nuGetServiceConnections }}
         nuGetSources: ${{ parameters.nuGetSources }}
       
-  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(build.buildNumber) --no-restore
+  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(build.buildNumber) --no-restore /p:ContinuousIntegrationBuild=true 
     displayName: 'dotnet build $(buildConfiguration) with version suffix  and no restore'
     condition: and(succeeded(), and(eq('${{ parameters.useVersionSuffix }}', 'true'), eq('${{ parameters.restoreDependencies }}', 'true')))
     
-  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(build.buildNumber)
+  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(build.buildNumber) /p:ContinuousIntegrationBuild=true 
     displayName: 'dotnet build $(buildConfiguration) with version suffix'
     condition: and(succeeded(), and(eq('${{ parameters.useVersionSuffix }}', 'true'), eq('${{ parameters.restoreDependencies }}', 'false')))
 
-  - script: dotnet build --configuration $(buildConfiguration) 
+  - script: dotnet build --configuration $(buildConfiguration) /p:ContinuousIntegrationBuild=true 
     displayName: 'dotnet build $(buildConfiguration)'
     condition: and(succeeded(), eq('${{ parameters.useVersionSuffix }}', 'false'))
 
@@ -57,7 +57,13 @@ jobs:
   - ${{ if eq(parameters.packageArtifacts, 'true') }}:
     - template: package.yml@templates
       parameters:
-        useVersionSuffix: ${{ parameters.useVersionSuffix }}
+        useVersionSuffix: ${{ parameters.useVersionSuffix }}  
+  
+  - template: codesign-nuget-packages.yml@templates
+    parameters:
+      certificateValue: $(FirelyCodeSignerCertificate)
+      certificatePasswordValue: $(CodeSigningPassword)
+      packagePaths: $(Build.ArtifactStagingDirectory)\*.nupkg
   
   - ${{ if eq(parameters.publishArtifacts, 'true') }}:
     - template: publish.yml@templates

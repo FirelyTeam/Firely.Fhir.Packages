@@ -15,6 +15,7 @@ variables:
   DOTNET_CORE_SDK: '6.0.x'
   GITHUB_PACKAGES_APIKEY: $(GitHubPushPackagesAPIKey) # key is set in UI of Azure Devops
   NUGET_APIKEY: $(NuGetAPIKey) 
+  - group: CodeSigning
 
 pool: 
   vmImage: $(vmImage)
