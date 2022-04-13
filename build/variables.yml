@@ -2,6 +2,7 @@
 # File: build/variables.yml
 # Variables used during builds.
 
+variables:
   buildConfiguration: 'Release'
   vmImage: 'windows-latest'
   DOTNET_CORE_SDK: '6.0.x'
