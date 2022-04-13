@@ -2,6 +2,9 @@
 # File: build/azure-pipelines.yml
 name: build-$(Date:yyyyMMdd)$(Rev:-r)
 
+variables:
+- group: CodeSigning
+
 resources:
   repositories:
     - repository: templates
@@ -15,7 +18,6 @@ variables:
   DOTNET_CORE_SDK: '6.0.x'
   GITHUB_PACKAGES_APIKEY: $(GitHubPushPackagesAPIKey) # key is set in UI of Azure Devops
   NUGET_APIKEY: $(NuGetAPIKey) 
-  - group: CodeSigning
 
 pool: 
   vmImage: $(vmImage)
