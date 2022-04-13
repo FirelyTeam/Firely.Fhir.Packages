@@ -1,10 +1,6 @@
 # Repo: FirelyTeam/Firely.Fhir.Packages
 # File: build/azure-pipelines.yml
 name: build-$(Date:yyyyMMdd)$(Rev:-r)
-
-variables:
-- group: CodeSigning
-
 resources:
   repositories:
     - repository: templates
@@ -13,6 +9,7 @@ resources:
       endpoint: FirelyTeam 
 
 variables:
+- group: CodeSigning
   buildConfiguration: 'Release'
   vmImage: 'windows-latest'
   DOTNET_CORE_SDK: '6.0.x'
