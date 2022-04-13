@@ -63,7 +63,7 @@ jobs:
     parameters:
       certificateValue: $(FirelyCodeSignerCertificate)
       certificatePasswordValue: $(CodeSigningPassword)
-      packagePaths: $(Build.ArtifactStagingDirectory)\*.nupkg
+      packagePaths: $(Build.ArtifactStagingDirectory)\packages\*.nupkg
   
   - ${{ if eq(parameters.publishArtifacts, 'true') }}:
     - template: publish.yml@templates
