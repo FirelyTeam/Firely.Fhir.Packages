@@ -12,6 +12,8 @@
 		<RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>
         <FhirNetSdkVersion>4.0.0-*</FhirNetSdkVersion>
 		<PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(FhirNetSdkVersion.StartsWith('1'))">
@@ -26,5 +28,9 @@
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+	</ItemGroup>
     
 </Project>
