@@ -9,12 +9,8 @@ resources:
       endpoint: FirelyTeam 
 
 variables:
-  group: CodeSigning
-  buildConfiguration: 'Release'
-  vmImage: 'windows-latest'
-  DOTNET_CORE_SDK: '6.0.x'
-  GITHUB_PACKAGES_APIKEY: $(GitHubPushPackagesAPIKey) # key is set in UI of Azure Devops
-  NUGET_APIKEY: $(NuGetAPIKey) 
+  - group: CodeSigning
+  - template: variables.yml  
 
 pool: 
   vmImage: $(vmImage)
