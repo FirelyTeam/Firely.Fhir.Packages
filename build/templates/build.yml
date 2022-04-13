@@ -55,11 +55,10 @@ jobs:
   - template: sign-dlls-template.yml
 
   - ${{ if eq(parameters.packageArtifacts, 'true') }}:
-    - template: package.yml@templates
+    - template: package.yml
       parameters:
         useVersionSuffix: ${{ parameters.useVersionSuffix }}  
   
-  - template: codesign-nuget-packages.yml@templates
     parameters:
       certificateValue: $(FirelyCodeSignerCertificate)
       certificatePasswordValue: $(CodeSigningPassword)
