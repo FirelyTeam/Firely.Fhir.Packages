@@ -37,5 +37,5 @@ If you want to participate in this project, we're using [Git Flow][nvie] for our
 [terminal]: https://fire.ly/products/firely-terminal/
 [forge]: https://fire.ly/products/forge/
 [zulip]: https://chat.fhir.org/#narrow/stream/179239-tooling
-[nuget]: https://www.nuget.org/packages/Firely.Fhir.Packages/3.0.0-beta2
+[nuget]: https://www.nuget.org/packages/Firely.Fhir.Packages
 [nvie]: http://nvie.com/posts/a-successful-git-branching-model/
