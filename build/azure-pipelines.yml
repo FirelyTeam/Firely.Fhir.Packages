@@ -9,7 +9,7 @@ resources:
       endpoint: FirelyTeam 
 
 variables:
-- group: CodeSigning
+  group: CodeSigning
   buildConfiguration: 'Release'
   vmImage: 'windows-latest'
   DOTNET_CORE_SDK: '6.0.x'
