@@ -31,7 +31,6 @@
 		<DelaySign>true</DelaySign>
 		<AssemblyOriginatorKeyFile>..\FirelyPackages-publickey.snk</AssemblyOriginatorKeyFile>
 		<IncludeSymbols>True</IncludeSymbols>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
 
