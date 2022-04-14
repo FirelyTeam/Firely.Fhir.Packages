@@ -31,7 +31,7 @@ stages:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
         useVersionSuffix: true
         packageArtifacts: true
-        restoreDependencies: false
+        restoreDependencies: true
         nuGetServiceConnections: GitHubPackageGetFeed
         nuGetSources: --source https://nuget.pkg.github.com/FirelyTeam/index.json
         pool: 
@@ -43,7 +43,7 @@ stages:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
         useVersionSuffix: false
         packageArtifacts: true
-        restoreDependencies: false
+        restoreDependencies: true
         pool: 
           vmImage: $(vmImage)
 
