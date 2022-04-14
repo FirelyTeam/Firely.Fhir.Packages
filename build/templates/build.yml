@@ -33,11 +33,11 @@ jobs:
         nuGetServiceConnections: ${{ parameters.nuGetServiceConnections }}
         nuGetSources: ${{ parameters.nuGetSources }}
       
-  - script: dotnet build --configuration $(buildConfiguration) /p:ContinuousIntegrationBuild=true --version-suffix $(build.buildNumber) --no-restore
+  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(build.buildNumber) --no-restore /p:ContinuousIntegrationBuild=true 
     displayName: 'dotnet build $(buildConfiguration) with version suffix  and no restore'
     condition: and(succeeded(), and(eq('${{ parameters.useVersionSuffix }}', 'true'), eq('${{ parameters.restoreDependencies }}', 'true')))
     
-  - script: dotnet build --configuration $(buildConfiguration) /p:ContinuousIntegrationBuild=true --version-suffix $(build.buildNumber) 
+  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(build.buildNumber) /p:ContinuousIntegrationBuild=true
     displayName: 'dotnet build $(buildConfiguration) with version suffix'
     condition: and(succeeded(), and(eq('${{ parameters.useVersionSuffix }}', 'true'), eq('${{ parameters.restoreDependencies }}', 'false')))
 
@@ -50,7 +50,7 @@ jobs:
     inputs:
       command: test
       projects: '**/*Tests/*Tests.csproj'
-      arguments: '--configuration $(buildConfiguration) --no-restore'
+      arguments: '--configuration $(buildConfiguration) --no-build --no-restore'
 
   - template: sign-dlls-template.yml
 
