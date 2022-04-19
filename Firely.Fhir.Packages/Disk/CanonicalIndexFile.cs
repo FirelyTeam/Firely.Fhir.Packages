@@ -1,75 +1,77 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
 using System.IO;
-using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
-    public static class CanonicalIndexFile
+    internal static class CanonicalIndexFile
     {
 
-
-        public static CanonicalIndex GetFromFolder(string folder, bool recurse)
+        internal static CanonicalIndex GetFromFolder(string folder, bool recurse)
         {
-            if (ExistsIn(folder))
+            if (existsIn(folder))
             {
-                var index = ReadFromFolder(folder);
-                if (index.Version == CanonicalIndexer.VERSION) return index;
+                var index = readFromFolder(folder);
+                if (index?.Version == CanonicalIndexer.FIRELY_INDEX_VERSION) return index;
             }
             // otherwise:
             return Create(folder, recurse);
         }
 
-        public static CanonicalIndex Create(string folder, bool recurse)
+        internal static CanonicalIndex Create(string folder, bool recurse)
         {
             var entries = CanonicalIndexer.IndexFolder(folder, recurse);
             var index = CanonicalIndexer.BuildCanonicalIndex(entries);
-            WriteToFolder(index, folder);
+            writeToFolder(index, folder);
             return index;
         }
 
-       
-
-        public static CanonicalIndex ReadFromFolder(string folder)
+        private static CanonicalIndex? readFromFolder(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
-            return Read(path);
+            var path = Path.Combine(folder, PackageFileNames.CANONICALINDEXFILE);
+            return read(path);
         }
 
-        public static CanonicalIndex Read(string path)
+        private static CanonicalIndex? read(string path)
         {
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                return Parser.ParseCanonicalIndex(content);
+                return PackageParser.ParseCanonicalIndex(content);
 
             }
             else return null;
         }
 
-        private static void Write(CanonicalIndex index, string path)
+        private static void write(CanonicalIndex index, string path)
         {
-            var content = Parser.SerializeCanonicalIndex(index);
+            var content = PackageParser.SerializeCanonicalIndex(index);
             File.WriteAllText(path, content);
         }
 
-        private static bool ExistsIn(string folder)
+        private static bool existsIn(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
+            var path = Path.Combine(folder, PackageFileNames.CANONICALINDEXFILE);
             return File.Exists(path);
         }
 
-        private static void WriteToFolder(CanonicalIndex index, string folder)
+        private static void writeToFolder(CanonicalIndex index, string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.CanonicalIndexFile);
-            Write(index, path);
+            var path = Path.Combine(folder, PackageFileNames.CANONICALINDEXFILE);
+            write(index, path);
         }
-
-
-
-
-
     }
 }
 
+
+#nullable restore
 

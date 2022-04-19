@@ -1,4 +1,15 @@
-﻿using Hl7.Fhir.ElementModel;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
+using Hl7.Fhir.ElementModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,14 +20,15 @@ namespace Firely.Fhir.Packages
 
     public static class CanonicalIndexer
     {
-        public const int VERSION = 5;
+        public const int FIRELY_INDEX_VERSION = 7;
+        public const int INDEX_JSON_VERSION = 1;
 
         /// <summary>
-        /// Builds a canonical index from a list of metadata entries.
+        /// Builds a canonical index (.firely.index.json) from a list of metadata entries.
         /// </summary>
         public static CanonicalIndex BuildCanonicalIndex(IEnumerable<ResourceMetadata> entries)
         {
-            var index = new CanonicalIndex { Files = new(), Version = VERSION, date = DateTimeOffset.Now };
+            var index = new CanonicalIndex { Files = new(), Version = FIRELY_INDEX_VERSION, date = DateTimeOffset.Now };
             return index.Append(entries);
         }
 
@@ -25,6 +37,30 @@ namespace Firely.Fhir.Packages
         /// </summary>
         public static CanonicalIndex Append(this CanonicalIndex index, IEnumerable<ResourceMetadata> entries)
         {
+            if (index.Files == null)
+                index.Files = new();
+
+            index.Files.AddRange(entries);
+            return index;
+        }
+
+        /// <summary>
+        /// Builds a index.json (.index.json) from a list of metadata entries.
+        /// </summary>
+        public static IndexJson BuildIndexJson(IEnumerable<IndexData> entries)
+        {
+            var index = new IndexJson { Files = new(), Version = INDEX_JSON_VERSION, date = DateTimeOffset.Now };
+            return index.Append(entries);
+        }
+
+        /// <summary>
+        /// Appends index data to a index json
+        /// </summary>
+        public static IndexJson Append(this IndexJson index, IEnumerable<IndexData> entries)
+        {
+            if (index.Files == null)
+                index.Files = new();
+
             index.Files.AddRange(entries);
             return index;
         }
@@ -35,104 +71,125 @@ namespace Firely.Fhir.Packages
         /// <param name="folder"></param>
         /// <param name="recurse"></param>
         /// <returns></returns>
-        public static List<ResourceMetadata> IndexFolder(string folder, bool recurse)
+        internal static List<ResourceMetadata> IndexFolder(string folder, bool recurse)
         {
             var option = recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             var paths = Directory.GetFiles(folder, "*.*", option);
-            return EnumerateFolderMetadata(folder, paths).ToList();
+            return enumerateMetadata(folder, paths).ToList();
         }
 
-        private static IEnumerable<ResourceMetadata> EnumerateFolderMetadata(string folder, IEnumerable<string> filepaths)
+        private static IEnumerable<ResourceMetadata> enumerateMetadata(string folder, IEnumerable<string> filepaths)
         {
-            foreach (var filepath in filepaths)
-            {
-                var meta = GetFileMetadata(folder, filepath);
-                if (meta is object)
-                    yield return meta;
-            }
+            return filepaths.Select(p => getFileMetadata(folder, p)).Where(p => p is not null);
         }
 
-
-        /// <summary>
-        /// Builds the CanonicalIndex Resource metadata for a single file on disk
-        /// </summary>
-        public static ResourceMetadata? GetFileMetadata(string folder, string filepath)
+        private static ResourceMetadata getFileMetadata(string folder, string filepath)
         {
-            try
-            {
-                var node = FhirParser.ParseFileToSourceNode(filepath);
-                if (node is null) return null;
+            return FhirParser.TryParseToSourceNode(filepath, out var node)
+                    ? BuildResourceMetadata(getRelativePath(folder, filepath), node!)
+                    : new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: getRelativePath(folder, filepath));
+        }
 
-                string? canonical = node.GetString("url"); // node.Children("url").FirstOrDefault()?.Text;
+        internal static IEnumerable<IndexData> GenerateIndexFile(IEnumerable<FileEntry> entries)
+        {
+            return entries.Select(e => getIndexData(e)).Where(e => e is not null);
+        }
 
-                return new ResourceMetadata
-                {
-                    FileName = GetRelativePath(folder, filepath),
-                    ResourceType = node.Name,
-                    Id = node.GetString("id"),
-                    Canonical = node.GetString("url"),
-                    Version = node.GetString("version"),
-                    Kind = node.GetString("kind"),
-                    Type = node.GetString("type"),
-                    FhirVersion = node.GetString("fhirVersion")
-                };
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+        private static IndexData getIndexData(FileEntry entry)
+        {
+            return FhirParser.TryParseToSourceNode(entry.GetStream(), out var node)
+                  ? BuildIndex(Path.GetFileName(entry.FilePath), node!)
+                : new IndexData(filename: Path.GetFileName(entry.FilePath));
         }
 
         /// <summary>
-        /// Builds Metadata for a Package File Index for a single file.
+        /// Builds Firely specific metadata for a Package File Index for a single file.
         /// </summary>
-        public static ResourceMetadata BuildResourceMetadata(string filename, ISourceNode resource)
-        { 
-            return new ResourceMetadata
+        /// <param name="filepath">relative path of the file</param>
+        /// <param name="resource">Resource to be indexed</param>
+        /// <returns>An entry to .firely.index.json</returns>
+        public static ResourceMetadata BuildResourceMetadata(string filepath, ISourceNode resource)
+        {
+            return new ResourceMetadata(filename: Path.GetFileName(filepath), filepath: filepath)
             {
-                FileName = filename,
-                ResourceType = resource.Name,
-                Id = resource.GetString("id"),
-                Canonical = resource.GetString("url"),
-                Version = resource.GetString("version"),
-                Kind = resource.GetString("kind"),
-                Type = resource.GetString("type"),
-                FhirVersion = resource.GetString("fhirVersion")
+                ResourceType = resource?.Name,
+                Id = resource?.getString("id"),
+                Canonical = resource?.getString("url"),
+                Version = resource?.getString("version"),
+                Kind = resource?.getString("kind"),
+                Type = resource?.getString("type"),
+                FhirVersion = resource?.getString("fhirVersion"),
+                HasSnapshot = resource?.checkForSnapshot(),
+                HasExpansion = resource?.checkForExpansion(),
+                ValueSetCodeSystem = resource?.getCodeSystemFromValueSet(),
+                NamingSystemUniqueId = resource?.getUniqueIdsFromNamingSystem(),
+                ConceptMapUris = resource?.getConceptMapsSourceAndTarget()
             };
         }
 
-        public static string GetString(this ISourceNode node, string expression)
+        /// <summary>
+        /// Builds index data for a Package File Index for a single file.
+        /// </summary>
+        /// <param name="filename">Name of the file</param>
+        /// <param name="resource">Resource to be indexed</param>
+        /// <returns>An entry to .index.json</returns>
+        public static IndexData BuildIndex(string filename, ISourceNode resource)
+        {
+            return new IndexData(filename)
+            {
+                ResourceType = resource.Name,
+                Id = resource.getString("id"),
+                Canonical = resource.getString("url"),
+                Version = resource.getString("version"),
+                Kind = resource.getString("kind"),
+                Type = resource.getString("type")
+            };
+        }
+
+
+        private static string? getString(this ISourceNode node, string expression)
         {
             if (node is null) return null;
+            var decendant = node.findFirstDescendant(expression);
+            return decendant?.Text;
+        }
 
+        private static IEnumerable<string> getRelativePaths(string folder, IEnumerable<string> paths)
+        {
+            foreach (var path in paths)
+                yield return getRelativePath(folder, path);
+        }
+
+        private static ISourceNode? findFirstDescendant(this ISourceNode? node, string expression)
+        {
             var parts = expression.Split('.');
 
             foreach (var part in parts)
             {
-                node = node.Children(part).FirstOrDefault();
+                node = node?.Children(part).FirstOrDefault();
                 if (node is null) return null;
             }
-            return node.Text;
+
+            return node;
         }
 
-        public static IEnumerable<string> GetRelativePaths(string folder, IEnumerable<string> paths)
+        private static IEnumerable<ISourceNode>? findDescendants(this ISourceNode node, string name)
         {
-            foreach (var path in paths)
-                yield return GetRelativePath(folder, path);
+            return node.Descendants()?.Where(node => node.Name == name);
         }
 
-        private static string DirectorySeparatorString = $"{Path.DirectorySeparatorChar}";
+        private static readonly string DIRECTORYSEPARATORSTRING = $"{Path.DirectorySeparatorChar}";
 
-        public static string GetRelativePath(string relativeTo, string path)
+        private static string getRelativePath(string relativeTo, string path)
         {
-          
+
             // Require trailing backslash for path
-            if (!relativeTo.EndsWith(DirectorySeparatorString)) 
-                relativeTo += DirectorySeparatorString;
+            if (!relativeTo.EndsWith(DIRECTORYSEPARATORSTRING))
+                relativeTo += DIRECTORYSEPARATORSTRING;
 
-            Uri baseUri = new Uri(relativeTo);
-            Uri fullUri = new Uri(path);
-            
+            Uri baseUri = new(relativeTo);
+            Uri fullUri = new(path);
+
             Uri relativeUri = baseUri.MakeRelativeUri(fullUri);
 
             // Uri's use forward slashes so convert back to backward slashes
@@ -140,7 +197,71 @@ namespace Firely.Fhir.Packages
             return result;
 
         }
+
+        private static bool checkForSnapshot(this ISourceNode node)
+        {
+            return node.Name == "StructureDefinition" && node.Children("snapshot") is not null;
+        }
+
+        private static bool checkForExpansion(this ISourceNode node)
+        {
+            return node.Name == "ValueSet" && node.findFirstDescendant("expansion.contains") is not null;
+        }
+
+        private static string? getCodeSystemFromValueSet(this ISourceNode node)
+        {
+            if (node.isWholeCodeSystemValueSet())
+            {
+                var uri = node.getString("compose.include.system");
+                string? version;
+
+                if (uri is not null)
+                    version = node.getString("compose.include.version");
+                else
+                    return null;
+
+                return (version is not null) ? $"{uri}|{version}" : uri;
+
+            }
+            return null;
+        }
+
+        private static bool isWholeCodeSystemValueSet(this ISourceNode node)
+        {
+            return node.Name == "ValueSet" &&
+                node.findFirstDescendant("compose.exclude") is null &&
+                node.findFirstDescendant("compose.include.filter") is null &&
+                node.findFirstDescendant("compose.include.concept") is null &&
+                node.findFirstDescendant("compose.include.valueSet") is null;
+        }
+
+        private static string[]? getUniqueIdsFromNamingSystem(this ISourceNode node)
+        {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+            return node.Name == "NamingSystem"
+                ? node.findDescendants("uniqueId")
+                       ?.Select(node => node.getString("value"))
+                       ?.Where(s => s != null)
+                       ?.ToArray()
+                : null;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+        }
+
+        private static SourceAndTarget? getConceptMapsSourceAndTarget(this ISourceNode node)
+        {
+            return node.Name == "ConceptMap"
+                ? new SourceAndTarget
+                {
+                    TargetUri = node.getString("targetCanonical") ?? node.getString("targetUri") ?? node.getString("targetReference.reference"),
+                    SourceUri = node.getString("sourceCanonical") ?? node.getString("sourceUri") ?? node.getString("sourceReference.reference")
+                }
+                : null;
+        }
+
+
+
     }
 }
 
 
+#nullable restore

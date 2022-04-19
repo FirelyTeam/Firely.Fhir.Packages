@@ -1,4 +1,15 @@
-﻿using System.Collections.Generic;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
+using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
 {
@@ -17,10 +28,16 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="name">The package name may include the (exact) version if separated with an at @ sign.</param>
         /// <param name="version">Optionally the exact version of the package</param>
-        public PackageReference(string name, string version) : this(null, name, version)
+        public PackageReference(string name, string? version) : this(null, name, version)
         { }
-        
-        public PackageReference (string scope, string name, string version)
+
+        /// <summary>
+        /// Provide the name and optionally the version of the package. 
+        /// </summary>
+        /// <param name="scope">An optional package scope</param>
+        /// <param name="name">The package name may include the (exact) version if separated with an at @ sign.</param>
+        /// <param name="version">Optionally the exact version of the package</param>
+        public PackageReference(string? scope, string name, string? version)
         {
             this.Scope = scope;
             this.Name = name;
@@ -28,6 +45,11 @@ namespace Firely.Fhir.Packages
         }
 
         public string Moniker => $"{Name}@{Version}";
+
+        /// <summary>
+        /// Returns the package name and version devided by an at @ sign respresented as a single string
+        /// </summary>
+        /// <returns>Returns the package name and version devided by an at @ sign respresented as a single string</returns>
         public override string ToString()
         {
             string s = $"{Name}@{Version}";
@@ -35,41 +57,80 @@ namespace Firely.Fhir.Packages
             return s;
         }
 
-        public static PackageReference None => new PackageReference { Name = null, Version = null };
+        /// <summary>
+        /// Empty package reference
+        /// </summary>
+        public static PackageReference None => new() { Name = null, Version = null };
 
+        /// <summary>
+        /// Returns true if the package isn't found
+        /// </summary>
         public bool NotFound => !Found;
 
+        /// <summary>
+        /// Returns true is the package is found
+        /// </summary>
         public bool Found => !(Name is null || Version is null);
 
-        public static implicit operator PackageReference (KeyValuePair<string, string> kvp)
+        /// <summary>
+        /// Implicitly converts a <see cref="KeyValuePair"/> to a <see cref="PackageReference"/>, where the key is the package name, and the value is the version
+        /// </summary>
+        /// <param name="kvp"><see cref="KeyValuePair"/> where the key is the package name, and the value is the version</param>
+        public static implicit operator PackageReference(KeyValuePair<string, string?> kvp)
         {
             return new PackageReference(kvp.Key, kvp.Value);
         }
 
+        /// <summary>
+        /// Implicitly converts a <see cref="KeyValuePair"/> to a <see cref="PackageReference"/>, where the key is the package name, and the value is the version
+        /// </summary>
+        /// <param name="kvp"><see cref="KeyValuePair"/> where the key is the package name, and the value is the version</param>
         public static implicit operator PackageReference(string reference)
         {
-            return Parse(reference);
+            return parse(reference);
         }
 
-        public static bool operator == (PackageReference A, PackageReference B)
+        /// <summary>
+        /// Compare two package references by name and version
+        /// </summary>
+        /// <param name="A">First package reference</param>
+        /// <param name="B">Second package reference</param>
+        /// <returns>Result of the comparison</returns>
+        public static bool operator ==(PackageReference A, PackageReference B)
         {
             return (A.Name == B.Name && A.Version == B.Version);
         }
 
-        public static bool operator != (PackageReference A, PackageReference B)
+        /// <summary>
+        /// Compare two package references by name and version
+        /// </summary>
+        /// <param name="A">First package reference</param>
+        /// <param name="B">Second package reference</param>
+        /// <returns>Result of the comparison</returns>
+        public static bool operator !=(PackageReference A, PackageReference B)
         {
             return !(A == B);
         }
 
-        public void Deconstruct(out string name, out string version)
+        /// <summary>
+        /// Returns the name and version of a package
+        /// </summary>
+        /// <param name="name">Package name</param>
+        /// <param name="version">Package version</param>
+        public void Deconstruct(out string? name, out string? version)
         {
             name = Name;
             version = Version;
         }
 
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Compare the current package references to another object
+        /// </summary>
+        /// <param name="obj">Object to compare to</param>
+        /// <returns>Result of the comparison</returns>
+        public override bool Equals(object? obj)
         {
-            if (!(obj is PackageReference))
+            if (obj is not PackageReference)
             {
                 return false;
             }
@@ -79,21 +140,25 @@ namespace Firely.Fhir.Packages
                    this.Version == reference.Version;
         }
 
+        /// <summary>
+        /// Returns the hashcode of a package based on the name and version
+        /// </summary>
+        /// <returns>the hashcode of a package based on the name and version</returns>
         public override int GetHashCode()
         {
             return (Name, Version).GetHashCode();
         }
 
-        public static PackageReference Parse(string reference)
+        private static PackageReference parse(string reference)
         {
-            var (scope, name, version) = ParseReference(reference);
+            var (scope, name, version) = parseReference(reference);
             return new PackageReference(scope, name, version);
         }
 
-        private static (string scope, string name, string version) ParseReference(string reference)
+        private static (string? scope, string name, string? version) parseReference(string reference)
         {
-            string scope = null;
-            string version = null;
+            string? scope = null;
+            string? version = null;
 
             if (reference.StartsWith("@")) // scope: @scope/name@version
             {
@@ -108,7 +173,7 @@ namespace Firely.Fhir.Packages
             return (scope, name, version);
 
         }
-
-      
     }
 }
+
+#nullable restore

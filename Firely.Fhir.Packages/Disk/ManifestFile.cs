@@ -1,9 +1,17 @@
-﻿using Hl7.Fhir.Specification;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
 using Hl7.Fhir.Utility;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Firely.Fhir.Packages
@@ -15,12 +23,12 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="path">The full path to the file containing the manifest.</param>
         /// <returns></returns>
-        public static PackageManifest Read(string path)
+        private static PackageManifest? read(string path)
         {
             if (File.Exists(path))
             {
                 var content = File.ReadAllText(path);
-                return Parser.ParseManifest(content);
+                return PackageParser.ParseManifest(content);
             }
             else
             {
@@ -54,17 +62,17 @@ namespace Firely.Fhir.Packages
         /// <param name="path">The full path to the file to write the manifest to.</param>
         /// <param name="merge">Whether to first merge the contents of the file at the given path before writing it.</param>
         /// <returns></returns>
-        public static void Write(PackageManifest manifest, string path, bool merge = false)
+        private static void write(PackageManifest manifest, string path, bool merge = false)
         {
             if (File.Exists(path) && merge)
             {
                 var content = File.ReadAllText(path);
-                var result = Parser.JsonMergeManifest(manifest, content);
+                var result = PackageParser.JsonMergeManifest(manifest, content);
                 File.WriteAllText(path, result);
             }
             else
             {
-                var content = Parser.SerializeManifest(manifest);
+                var content = PackageParser.SerializeManifest(manifest);
                 File.WriteAllText(path, content);
             }
         }
@@ -75,10 +83,10 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="folder">The folder containing the package.json file.</param>
         /// <returns></returns>
-        public static PackageManifest ReadFromFolder(string folder)
+        public static PackageManifest? ReadFromFolder(string folder)
         {
-            var path = Path.Combine(folder, PackageConsts.Manifest);
-            var manifest = Read(path);
+            var path = Path.Combine(folder, PackageFileNames.MANIFEST);
+            var manifest = read(path);
             return manifest;
         }
 
@@ -92,14 +100,14 @@ namespace Firely.Fhir.Packages
         {
             var release = FhirReleaseParser.Parse(fhirVersion);
             //var release = FhirVersions.Parse(fhirVersion);
-            var version = FhirReleaseParser.FhirVersionFromRelease(release); 
+            var version = FhirReleaseParser.FhirVersionFromRelease(release);
 
-            var manifest = new PackageManifest
+            var manifest = new PackageManifest(name, "0.1.0")
             {
                 Name = name,
                 Description = "Put a description here",
                 Version = "0.1.0",
-                Dependencies = new Dictionary<string, string>()
+                Dependencies = new Dictionary<string, string?>()
             };
             manifest.SetFhirVersion(version);
             return manifest;
@@ -124,19 +132,6 @@ namespace Firely.Fhir.Packages
         //}
 
         /// <summary>
-        /// Creates a new <see cref="PackageManifest"/> initialized with sensible default values.
-        /// </summary>
-        /// <param name="name">A name for the package</param>
-        /// <param name="fhirVersion">The FHIR version of the package contents.</param>
-        /// <returns></returns>
-        [Obsolete("With the introduction of release 4b, integer-numbered releases are no longer useable.")]
-        public static PackageManifest Create(string name, FhirRelease fhirRelease)
-        { 
-            var fhirVersion = FhirReleaseParser.FhirVersionFromRelease(fhirRelease);
-            return Create(name, fhirVersion);
-        }
-
-        /// <summary>
         /// Serializes the manifest to json and writes it to the package.json file in the given folder, 
         /// optionally merging the changes with the contents already in the package.json file. 
         /// </summary>
@@ -146,10 +141,15 @@ namespace Firely.Fhir.Packages
         /// <returns></returns>
         public static void WriteToFolder(PackageManifest manifest, string folder, bool merge = false)
         {
-            string path = Path.Combine(folder, PackageConsts.Manifest);
-            Write(manifest, path, merge);
+            string path = Path.Combine(folder, PackageFileNames.MANIFEST);
+            write(manifest, path, merge);
         }
 
+        /// <summary>
+        /// Checks whether a package name is valid  
+        /// </summary>
+        /// <param name="name">Package name to be checked</param>
+        /// <returns>whether a package name is valid  </returns>
         public static bool ValidPackageName(string name)
         {
             char[] invalidchars = new char[] { '/', '\\' };
@@ -175,16 +175,23 @@ namespace Firely.Fhir.Packages
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Gets the package type of a certain package, based on the manifest
+        /// </summary>
+        /// <param name="manifest">The manifest file</param>
+        /// <returns>The package type</returns>
         public static PackageManifestType? TryGetPackageType(this PackageManifest manifest)
         {
-            if (PackageManifestTypes.TryParse(manifest.Type, out var type)) return type;
-            else return null;
+            if (manifest?.Type is null)
+                return null;
+
+            return PackageManifestTypes.TryParse(manifest.Type, out var type)
+                ? type
+                : null;
         }
-
     }
-
- 
-
 }
+
+#nullable restore
 
 

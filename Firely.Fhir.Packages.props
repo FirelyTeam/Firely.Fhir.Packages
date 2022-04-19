@@ -1,23 +1,46 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<!-- Build properties -->
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;netstandard2.0;net452</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<FhirNetSdkVersion>4.0.0-*</FhirNetSdkVersion>
+	</PropertyGroup>
+	
     <!-- Solution-wide properties for NuGet packaging -->
     <PropertyGroup>
         <LangVersion>9.0</LangVersion>
-
-        <VersionPrefix>2.2.1</VersionPrefix>
-        <VersionSuffix>alpha</VersionSuffix>
-
+        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionSuffix></VersionSuffix>
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
-        <Copyright>Copyright 2013-2020 Firely</Copyright>
+        <Copyright>Copyright 2013-2022 Firely</Copyright>
         <RepositoryType>git</RepositoryType>
-		    <RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>
-        <FhirNetSdkVersion>3.*</FhirNetSdkVersion>
+		<RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>        
+		<PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>		
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(FhirNetSdkVersion.StartsWith('1'))">
-        <DefineConstants>BUILDFHIRRELEASEENUM</DefineConstants>
-    </PropertyGroup>
+	<!-- Strong name signing -->
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<SignAssembly>True</SignAssembly>
+		<DelaySign>true</DelaySign>
+		<AssemblyOriginatorKeyFile>..\FirelyPackages-publickey.snk</AssemblyOriginatorKeyFile>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE" Pack="true" PackagePath=""/>
+		<None Include="..\README.md" Pack="true" PackagePath=""/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+	</ItemGroup>
     
 </Project>

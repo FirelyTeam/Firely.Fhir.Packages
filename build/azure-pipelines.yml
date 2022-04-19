@@ -1,7 +1,6 @@
 # Repo: FirelyTeam/Firely.Fhir.Packages
 # File: build/azure-pipelines.yml
 name: build-$(Date:yyyyMMdd)$(Rev:-r)
-
 resources:
   repositories:
     - repository: templates
@@ -10,9 +9,8 @@ resources:
       endpoint: FirelyTeam 
 
 variables:
-  buildConfiguration: 'Release'
-  vmImage: 'windows-latest'
-  GITHUB_PACKAGES_APIKEY: $(GitHubPushPackagesAPIKey)  # key is set in UI of Azure Devops
+  - group: CodeSigning
+  - template: variables.yml  
 
 pool: 
   vmImage: $(vmImage)
@@ -22,27 +20,40 @@ trigger:
     include:
     - develop*
     - release*
+    - refs/tags/v*
 
 stages:
 - stage: build
   jobs:
-  - template: build.yml@templates  # Template reference
-    parameters:
-      dotNetCoreVersion: 6.0.x
-      packageArtifacts: true
-      restoreDependencies: true
-      nuGetServiceConnections: GitHubPackageGetFeed
-      nuGetSources: --source https://nuget.pkg.github.com/FirelyTeam/index.json
-      pool: 
-        vmImage: $(vmImage)
+  - ${{ if not(startswith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:  # 'normal' build 
+    - template: templates/build.yml  # Template reference
+      parameters:
+        dotNetCoreVersion: $(DOTNET_CORE_SDK)
+        useVersionSuffix: true
+        packageArtifacts: true
+        restoreDependencies: true
+        nuGetServiceConnections: GitHubPackageGetFeed
+        nuGetSources: --source https://nuget.pkg.github.com/FirelyTeam/index.json
+        pool: 
+          vmImage: $(vmImage)
+    
+  - ${{ if startswith(variables['Build.SourceBranch'], 'refs/tags/v') }}:  # release mode
+    - template: templates/build.yml  # Template reference
+      parameters:
+        dotNetCoreVersion: $(DOTNET_CORE_SDK)
+        useVersionSuffix: false
+        packageArtifacts: true
+        restoreDependencies: true
+        pool: 
+          vmImage: $(vmImage)
 
-- stage: deploy
+- stage: deployToGitHub
   dependsOn: build
-  displayName: Deploy packages to GitHub
+  displayName: Deploy packages To Github
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest')) # not a PR
   jobs:
   - deployment: gitHub
-    displayName: GitHub Packages
+    displayName: Deploy Packages to GitHub
     environment: GitHub
     strategy:
       runOnce:
@@ -52,4 +63,22 @@ stages:
             parameters:
               artifact: 'NuGet Packages'
               source: https://nuget.pkg.github.com/FirelyTeam/index.json
-              apiKey: $(GITHUB_PACKAGES_APIKEY)
+              apiKey: $(GITHUB_PACKAGES_APIKEY)                
+
+- stage: deployToNuget
+  dependsOn: deployToGitHub
+  displayName: Deploy packages to NuGet
+  condition: and(succeeded(), startswith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  jobs:
+  - deployment: NuGet    
+    displayName: Publish to Nuget      
+    environment: NuGet
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: push-nuget-package.yml@templates
+            parameters:
+              artifact: 'NuGet Packages'
+              source: https://api.nuget.org/v3/index.json
+              apiKey: $(NUGET_APIKEY)

@@ -1,4 +1,14 @@
-﻿using Hl7.Fhir.Specification;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -11,48 +21,61 @@ namespace Firely.Fhir.Packages
 
     public class PackageClient : IPackageServer, IDisposable
     {
+        /// <summary>
+        /// Creates a package client
+        /// </summary>
+        /// <param name="source">The package source the client using</param>
+        /// <param name="npm">Whether the source is a NPM package source or not</param>
+        /// <param name="insecure">Whether to use an insecure connection</param>
+        /// <returns>A newly created package client</returns>
         public static PackageClient Create(string source, bool npm = false, bool insecure = false)
         {
-            var urlprovider = npm ? (IPackageUrlProvider) new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
+            var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
             var httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
 
             return new PackageClient(urlprovider, httpClient);
-            
+
         }
+
+        /// <summary>
+        /// Creates a package client to Simplifier.net
+        /// </summary>
+        /// <returns>A Simplifier.net package client</returns>
         public static PackageClient Create()
         {
             var provider = PackageUrlProviders.Simplifier;
             return new PackageClient(provider);
         }
 
+        /// <summary>
+        /// Creates a package client using a custom <see cref="IPackageUrlProvider"/> and optional custom  <see cref="HttpClient"/>        
+        /// </summary>
+        /// <param name="urlProvider">Custom <see cref="IPackageUrlProvider"/></param>
+        /// <param name="client">Custom <see cref="HttpClient"/></param>
         public PackageClient(IPackageUrlProvider urlProvider, HttpClient? client = null)
         {
-            this.urlProvider = urlProvider;
-            this.httpClient = client ?? new HttpClient();
+            this._urlProvider = urlProvider;
+            this._httpClient = client ?? new HttpClient();
         }
 
-        readonly IPackageUrlProvider urlProvider;
-        readonly HttpClient httpClient;
+        private readonly IPackageUrlProvider _urlProvider;
+        private readonly HttpClient _httpClient;
 
-        public async ValueTask<string?> DownloadListingRawAsync(string pkgname)
+
+        internal async ValueTask<string?> DownloadListingRawAsync(string? pkgname)
         {
-           
-            var url = urlProvider.GetPackageListingUrl(pkgname);
+            if (pkgname is null)
+            {
+                return null;
+            }
+
+            var url = _urlProvider.GetPackageListingUrl(pkgname);
             try
             {
-                var response = await httpClient.GetAsync(url);
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await response.Content.ReadAsStringAsync();
-                }
-                else if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return null;
-                }
-                else
-                {
-                    return null;
-                }
+                var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
+                return response.StatusCode == HttpStatusCode.OK
+                    ? await response.Content.ReadAsStringAsync().ConfigureAwait(false)
+                    : response.StatusCode == HttpStatusCode.NotFound ? null : null;
             }
             catch
             {
@@ -60,19 +83,31 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        /// <summary>
+        /// Download the package listing
+        /// </summary>
+        /// <param name="pkgname">Name of the package</param>
+        /// <returns>Package listing</returns>
         public async ValueTask<PackageListing?> DownloadListingAsync(string pkgname)
         {
-            var body = await DownloadListingRawAsync(pkgname);
-            if (body is null) return null;
-            return Parser.Deserialize<PackageListing>(body);
+            var body = await DownloadListingRawAsync(pkgname).ConfigureAwait(false);
+            return body is null ? null : PackageParser.Deserialize<PackageListing>(body);
         }
 
-        public async ValueTask<List<PackageCatalogEntry>?> CatalogPackagesAsync(
-            string? pkgname = null, 
-            string? canonical = null, 
+        /// <summary>
+        /// Get a list of package catalogs, based on optional parameters
+        /// </summary>
+        /// <param name="pkgname">Name of the package</param>
+        /// <param name="canonical">the canonical url of an artifact that is in the package</param>
+        /// <param name="fhirversion">the FHIR version of a package</param>
+        /// <param name="preview">allow for prelease packages</param>
+        /// <returns>A list of package catalogs that conform to the parameters</returns>
+        public async ValueTask<List<PackageCatalogEntry>> CatalogPackagesAsync(
+            string? pkgname = null,
+            string? canonical = null,
             string? fhirversion = null,
             bool preview = false)
-        { 
+        {
             var parameters = new NameValueCollection();
             parameters.AddWhenValued("name", pkgname);
             parameters.AddWhenValued("canonical", canonical);
@@ -80,76 +115,92 @@ namespace Firely.Fhir.Packages
             parameters.AddWhenValued("prerelease", preview ? "true" : "false");
             string query = parameters.ToQueryString();
 
-            string url = $"{urlProvider.Root}/catalog?{query}";
+            string url = $"{_urlProvider.Root}/catalog?{query}";
 
             try
             {
-                var body = await httpClient.GetStringAsync(url);
-                var result = Parser.Deserialize<List<PackageCatalogEntry>>(body);
-                return result;
+                var body = await _httpClient.GetStringAsync(url).ConfigureAwait(false);
+                var result = PackageParser.Deserialize<List<PackageCatalogEntry>>(body);
+                return result ?? new List<PackageCatalogEntry>();
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return null;
+                return null ?? new List<PackageCatalogEntry>();
             }
         }
 
-        internal async ValueTask<byte[]> DownloadPackage(PackageReference reference)
+        private async ValueTask<byte[]> downloadPackage(PackageReference reference)
         {
-            string url = urlProvider.GetPackageUrl(reference);
-            return await httpClient.GetByteArrayAsync(url);
+            string url = _urlProvider.GetPackageUrl(reference);
+            return await _httpClient.GetByteArrayAsync(url).ConfigureAwait(false);
         }
 
-        
 
+        /// <summary>
+        /// Publish a package to the package source
+        /// </summary>
+        /// <param name="reference">PackageReference of the package to be published</param>
+        /// <param name="fhirRelease">FHIR Release that is used by the package</param>
+        /// <param name="buffer">package content</param>
+        /// <returns>Http response whether the package has been succesfully published</returns>
         public async ValueTask<HttpResponseMessage> Publish(PackageReference reference, byte[] buffer)
         {
-            string url = urlProvider.GetPublishUrl(reference, PublishMode.Any);
+            string url = _urlProvider.GetPublishUrl(reference, PublishMode.Any);
             var content = new ByteArrayContent(buffer);
-            var response = await httpClient.PostAsync(url, content);
+            var response = await _httpClient.PostAsync(url, content).ConfigureAwait(false);
 
             return response;
         }
 
         #region IDisposable
 
-        bool disposed;
+        private bool _disposed;
 
         void IDisposable.Dispose() => Dispose(true);
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
                     // [WMR 20181102] HttpClient will dispose internal HttpClientHandler/WebRequestHandler
-                    httpClient?.Dispose();
+                    _httpClient?.Dispose();
                 }
 
                 // release any unmanaged objects
                 // set the object references to null
 
-                disposed = true;
+                _disposed = true;
             }
         }
 
         #endregion
 
-        public override string ToString() => urlProvider.ToString();
+        public override string? ToString() => _urlProvider.ToString();
 
-        public async Task<Versions> GetVersions(string name)
+        /// <summary>
+        /// Retrieve the different versions of a package
+        /// </summary>
+        /// <param name="name">Package name</param>
+        /// <returns>List is versions</returns>
+        public async Task<Versions?> GetVersions(string name)
         {
             var listing = await DownloadListingAsync(name);
-            if (listing is null) return new Versions();
-            
-            return listing.ToVersions();
+            return listing is null ? new Versions() : listing.ToVersions();
         }
 
+        /// <summary>
+        /// Download a package from the source
+        /// </summary>
+        /// <param name="reference">Package reference of the package to be downloaded </param>
+        /// <returns>Package content as byte array</returns>
         public async Task<byte[]> GetPackage(PackageReference reference)
         {
-            return await DownloadPackage(reference);
+            return await downloadPackage(reference);
         }
     }
 }
+
+#nullable restore

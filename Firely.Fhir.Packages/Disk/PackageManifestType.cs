@@ -1,4 +1,15 @@
-﻿using System;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
+using System;
 using System.Linq;
 
 namespace Firely.Fhir.Packages
@@ -15,7 +26,7 @@ namespace Firely.Fhir.Packages
     {
         None = 0,
 
-        Conformance, 
+        Conformance,
         IG,
         Core,
         Examples,
@@ -33,12 +44,17 @@ namespace Firely.Fhir.Packages
             return ok;
         }
 
-        public static bool FhirVersionRequired(PackageManifestType type) => !NoFhirVersionRequiredTypes.Contains(type);
+        /// <summary>
+        /// Checks packages of certain type require a FHIR version
+        /// </summary>
+        /// <param name="type">Package type</param>
+        /// <returns>Whether is the required to declare the FHIR version in the manifest file</returns>
+        public static bool FhirVersionRequired(PackageManifestType type) => !NOFHIRVERSIONREQUIREDTYPES.Contains(type);
 
 
-        private static PackageManifestType[] NoFhirVersionRequiredTypes = new[] { PackageManifestType.Tool, PackageManifestType.IGTemplate };
+        private static readonly PackageManifestType[] NOFHIRVERSIONREQUIREDTYPES = new[] { PackageManifestType.Tool, PackageManifestType.IGTemplate };
 
     }
 }
 
-
+#nullable restore
