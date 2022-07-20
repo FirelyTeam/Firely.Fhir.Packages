@@ -20,7 +20,7 @@ namespace Firely.Fhir.Packages
 
     public static class CanonicalIndexer
     {
-        public const int FIRELY_INDEX_VERSION = 7;
+        public const int FIRELY_INDEX_VERSION = 8;
         public const int INDEX_JSON_VERSION = 1;
 
         /// <summary>
@@ -210,29 +210,7 @@ namespace Firely.Fhir.Packages
 
         private static string? getCodeSystemFromValueSet(this ISourceNode node)
         {
-            if (node.isWholeCodeSystemValueSet())
-            {
-                var uri = node.getString("compose.include.system");
-                string? version;
-
-                if (uri is not null)
-                    version = node.getString("compose.include.version");
-                else
-                    return null;
-
-                return (version is not null) ? $"{uri}|{version}" : uri;
-
-            }
-            return null;
-        }
-
-        private static bool isWholeCodeSystemValueSet(this ISourceNode node)
-        {
-            return node.Name == "ValueSet" &&
-                node.findFirstDescendant("compose.exclude") is null &&
-                node.findFirstDescendant("compose.include.filter") is null &&
-                node.findFirstDescendant("compose.include.concept") is null &&
-                node.findFirstDescendant("compose.include.valueSet") is null;
+            return node.Name == "CodeSystem" ? node.getString("valueSet") : null;
         }
 
         private static string[]? getUniqueIdsFromNamingSystem(this ISourceNode node)
