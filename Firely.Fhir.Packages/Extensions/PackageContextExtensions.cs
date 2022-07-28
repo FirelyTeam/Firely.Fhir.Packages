@@ -219,23 +219,19 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Find a CodeSystem resource by a ValueSet canonical url that contains all codes from that codesystem.
         /// </summary>
-        /// <param name="scope">The package context in which to find the CodeSystem and ValueSet</param>
+        /// <param name="scope">The package context in which to find the CodeSystem</param>
         /// <param name="valueSetUri">The canonical uri of a ValueSet resource.</param>
         /// <returns>A CodeSystem resource, or null.</returns>
         /// <remarks>
         /// It is very common for valuesets to represent all codes from a specific/smaller code system.
-        /// These are indicated by he CodeSystem.valueSet element, which is searched here.
+        /// These are indicated by the CodeSystem.valueSet element, which is searched here.
         /// </remarks>
         public static async Task<string?> GetCodeSystemByValueSet(this PackageContext scope, string valueSetUri)
         {
-            var vsReference = scope.GetIndex().Where(i => i.Canonical == valueSetUri).FirstOrDefault();
-            if (vsReference?.ValueSetCodeSystem is null) return null;
-            else
-            {
-                (var uri, var version) = vsReference.ValueSetCodeSystem.Splice('|');
-
-                return uri is not null ? await scope.GetFileContentByCanonical(uri, version).ConfigureAwait(false) : null;
-            }
+            var codeSystem = scope.GetIndex().Where(i => i.ValueSetCodeSystem == valueSetUri).FirstOrDefault();
+            return codeSystem?.Canonical is not null
+                ? await scope.GetFileContentByCanonical(codeSystem.Canonical, codeSystem.Version).ConfigureAwait(false)
+                : null;
         }
 
         /// <summary>Find ConceptMap resources which map from the given source to the given target.</summary>
