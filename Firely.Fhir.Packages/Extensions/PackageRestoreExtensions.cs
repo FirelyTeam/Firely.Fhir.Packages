@@ -1,81 +1,65 @@
-﻿using System.Threading.Tasks;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
+using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
 {
-
     public static class PackageRestoreExtensions
     {
-        public static async Task<PackageReference> CacheInstall(this PackageContext scope, PackageDependency dependency)
+        internal static async Task<PackageReference> CacheInstall(this PackageContext context, PackageDependency dependency)
         {
-            PackageReference reference;
 
-            if (scope.Server is object)
-            {
-                reference = await scope.Server.Resolve(dependency);
-                if (!reference.Found) return reference;
-            }
-            else
-            {
-                reference = await scope.Cache.Resolve(dependency);
-                if (!reference.Found) return reference;
-            }
+            PackageReference reference = await context.Resolve(dependency);
 
-            if (await scope.Cache.IsInstalled(reference)) return reference;
+            if (reference.NotFound)
+                return PackageReference.None;
 
-            var buffer = await scope.Server.GetPackage(reference);
+            if (await context.Cache.IsInstalled(reference)) return reference;
+
+            var buffer = (context.Server != null) ? await context.Server.GetPackage(reference) : null;
             if (buffer is null) return PackageReference.None;
 
-            await scope.Cache.Install(reference, buffer);
-            scope.Report?.Invoke($"Installed {reference}.");
+            await context.Cache.Install(reference, buffer);
+            context.onInstalled?.Invoke(reference);
             return reference;
         }
 
-        public static async Task<PackageClosure> Restore(this PackageContext scope)
+        /// <summary>
+        /// Resolve asks the configured server of this context to resolve a package and if it can't find it, fallback to the 
+        /// configured cache to resolve it.
+        /// </summary>
+        public static async Task<PackageReference> Resolve(this PackageContext context, PackageDependency dependency)
         {
-            scope.Closure = new PackageClosure(); // reset
-            var manifest = await scope.Project.ReadManifest();
-
-            await scope.RestoreManifest(manifest);
-            return await scope.SaveClosure();
-        }
-
-        public static async Task<PackageClosure> SaveClosure(this PackageContext scope)
-        {
-            await scope.Project.WriteClosure(scope.Closure);
-            return scope.Closure;
-        }
-
-        private static async Task RestoreManifest(this PackageContext scope, PackageManifest manifest)
-        {
-            foreach(PackageDependency dependency in manifest.GetDependencies())
-            { 
-                await scope.RestoreDependency(dependency);
-            }
-        }
-
-        private static async Task RestoreDependency(this PackageContext scope, PackageDependency dependency)
-        {
-            var reference = await scope.CacheInstall(dependency);
-            if (reference.Found)
+            if (context.Server is object)
             {
-                scope.Closure.Add(reference);
-                await scope.RestoreReference(reference);
+                PackageReference reference = await context.Server.Resolve(dependency);
+                if (reference.Found) return reference;
             }
-            else
-            {
-                scope.Closure.AddMissing(dependency);
-            }
+
+            return await context.Cache.Resolve(dependency);
         }
 
-        private static async Task RestoreReference(this PackageContext scope, PackageReference reference)
+
+        /// <summary>
+        /// Restores a package
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns>Package lock file</returns>
+        public static async Task<PackageClosure> Restore(this PackageContext context)
         {
-            var manifest = await scope.Cache.ReadManifest(reference);
-            if (manifest is object)
-            {
-                await scope.RestoreManifest(manifest);
-            }
+            var restorer = new PackageRestorer(context);
+            return await restorer.Restore();
         }
-
     }
-
 }
+
+#nullable restore

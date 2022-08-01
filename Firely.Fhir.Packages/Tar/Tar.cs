@@ -1,4 +1,15 @@
-﻿using ICSharpCode.SharpZipLib.GZip;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
+using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using System;
 using System.Collections.Generic;
@@ -7,28 +18,30 @@ using System.Text;
 
 namespace Firely.Fhir.Packages
 {
-    public static class Tar
+    internal static class Tar
     {
-        public static string PackToDisk(string path, IEnumerable<FileEntry> entries)
+        internal static string PackToDisk(string path, IEnumerable<FileEntry> entries)
         {
+
             var packagefile = Path.ChangeExtension(path, ".tgz");
 
             using var file = File.Create(packagefile);
             using var gzip = new GZipOutputStream(file);
-            using TarOutputStream tar = new TarOutputStream(gzip);
-            
+            using TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default);
+
             Write(tar, entries);
-            
+
             return packagefile;
         }
 
-        public static string PackToDisk(string path, FileEntry single, IEnumerable<FileEntry> entries)
+        internal static string PackToDisk(string path, FileEntry single, IEnumerable<FileEntry> entries)
         {
+
             var packagefile = Path.ChangeExtension(path, ".tgz");
 
             using (var file = File.Create(packagefile))
             using (var gzip = new GZipOutputStream(file))
-            using (TarOutputStream tar = new TarOutputStream(gzip))
+            using (TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default))
             {
                 Write(tar, single);
                 Write(tar, entries);
@@ -36,11 +49,11 @@ namespace Firely.Fhir.Packages
             return packagefile;
         }
 
-        public static byte[] Pack(FileEntry single, IEnumerable<FileEntry> entries)
+        internal static byte[] Pack(FileEntry single, IEnumerable<FileEntry> entries)
         {
             var stream = new LateDisposalMemoryStream();
             using (var gzip = new GZipOutputStream(stream))
-            using (TarOutputStream tar = new TarOutputStream(gzip))
+            using (TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default))
             {
                 tar.Write(single);
                 tar.Write(entries);
@@ -51,11 +64,11 @@ namespace Firely.Fhir.Packages
             return bytes;
         }
 
-        public static byte[] Pack(IEnumerable<FileEntry> entries)
+        internal static byte[] Pack(IEnumerable<FileEntry> entries)
         {
             var stream = new LateDisposalMemoryStream();
             using (var gzip = new GZipOutputStream(stream))
-            using (TarOutputStream tar = new TarOutputStream(gzip))
+            using (TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default))
             {
                 tar.Write(entries);
             }
@@ -72,17 +85,17 @@ namespace Firely.Fhir.Packages
         //    Internal.Write(tar, path, content);
         //}
 
-        public static void ExtractTarballToToDisk(byte[] buffer, string folder)
+        internal static void ExtractTarballToToDisk(byte[] buffer, string folder)
         {
             Directory.CreateDirectory(folder);
             var stream = new MemoryStream(buffer);
 
-            using var archive = TarArchive.CreateInputTarArchive(stream);
+            using var archive = TarArchive.CreateInputTarArchive(stream, Encoding.Default);
 
             archive.ExtractContents(folder);
         }
 
-        public static IEnumerable<FileEntry> ExtractFiles(string path, Predicate<string> predicate)
+        internal static IEnumerable<FileEntry> ExtractFiles(string path, Predicate<string> predicate)
         {
             using var file = File.OpenRead(path);
 
@@ -92,43 +105,38 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        public static IEnumerable<FileEntry> ExtractFiles(Stream stream, Predicate<string> predicate)
+        internal static IEnumerable<FileEntry> ExtractFiles(Stream stream, Predicate<string> predicate)
         {
             using var gzip = new GZipInputStream(stream);
-            using var tar = new TarInputStream(gzip);
+            using var tar = new TarInputStream(gzip, Encoding.Default);
 
             for (TarEntry tarEntry = tar.GetNextEntry(); tarEntry != null; tarEntry = tar.GetNextEntry())
             {
                 if (predicate(tarEntry.Name))
                 {
-                    var fileEntry = new FileEntry
-                    {
-                        FilePath = tarEntry.Name
-                    };
+                    using var output = new MemoryStream();
+                    string filePath = tarEntry.Name;
+                    tar.CopyEntryContents(output);
+                    var buffer = output.ToArray();
 
-                    using (var output = new MemoryStream())
-                    {
-                        tar.CopyEntryContents(output);
-                        fileEntry.Buffer = output.ToArray();
-                    }
-                    yield return fileEntry;
+                    yield return new FileEntry(filePath, buffer);
                 }
             }
         }
 
-        public static IEnumerable<FileEntry> ExtractMatchingFiles(string packagefile, string match)
+        internal static IEnumerable<FileEntry> ExtractMatchingFiles(string packagefile, string match)
         {
             return ExtractFiles(packagefile, name => PathMatch(name, match));
         }
 
-        public static bool PathMatch(string pathA, string pathB)
+        internal static bool PathMatch(string pathA, string pathB)
         {
             pathA = pathA.Replace('\\', '/');
             pathB = pathB.Replace('\\', '/');
             return pathA == pathB;
         }
 
-        public static byte[] Unzip(byte[] buffer)
+        internal static byte[] Unzip(byte[] buffer)
         {
             using var instream = new MemoryStream(buffer);
             using var outstream = new MemoryStream();
@@ -137,16 +145,16 @@ namespace Firely.Fhir.Packages
             return outstream.ToArray();
         }
 
-        public static void PackToStream(IEnumerable<FileEntry> entries, Stream stream)
+        internal static void PackToStream(IEnumerable<FileEntry> entries, Stream stream)
         {
             using var gzip = new GZipOutputStream(stream);
-            using TarOutputStream tar = new TarOutputStream(gzip);
+            using TarOutputStream tar = new TarOutputStream(gzip, Encoding.Default);
 
             Tar.Write(tar, entries);
         }
 
-        [CLSCompliant(false)]
-        public static void Write(this TarOutputStream tar, IEnumerable<FileEntry> entries)
+
+        internal static void Write(this TarOutputStream tar, IEnumerable<FileEntry> entries)
         {
             foreach (var entry in entries)
             {
@@ -154,8 +162,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        [CLSCompliant(false)]
-        public static void Write(this TarOutputStream tar, FileEntry file)
+        internal static void Write(this TarOutputStream tar, FileEntry file)
         {
             using (Stream stream = file.GetStream())
             {
@@ -179,20 +186,14 @@ namespace Firely.Fhir.Packages
             tar.CloseEntry();
         }
 
-        [CLSCompliant(false)]
-        public static void Write(this TarOutputStream tar, string path, string content)
+        internal static void Write(this TarOutputStream tar, string path, string content)
         {
-            var entry = new FileEntry
-            {
-                FilePath = path,
-                Buffer = Encoding.UTF8.GetBytes(content)
-            };
+            var entry = new FileEntry(path, Encoding.UTF8.GetBytes(content));
             Write(tar, entry);
         }
-
-        
     }
-
 }
+
+#nullable restore  
 
 

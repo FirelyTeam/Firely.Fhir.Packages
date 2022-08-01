@@ -11,10 +11,8 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void RoundtripsAllCommonProperties()
         {
-            PackageManifest manif = new PackageManifest
+            PackageManifest manif = new(name: "roundtrip.test", version: "1.0.1")
             {
-                Name = "roundtrip.test",
-                Version = "1.0.1",
                 Description = "Does this roundtrip all properties?",
                 Author = "Ewout",
                 Dependencies = new() { ["dep.a"] = "=1.0.0", ["dep.b"] = ">=2.0.1" },
@@ -36,8 +34,8 @@ namespace Firely.Fhir.Packages.Tests
                 Jurisdiction = "urn:iso:std:iso:3166#US"
             };
 
-            var json = Parser.WriteManifest(manif);
-            var manif2 = Parser.ReadManifest(json);
+            var json = PackageParser.SerializeManifest(manif);
+            var manif2 = PackageParser.ParseManifest(json);
 
             manif2.Should().BeEquivalentTo(manif);
         }
@@ -57,12 +55,12 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void MergeDoesNotWriteNulls()
         {
-            var dir = CreateTempDir();
-            var manifest1 = new PackageManifest { Name = "a-b-c", Version = "4.0.1" };
-            var manifest2 = new PackageManifest { Name = "a-b-c", Version = "4.0.1", Author = "Turing" };
-            
-            var serialized1 = Parser.WriteManifest(manifest1);
-            var serialized2 = Parser.JsonMergeManifest(manifest2, serialized1);
+            _ = createTempDir();
+            var manifest1 = new PackageManifest("a-b-c", "4.0.1");
+            var manifest2 = new PackageManifest("a-b-c", "4.0.1") { Author = "Turing" };
+
+            var serialized1 = PackageParser.SerializeManifest(manifest1);
+            var serialized2 = PackageParser.JsonMergeManifest(manifest2, serialized1);
 
             var roundtrip = JObject.Parse(serialized2);
 
@@ -72,16 +70,16 @@ namespace Firely.Fhir.Packages.Tests
         }
 
 
-        private string writeManifest(PackageManifest manif)
+        private static string writeManifest(PackageManifest manif)
         {
-            var tempDir = CreateTempDir();
-            FolderProject proj = new FolderProject(tempDir);
+            var tempDir = createTempDir();
+            FolderProject proj = new(tempDir);
             proj.WriteManifest(manif);
 
-            return File.ReadAllText(Path.Combine(tempDir, PackageConsts.Manifest));
+            return File.ReadAllText(Path.Combine(tempDir, PackageFileNames.MANIFEST));
         }
 
-        private static string CreateTempDir()
+        private static string createTempDir()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(tempDir);

@@ -1,4 +1,16 @@
-﻿using System.Collections.Generic;
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,18 +19,38 @@ namespace Firely.Fhir.Packages
 {
     public static class IPackageCacheExtensions
     {
-        public static async Task<PackageManifest> ReadManifest(this IPackageCache cache, string name, string version)
+        /// <summary>
+        /// Reads manifest file
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="name">Package name</param>
+        /// <param name="version">package version</param>
+        /// <returns>The package manifest</returns>
+        internal static async Task<PackageManifest?> ReadManifest(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
-            return await cache.ReadManifest(reference);
+            return await cache.ReadManifest(reference).ConfigureAwait(false);
         }
 
-        public static async Task<CanonicalIndex> ReadCanonicalIndex(this IPackageCache cache, string name, string version)
+        /// <summary>
+        /// Read the firely specific index file from the package
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="name">name of the package</param>
+        /// <param name="version">version of the package</param>
+        /// <returns></returns>
+        internal static async Task<CanonicalIndex> ReadCanonicalIndex(this IPackageCache cache, string name, string version)
         {
             var reference = new PackageReference(name, version);
-            return await cache.GetCanonicalIndex(reference);
+            return await cache.GetCanonicalIndex(reference).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Get packages with a certain name
+        /// </summary>
+        /// <param name="refs"></param>
+        /// <param name="name">Package name</param>
+        /// <returns>List of package references of packages with a certain name</returns>
         public static IEnumerable<PackageReference> WithName(this IEnumerable<PackageReference> refs, string name)
         {
             return refs.Where(r => string.Compare(r.Name, name, ignoreCase: true) == 0);
@@ -29,29 +61,57 @@ namespace Firely.Fhir.Packages
         //    return cache.GetPackageReferences().WithName(pkgname);
         //}
 
+        /// <summary>
+        /// Install a package from a file on disk
+        /// </summary>
+        /// <param name="cache">Cache in which the package is to be installed</param>
+        /// <param name="path">file path of the package to be installed</param>
+        /// <returns>Reference to the installed package</returns>
         public static async Task<PackageReference> InstallFromFile(this IPackageCache cache, string path)
         {
             var manifest = Packaging.ExtractManifestFromPackageFile(path);
+            if (manifest == null)
+                throw new InvalidOperationException("Cannot extract manifest from package file");
+
             var reference = manifest.GetPackageReference();
-            var buffer = File.ReadAllBytes(path);
-            
-            await cache.Install(reference, buffer);
 
-            return reference; 
+            await cache.Install(reference, path).ConfigureAwait(false);
+
+            return reference;
         }
 
-        public static async Task<string> GetFileContent(this IPackageCache cache, PackageFileReference reference)
+        /// <summary>
+        /// Install a package from a file on disk
+        /// </summary>
+        /// <param name="cache">Cache in which the package is to be installed</param>
+        /// <param name="reference">Reference of the package to be installed</param>
+        /// <param name="path">file path of the package to be installed</param>
+        /// <returns></returns>
+        public static async Task Install(this IPackageCache cache, PackageReference reference, string path)
         {
-            return await cache.GetFileContent(reference.Package, reference.FileName);
+            if (!await cache.IsInstalled(reference))
+            {
+                var buffer = File.ReadAllBytes(path);
+                await cache.Install(reference, buffer).ConfigureAwait(false);
+            }
         }
 
-        public static async Task<string> ReadPackageFhirVersion(this IPackageCache cache, PackageReference reference)
+
+        internal static async Task<string> GetFileContent(this IPackageCache cache, PackageFileReference reference)
         {
-            var m = await cache.ReadManifest(reference);
-            var fhirVersion = m.GetFhirVersion();
-            return fhirVersion;
-        } 
+            return await cache.GetFileContent(reference.Package, reference.FilePath).ConfigureAwait(false);
+        }
+
+        internal static async Task<string> ReadPackageFhirVersion(this IPackageCache cache, PackageReference reference)
+        {
+            var m = await cache.ReadManifest(reference).ConfigureAwait(false);
+            var fhirVersion = m?.GetFhirVersion();
+
+            return fhirVersion ?? throw new ArgumentException($"FHIR Version {reference.Version} from package {reference.Name} is invalid");
+        }
 
     }
 }
+
+#nullable restore
 

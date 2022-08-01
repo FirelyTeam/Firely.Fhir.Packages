@@ -1,13 +1,25 @@
-﻿namespace Firely.Fhir.Packages
+﻿/* 
+ * Copyright (c) 2022, Firely (info@fire.ly) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
+ */
+
+
+#nullable enable
+
+namespace Firely.Fhir.Packages
 {
-    public static class PackageConsts
+    public static class PackageFileNames
     {
-        public const string Manifest = "package.json";
-        public const string LockFile = "fhirpkg.lock.json";
-        public const string CanonicalIndexFile = ".index.json";
-        public const string PackageFolder = "package";
+        public const string MANIFEST = "package.json";
+        public const string LOCKFILE = "fhirpkg.lock.json";
+        public const string CANONICALINDEXFILE = ".firely.index.json";
+        public const string INDEXJSONFILE = ".index.json";
+        public const string PACKAGEFOLDER = "package";
     }
 
 }
 
-
+#nullable restore
