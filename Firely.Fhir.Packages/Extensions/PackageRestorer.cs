@@ -42,8 +42,9 @@ namespace Firely.Fhir.Packages
             var reference = await context.CacheInstall(dependency);
             if (reference.Found)
             {
-                closure.Add(reference);
-                await RestoreReference(reference);
+                bool added = closure.Add(reference);
+                if (added)
+                    await RestoreReference(reference);
             }
             else
             {

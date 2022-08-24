@@ -4,8 +4,8 @@
     <PropertyGroup>
         <LangVersion>9.0</LangVersion>
 
-        <VersionPrefix>2.2.1</VersionPrefix>
-        <VersionSuffix>alpha</VersionSuffix>
+        <VersionPrefix>2.2.2</VersionPrefix>
+        <VersionSuffix></VersionSuffix>
 
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
