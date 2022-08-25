@@ -9,25 +9,25 @@ namespace Firely.Fhir.Packages
     {
         public static Versions ToVersions(this PackageListing listing)
         {
-            var versions = new Versions(listing.Versions.Keys);
-            return versions;
+            var listed = listing.GetlistedVersionStrings();
+            var unlisted = listing.GetUnlistedVersionStrings();
+            return new Versions(listed, unlisted);
+        }
+
+        public static IEnumerable<string> GetUnlistedVersionStrings(this PackageListing listing)
+        {
+            return listing.Versions.Where(v => v.Value.Unlisted == "false").Select(v => v.Key);
+        }
+
+        public static IEnumerable<string> GetlistedVersionStrings(this PackageListing listing)
+        {
+            return listing.Versions.Where(v => v.Value.Unlisted == "true").Select(v => v.Key);
         }
 
         public static Versions ToVersions(this IEnumerable<PackageReference> references)
         {
             var list = new Versions(references.Select(r => r.Version));
             return list;
-        }
-
-        [System.CLSCompliant(false)]
-        public static Version Resolve(this Versions versions, string pattern)
-        {
-            if (pattern == "latest" || string.IsNullOrEmpty(pattern))
-            {
-                return versions.Latest();
-            }
-            var range = new Range(pattern);
-            return versions.Resolve(range);
         }
 
         public static PackageReference Resolve(this Versions versions, PackageDependency dependency)
@@ -45,5 +45,7 @@ namespace Firely.Fhir.Packages
             var v = new Version(version);
             return versions.Has(v);
         }
+
+        
     }
 }

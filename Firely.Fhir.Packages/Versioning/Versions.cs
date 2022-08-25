@@ -7,33 +7,32 @@ namespace Firely.Fhir.Packages
     public class Versions
     {
         readonly List<Version> list = new List<Version>();
+        readonly List<Version> unlisted = new List<Version>();
 
         [System.CLSCompliant(false)]
         public IReadOnlyCollection<Version> Items => list;
 
         public Versions() { }
 
-        public Versions(IEnumerable<string> versions)
+        public Versions(IEnumerable<string> listed, IEnumerable<string> unlisted = null)
         {
-            Append(versions);
-        }
-
-        public void Append(IEnumerable<string> versions)
-        {
-            foreach (var s in versions)
-            {
-                if (TryParseVersion(s, out Version version))
-                {
-                    list.Add(version);
-                }
-            }
-            list.Sort();
+            AppendSorted(this.list, listed);
+            
+            if (unlisted is not null)
+                AppendSorted(this.unlisted, unlisted);
         }
 
         [System.CLSCompliant(false)]
-        public Version Latest(bool previews = false)
+        public Version Latest(bool stable = true)
         {
+            IEnumerable<Version> list = stable ? this.Stable() : this.list;
+
             return list.LastOrDefault();
+        }
+
+        public IEnumerable<Version> Stable()
+        {
+            return list.Where(v => v.PreRelease is null && v.Build is null);
         }
 
         [System.CLSCompliant(false)]
@@ -53,11 +52,41 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        [System.CLSCompliant(false)]
-        public Version Resolve(Range range)
+        private static void AppendSorted(List<Version> list, IEnumerable<string> values)
         {
+            foreach (var value in values)
+            {
+                if (TryParseVersion(value, out Version version))
+                {
+                    list.Add(version);
+                }
+            }
+            list.Sort();
+        }
+    
 
-            return range.MaxSatisfying(list);
+    [System.CLSCompliant(false)]
+        public Version Resolve(string pattern)
+        {
+            if (pattern == "latest" || string.IsNullOrEmpty(pattern))
+            {
+                return this.Latest();
+            }
+
+            var range = new Range(pattern);
+            Version version = range.MaxSatisfying(list);
+            if (version is not null) return version;
+            
+            if (TryParseVersion(pattern, out version) && ExistsUnlisted(version)) 
+                return version;
+            
+            return null;
+        }
+
+        private bool ExistsUnlisted(Version version)
+        {
+            Version v = unlisted.Find(v => v == version);
+            return v is not null;
         }
 
         [System.CLSCompliant(false)]

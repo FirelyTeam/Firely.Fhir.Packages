@@ -13,6 +13,17 @@ namespace Firely.Fhir.Packages
         {
             var versions = await server.GetVersions(dependency.Name);
             var version = versions.Resolve(dependency.Range)?.ToString(); //null => NotFound
+
+            if (version is null) return PackageReference.None;
+
+            return new PackageReference(dependency.Name, version);
+        }
+
+        public static async ValueTask<PackageReference> ResolveListed(this IPackageServer server, PackageDependency dependency)
+        {
+            var versions = await server.GetVersions(dependency.Name);
+            var version = versions.Resolve(dependency.Range)?.ToString(); //null => NotFound
+
             if (version is null) return PackageReference.None;
 
             return new PackageReference(dependency.Name, version);
