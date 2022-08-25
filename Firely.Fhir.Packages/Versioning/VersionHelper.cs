@@ -30,9 +30,9 @@ namespace Firely.Fhir.Packages
             return list;
         }
 
-        public static PackageReference Resolve(this Versions versions, PackageDependency dependency)
+        public static PackageReference Resolve(this Versions versions, PackageDependency dependency, bool stable = false)
         {
-            var version = versions.Resolve(dependency.Range);
+            var version = versions.Resolve(dependency.Range, stable);
             if (version is null)
             {
                 return PackageReference.None;
