@@ -66,12 +66,10 @@ namespace Firely.Fhir.Packages
     
 
     [System.CLSCompliant(false)]
-        public Version Resolve(string pattern)
+        public Version Resolve(string pattern, bool stable = true)
         {
             if (pattern == "latest" || string.IsNullOrEmpty(pattern))
-            {
-                return this.Latest();
-            }
+                return this.Latest(stable);
 
             var range = new Range(pattern);
             Version version = range.MaxSatisfying(list);
