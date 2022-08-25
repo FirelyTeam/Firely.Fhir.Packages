@@ -39,5 +39,16 @@ namespace Firely.Fhir.Packages.Tests
 
             Assert.AreEqual("3.0.2", version.ToString());
         }
+
+        [TestMethod]
+        public void LatestStable()
+        {
+            var listed = new List<string> { "1.0.0-alpha-1", "1.0.0-alpha-2", "1.0.0-beta-1" };
+            var versions = new Versions(listed);
+
+            var version = versions.Resolve("latest", stable: true);
+
+            Assert.AreEqual(null, version);
+        }
     }
 }
