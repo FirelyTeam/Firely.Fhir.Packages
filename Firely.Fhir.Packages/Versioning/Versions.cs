@@ -21,6 +21,7 @@ namespace Firely.Fhir.Packages
     public class Versions
     {
         private readonly List<Version> _list = new();
+        private readonly List<Version> _unlisted = new();
 
         /// <summary>
         /// Return the versions from the list
@@ -37,9 +38,14 @@ namespace Firely.Fhir.Packages
         /// Create a list of versions
         /// </summary>
         /// <param name="versions">versions from a list has to be created</param>
-        public Versions(IEnumerable<string> versions)
+        /// <param name="unlisted">unlisted versions</param>
+        public Versions(IEnumerable<string> versions, IEnumerable<string>? unlisted = null)
         {
-            Append(versions);
+            if (versions is not null)
+                appendSorted(this._list, versions);
+
+            if (unlisted is not null)
+                appendSorted(this._unlisted, unlisted);
         }
 
         /// <summary>
@@ -61,12 +67,22 @@ namespace Firely.Fhir.Packages
 
         /// <summary>
         /// Get the latest version from the list
+        /// <param name="stable">Indication of allowing only non-preview versions</param>
         /// </summary>
         /// <returns>the latest version from the list</returns>
+
         [System.CLSCompliant(false)]
-        public Version? Latest()
+        public Version? Latest(bool stable = true)
         {
-            return _list.LastOrDefault();
+            IEnumerable<Version> list = stable ? this.Stable() : this._list;
+
+            return list.LastOrDefault();
+        }
+
+        [System.CLSCompliant(false)]
+        public IEnumerable<Version> Stable()
+        {
+            return _list.Where(v => v.PreRelease is null && v.Build is null);
         }
 
         /// <summary>
@@ -92,6 +108,43 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        private static void appendSorted(List<Version> list, IEnumerable<string> values)
+        {
+            foreach (var value in values)
+            {
+                if (TryParseVersion(value, out Version? version))
+                {
+                    if (version is not null)
+                        list.Add(version);
+                }
+            }
+            list.Sort();
+        }
+
+
+        /// <summary>
+        /// Resolve the best mathing version from a range
+        /// </summary>
+        /// <param name="range">Range of versions to be used during the resolving</param>
+        /// <param name="stable">Indication of allowing only non-preview versions</param>
+        /// <returns>Semver Version object if the best matching version</returns>
+        [System.CLSCompliant(false)]
+        public Version? Resolve(string pattern, bool stable = true)
+        {
+            if (pattern == "latest" || string.IsNullOrEmpty(pattern))
+                return this.Latest(stable);
+
+            var range = new Range(pattern);
+            Version? version = Resolve(range);
+
+            if (version is not null) return version;
+
+            return TryParseVersion(pattern, out version) && existsUnlisted(version)
+                ? version
+                : null;
+        }
+
+
         /// <summary>
         /// Resolve the best mathing version from a range
         /// </summary>
@@ -100,8 +153,13 @@ namespace Firely.Fhir.Packages
         [System.CLSCompliant(false)]
         public Version Resolve(Range range)
         {
-
             return range.MaxSatisfying(_list);
+        }
+
+        private bool existsUnlisted(Version? version)
+        {
+            Version? v = (version is null) ? null : _unlisted.Find(v => v == version);
+            return v is not null;
         }
 
         /// <summary>

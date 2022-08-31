@@ -25,7 +25,19 @@ namespace Firely.Fhir.Packages
         /// <returns>A list of package versions</returns>
         public static Versions ToVersions(this PackageListing listing)
         {
-            return listing.Versions == null ? new Versions() : new Versions(listing.Versions.Keys);
+            var listed = listing.GetListedVersionStrings();
+            var unlisted = listing.GetUnlistedVersionStrings();
+            return new Versions(listed, unlisted);
+        }
+
+        internal static IEnumerable<string> GetUnlistedVersionStrings(this PackageListing listing)
+        {
+            return listing.Versions?.Where(v => v.Value.Unlisted == "false").Select(v => v.Key) ?? new List<string> { };
+        }
+
+        internal static IEnumerable<string> GetListedVersionStrings(this PackageListing listing)
+        {
+            return listing.Versions?.Where(v => v.Value.Unlisted == "true").Select(v => v.Key) ?? new List<string> { };
         }
 
         /// <summary>
@@ -58,15 +70,12 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="versions"></param>
         /// <param name="dependency">The package reference to be resolves</param>
+        /// <param name="stable">Indication of allowing only non-preview versions</param>
         /// <returns>A package reference describing the dependency</returns>
-        public static PackageReference Resolve(this Versions versions, PackageDependency dependency)
+        public static PackageReference Resolve(this Versions versions, PackageDependency dependency, bool stable = false)
         {
-            var version = versions.Resolve(dependency.Range);
-            if (version is null)
-            {
-                return PackageReference.None;
-            }
-            return new PackageReference(dependency.Name, version.ToString());
+            var version = (dependency.Range is null) ? null : versions.Resolve(dependency.Range, stable);
+            return version is null ? PackageReference.None : new PackageReference(dependency.Name, version.ToString());
         }
 
         /// <summary>
