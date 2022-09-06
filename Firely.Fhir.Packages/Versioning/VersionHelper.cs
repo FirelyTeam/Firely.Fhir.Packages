@@ -30,14 +30,16 @@ namespace Firely.Fhir.Packages
             return new Versions(listed, unlisted);
         }
 
+        //"unlisted" is defined by us, it's not part of npm. npm has a deprecated warning. The "unlisted" field is currently a string, but we expect to transform it to a boolean "true" / "false".
         internal static IEnumerable<string> GetUnlistedVersionStrings(this PackageListing listing)
         {
-            return listing.Versions?.Where(v => v.Value.Unlisted == "true").Select(v => v.Key) ?? new List<string> { };
+            return listing.Versions?.Where(v => !string.IsNullOrEmpty(v.Value.Unlisted)).Select(v => v.Key) ?? new List<string> { };
         }
 
+        //"unlisted" is defined by us, it's not part of npm. npm has a deprecated warning. The "unlisted" field is currently a string, but we expect to transform it to a boolean "true" / "false".
         internal static IEnumerable<string> GetListedVersionStrings(this PackageListing listing)
         {
-            return listing.Versions?.Where(v => v.Value.Unlisted != "true").Select(v => v.Key) ?? new List<string> { };
+            return listing.Versions?.Where(v => string.IsNullOrEmpty(v.Value.Unlisted)).Select(v => v.Key) ?? new List<string> { };
         }
 
         /// <summary>
