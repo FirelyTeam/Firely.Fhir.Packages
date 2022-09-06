@@ -32,12 +32,12 @@ namespace Firely.Fhir.Packages
 
         internal static IEnumerable<string> GetUnlistedVersionStrings(this PackageListing listing)
         {
-            return listing.Versions?.Where(v => v.Value.Unlisted == "false").Select(v => v.Key) ?? new List<string> { };
+            return listing.Versions?.Where(v => v.Value.Unlisted == "true").Select(v => v.Key) ?? new List<string> { };
         }
 
         internal static IEnumerable<string> GetListedVersionStrings(this PackageListing listing)
         {
-            return listing.Versions?.Where(v => v.Value.Unlisted == "true").Select(v => v.Key) ?? new List<string> { };
+            return listing.Versions?.Where(v => v.Value.Unlisted != "true").Select(v => v.Key) ?? new List<string> { };
         }
 
         /// <summary>
