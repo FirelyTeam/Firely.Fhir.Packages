@@ -44,7 +44,7 @@ namespace Firely.Fhir.Packages
             _closure = new();
             var manifest = await _context.Project.ReadManifest().ConfigureAwait(false);
 
-            if (manifest is null) 
+            if (manifest is null)
                 throw new Exception("This context does not have a package manifest (package.json)");
 
             var errors = new List<Exception>();
@@ -85,8 +85,11 @@ namespace Firely.Fhir.Packages
 
                 if (reference.Found)
                 {
-                    _closure.Add(reference);
-                    await restoreReference(reference, errors, dependencyChain).ConfigureAwait(false);
+                    bool added = _closure.Add(reference);
+                    if (added)
+                    {
+                        await restoreReference(reference, errors, dependencyChain).ConfigureAwait(false);
+                    }
                 }
                 else
                 {

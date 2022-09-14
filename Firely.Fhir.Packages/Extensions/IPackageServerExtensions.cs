@@ -27,10 +27,10 @@ namespace Firely.Fhir.Packages
         }
 
 
-        internal static async ValueTask<PackageReference> Resolve(this IPackageServer server, PackageDependency dependency)
+        internal static async ValueTask<PackageReference> Resolve(this IPackageServer server, PackageDependency dependency, bool stable = false)
         {
             var versions = await server.GetVersions(dependency.Name);
-            var version = versions?.Resolve(dependency.Range)?.ToString(); //null => NotFound
+            var version = (dependency.Range == null) ? null : versions?.Resolve(dependency.Range, stable)?.ToString(); //null => NotFound
             return version is null ? PackageReference.None : new PackageReference(dependency.Name, version);
         }
 
@@ -39,11 +39,12 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="server"></param>
         /// <param name="name">Package name</param>
+        /// <param name="stable">Indication of allowing only non-preview versions</param>
         /// <returns>The package reference of the latest version of the package</returns>
-        public static async ValueTask<PackageReference> GetLatest(this IPackageServer server, string name)
+        public static async ValueTask<PackageReference> GetLatest(this IPackageServer server, string name, bool stable = false)
         {
             var versions = await server.GetVersions(name);
-            var version = versions?.Latest()?.ToString();
+            var version = versions?.Latest(stable)?.ToString();
             return version is null ? PackageReference.None : new PackageReference(name, version);
         }
 
@@ -52,10 +53,11 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="server"></param>
         /// <param name="dependency">The dependency to be search for</param>
+        /// <param name="stable">Indication of allowing only non-preview versions</param>
         /// <returns>whether the server can find a certain dependency</returns>
-        public async static ValueTask<bool> HasMatch(this IPackageServer server, PackageDependency dependency)
+        public async static ValueTask<bool> HasMatch(this IPackageServer server, PackageDependency dependency, bool stable = false)
         {
-            var reference = await server.Resolve(dependency);
+            var reference = await server.Resolve(dependency, stable);
             return await Task.FromResult(reference.Found);
         }
     }

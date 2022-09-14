@@ -87,6 +87,7 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// If a package is unlisted, it should no longer be used except for
         /// backward compatible installations.
+        /// This field is defined by us, it's not part of npm. npm has a deprecated warning. The "unlisted" field is currently a string, but we expect to transform it to a boolean "true" / "false".
         /// </summary>
         [JsonProperty(PropertyName = "unlisted")]
         public string? Unlisted;
