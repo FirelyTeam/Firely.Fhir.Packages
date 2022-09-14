@@ -435,6 +435,7 @@ namespace Firely.Fhir.Packages
         /// Instantiates a new metadata entry for .firely.index.json
         /// </summary>
         /// <param name="filepath">File path relative to the root folder including the file name</param>
+        [JsonConstructor]
         public ResourceMetadata(string filepath) : base(Path.GetFileName(filepath))
         {
             FileName = Path.GetFileName(filepath);
