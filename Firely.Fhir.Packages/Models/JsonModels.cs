@@ -12,6 +12,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Firely.Fhir.Packages
@@ -422,11 +423,21 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Instantiates a new metadata entry for .firely.index.json
         /// </summary>
-        /// <param name="filename"></param>
-        /// <param name="filepath"></param>
+        /// <param name="filename">name of the file</param>
+        /// <param name="filepath">File path relative to the root folder including the file name</param>
         public ResourceMetadata(string filename, string filepath) : base(filename)
         {
             FileName = filename;
+            FilePath = filepath;
+        }
+
+        /// <summary>
+        /// Instantiates a new metadata entry for .firely.index.json
+        /// </summary>
+        /// <param name="filepath">File path relative to the root folder including the file name</param>
+        public ResourceMetadata(string filepath) : base(Path.GetFileName(filepath))
+        {
+            FileName = Path.GetFileName(filepath);
             FilePath = filepath;
         }
 
