@@ -8,12 +8,13 @@ namespace Firely.Fhir.Packages.Tests
     public class ResolveFilesTest
     {
         private const string R3_CORE_PACKAGE = "hl7.fhir.r3.core";
-        private const string EXPANSIONS_PACKAGE = "hl7.fhir.r3.expansions";
+        private const string R3_EXPANSIONS_PACKAGE = "hl7.fhir.r3.expansions";
+
 
         [TestMethod]
         public void ResolveBestCandidateTest()
         {
-            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, EXPANSIONS_PACKAGE);
+            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, R3_EXPANSIONS_PACKAGE);
             var adm_gender = context.GetIndex().ResolveBestCandidateByCanonical("http://hl7.org/fhir/ValueSet/administrative-gender");
             adm_gender.Should().NotBeNull();
             adm_gender!.HasExpansion.Should().BeTrue();
@@ -22,7 +23,7 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public async Task TestGetCodeSystemByValueSet()
         {
-            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, EXPANSIONS_PACKAGE);
+            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, R3_EXPANSIONS_PACKAGE);
             var codeSystem = await context.GetCodeSystemByValueSet("http://hl7.org/fhir/ValueSet/address-type");
             codeSystem.Should().NotBeEmpty();
             codeSystem.Should().Contain("\"url\":\"http://hl7.org/fhir/address-type");
@@ -31,18 +32,27 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void TestGetListOfResourceUris()
         {
-            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, EXPANSIONS_PACKAGE);
-            var listUris = context.ListCanonicalUris();
+            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, R3_EXPANSIONS_PACKAGE);
+            var listUris = context.ListResourceUris();
             listUris.Should().NotBeEmpty();
-            listUris.Should().Contain("http://hl7.org/fhir/StructureDefinition/Patient");
-            listUris.Should().Contain("http://hl7.org/fhir/administrative-gender");
+            listUris.Should().Contain("StructureDefinition/Patient");
+            listUris.Should().Contain("ValueSet/administrative-gender");
         }
 
+        [TestMethod]
+        public void TestGetListOfCanonicalUris()
+        {
+            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, R3_EXPANSIONS_PACKAGE);
+            var listCanonicals = context.ListCanonicalUris();
+            listCanonicals.Should().NotBeEmpty();
+            listCanonicals.Should().Contain("http://hl7.org/fhir/StructureDefinition/Patient");
+            listCanonicals.Should().Contain("http://hl7.org/fhir/administrative-gender");
+        }
 
         [TestMethod]
         public async Task TestGetConceptMap()
         {
-            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, EXPANSIONS_PACKAGE);
+            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, R3_EXPANSIONS_PACKAGE);
             var conceptMaps = await context.GetConceptMapsBySourceAndTarget(sourceUri: "http://hl7.org/fhir/ValueSet/data-absent-reason", targetUri: "http://hl7.org/fhir/ValueSet/v3-NullFlavor");
             conceptMaps.Should().NotBeEmpty();
             conceptMaps.Should().Contain(i => i.Contains("\"url\":\"http://hl7.org/fhir/ConceptMap/cm-data-absent-reason-v3\""));
@@ -52,7 +62,7 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public async Task TestGetNamingSystem()
         {
-            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, EXPANSIONS_PACKAGE);
+            var context = TestHelper.GetPackageContext(R3_CORE_PACKAGE, R3_EXPANSIONS_PACKAGE);
             var namingSystem = await context.GetNamingSystemByUniqueId("http://snomed.info/sct");
             namingSystem.Should().NotBeEmpty();
             namingSystem.Should().Contain("http://snomed.info/sct");

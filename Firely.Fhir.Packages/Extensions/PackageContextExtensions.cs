@@ -203,17 +203,31 @@ namespace Firely.Fhir.Packages
         }
 
         /// <summary>
-        /// Lists all canonical Uri of a package, with optional filter on resource type 
+        /// Lists all canonical Uri's of a package, with optional filter on resource type 
         /// </summary>
         /// <param name="scope">The package containing the resources</param>
         /// <param name="resourceType">Resource type as string used to filter</param>
-        /// <returns>Sequence of uri strings.</returns>
+        /// <returns>Sequence of canonical uri strings.</returns>
         public static IEnumerable<string> ListCanonicalUris(this PackageContext scope, string? resourceType = null)
         {
             return (resourceType is not null)
                 ? scope.GetIndex().Where(i => i.ResourceType == resourceType && i.Canonical is not null).Select(i => i.Canonical!)
                 : scope.GetIndex().Where(i => i.Canonical is not null).Select(i => i.Canonical!);
         }
+
+        /// <summary>
+        /// Lists all resource Uri's of a package (not canonical Uris), with optional filter on resource type 
+        /// </summary>
+        /// <param name="scope">The package containing the resources</param>
+        /// <param name="resourceType">Resource type as string used to filter</param>
+        /// <returns>Sequence of uri strings.</returns>
+        public static IEnumerable<string> ListResourceUris(this PackageContext scope, string? resourceType = null)
+        {
+            return (resourceType is not null)
+                ? scope.GetIndex().Where(i => i.ResourceType == resourceType && i.Id != null).Select(i => $"{i.ResourceType}/{i.Id}")
+                : scope.GetIndex().Where(i => i.ResourceType is not null && i.Id != null).Select(i => $"{i.ResourceType}/{i.Id}");
+        }
+
 
 
         /// <summary>
