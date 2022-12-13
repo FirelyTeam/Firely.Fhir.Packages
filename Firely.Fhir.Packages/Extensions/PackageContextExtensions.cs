@@ -254,12 +254,24 @@ namespace Firely.Fhir.Packages
         /// <param name="targetUri">An uri that is either the target uri, target ValueSet system or target StructureDefinition canonical url for the map.</param>
         /// <returns>A sequence of ConceptMap resources.</returns>
         /// <remarks>Either sourceUri may be null, or targetUri, but not both</remarks>
-        public static async Task<IEnumerable<string>?> GetConceptMapsBySourceAndTarget(this PackageContext scope, string? sourceUri, string? targetUri)
+        public static async Task<IEnumerable<string>> GetConceptMapsBySourceAndTarget(this PackageContext scope, string? sourceUri, string? targetUri)
         {
-            if (sourceUri == null && targetUri == null)
-                return null;
+            var conceptMapReferences = Enumerable.Empty<PackageFileReference>();
 
-            var conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
+            if (sourceUri == null && targetUri == null)
+                return Enumerable.Empty<string>();
+            else if (sourceUri is not null && targetUri is null)
+            {
+                conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.SourceUri == sourceUri);
+            }
+            else if (sourceUri is null && targetUri is not null)
+            {
+                conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.TargetUri == targetUri);
+            }
+            else
+            {
+                conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
+            }
             return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.getFileContent(i).ConfigureAwait(false))).ConfigureAwait(false);
         }
 

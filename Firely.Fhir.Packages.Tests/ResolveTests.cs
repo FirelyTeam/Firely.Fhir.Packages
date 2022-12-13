@@ -57,7 +57,20 @@ namespace Firely.Fhir.Packages.Tests
             conceptMaps.Should().NotBeEmpty();
             conceptMaps.Should().Contain(i => i.Contains("\"url\":\"http://hl7.org/fhir/ConceptMap/cm-data-absent-reason-v3\""));
             conceptMaps.Should().NotContain(i => i.Contains("\"url\":\"http://hl7.org/fhir/ConceptMap/cm-contact-point-use-v3\""));
+
+            conceptMaps = await context.GetConceptMapsBySourceAndTarget(sourceUri: "http://hl7.org/fhir/ValueSet/data-absent-reason", null);
+            conceptMaps.Should().NotBeEmpty();
+            conceptMaps.Should().Contain(i => i.Contains("\"url\":\"http://hl7.org/fhir/ConceptMap/cm-data-absent-reason-v3\""));
+            conceptMaps.Should().NotContain(i => i.Contains("\"url\":\"http://hl7.org/fhir/ConceptMap/cm-contact-point-use-v3\""));
+
+            conceptMaps = await context.GetConceptMapsBySourceAndTarget(sourceUri: null, targetUri: "http://hl7.org/fhir/ValueSet/v3-NullFlavor");
+            conceptMaps.Should().NotBeEmpty();
+            conceptMaps.Should().Contain(i => i.Contains("\"url\":\"http://hl7.org/fhir/ConceptMap/cm-data-absent-reason-v3\""));
+            conceptMaps.Should().NotContain(i => i.Contains("\"url\":\"http://hl7.org/fhir/ConceptMap/cm-contact-point-use-v3\""));
         }
+
+
+
 
         [TestMethod]
         public async Task TestGetNamingSystem()
