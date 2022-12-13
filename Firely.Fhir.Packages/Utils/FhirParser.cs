@@ -13,6 +13,7 @@ using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.Serialization;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
@@ -38,7 +39,7 @@ namespace Firely.Fhir.Packages
                 return FhirXmlNode.Parse(File.ReadAllText(filepath), _xmlParsingSettings);
             }
 
-            if (FhirFileFormats.HasJsonExtension(filepath))
+            if (FhirFileFormats.HasJsonExtension(filepath) && !PackageFileNames.ALL_PACKAGE_FILENAMES.Contains(filepath.Split(Path.DirectorySeparatorChar).Last()))
             {
                 var content = File.ReadAllText(filepath);
                 return FhirJsonNode.Parse(content, null, _jsonParsingSettings);
