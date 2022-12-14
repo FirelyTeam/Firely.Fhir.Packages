@@ -11,8 +11,7 @@
 	</ItemGroup>	
 
 	<ItemGroup>
-		<PackageReference Include="Hl7.Fhir.Support" Version="$(FhirNetSdkVersion)" />
-		<PackageReference Include="Hl7.Fhir.Serialization" Version="$(FhirNetSdkVersion)" />
+		<PackageReference Include="Hl7.Fhir.Base" Version="$(FhirNetSdkVersion)" />
 	</ItemGroup>
 
 </Project>
