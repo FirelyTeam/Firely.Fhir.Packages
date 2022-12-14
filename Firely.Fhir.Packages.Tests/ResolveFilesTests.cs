@@ -69,9 +69,6 @@ namespace Firely.Fhir.Packages.Tests
             conceptMaps.Should().NotContain(i => i.Contains("\"url\":\"http://hl7.org/fhir/ConceptMap/cm-contact-point-use-v3\""));
         }
 
-
-
-
         [TestMethod]
         public async Task TestGetNamingSystem()
         {

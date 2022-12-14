@@ -7,12 +7,11 @@
  */
 
 using System;
+using System.Runtime.CompilerServices;
 
 [assembly: CLSCompliant(true)]
 
-#if DEBUG
-//[assembly: InternalsVisibleTo("something")]
-#endif
+[assembly: InternalsVisibleTo("Firely.Fhir.Packages.Tests")]
 
 #if RELEASE
 // https://docs.microsoft.com/en-us/dotnet/standard/assembly/create-signed-friend
