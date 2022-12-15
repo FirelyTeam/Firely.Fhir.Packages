@@ -18,6 +18,9 @@ namespace Firely.Fhir.Packages
         public const string CANONICALINDEXFILE = ".firely.index.json";
         public const string INDEXJSONFILE = ".index.json";
         public const string PACKAGEFOLDER = "package";
+
+        public static readonly string[] ALL_PACKAGE_FILENAMES = { MANIFEST, LOCKFILE, CANONICALINDEXFILE, INDEXJSONFILE, PACKAGEFOLDER };
+
     }
 
 }
