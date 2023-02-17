@@ -1,6 +1,7 @@
 parameters:
   # Default values
   useVersionSuffix: true
+  artifactName: 'NuGetPackages'
 
 steps:
   # Package nugets
@@ -19,7 +20,7 @@ steps:
       packagePaths: $(Build.ArtifactStagingDirectory)\packages\*.nupkg
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: NuGet Packages'
+    displayName: 'Publish Artifact'
     inputs:
       pathtoPublish: '$(Build.artifactStagingDirectory)/packages'
-      artifactName: 'NuGet Packages'
+      artifactName: ${{ parameters.artifactName }}
