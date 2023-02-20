@@ -203,17 +203,31 @@ namespace Firely.Fhir.Packages
         }
 
         /// <summary>
-        /// Lists all canonical Uri of a package, with optional filter on resource type 
+        /// Lists all canonical Uri's of a package, with optional filter on resource type 
         /// </summary>
         /// <param name="scope">The package containing the resources</param>
         /// <param name="resourceType">Resource type as string used to filter</param>
-        /// <returns>Sequence of uri strings.</returns>
+        /// <returns>Sequence of canonical uri strings.</returns>
         public static IEnumerable<string> ListCanonicalUris(this PackageContext scope, string? resourceType = null)
         {
             return (resourceType is not null)
                 ? scope.GetIndex().Where(i => i.ResourceType == resourceType && i.Canonical is not null).Select(i => i.Canonical!)
                 : scope.GetIndex().Where(i => i.Canonical is not null).Select(i => i.Canonical!);
         }
+
+        /// <summary>
+        /// Lists all resource Uri's of a package (not canonical Uris), with optional filter on resource type 
+        /// </summary>
+        /// <param name="scope">The package containing the resources</param>
+        /// <param name="resourceType">Resource type as string used to filter</param>
+        /// <returns>Sequence of uri strings.</returns>
+        public static IEnumerable<string> ListResourceUris(this PackageContext scope, string? resourceType = null)
+        {
+            return (resourceType is not null)
+                ? scope.GetIndex().Where(i => i.ResourceType == resourceType && i.Id != null).Select(i => $"{i.ResourceType}/{i.Id}")
+                : scope.GetIndex().Where(i => i.ResourceType is not null && i.Id != null).Select(i => $"{i.ResourceType}/{i.Id}");
+        }
+
 
 
         /// <summary>
@@ -240,12 +254,24 @@ namespace Firely.Fhir.Packages
         /// <param name="targetUri">An uri that is either the target uri, target ValueSet system or target StructureDefinition canonical url for the map.</param>
         /// <returns>A sequence of ConceptMap resources.</returns>
         /// <remarks>Either sourceUri may be null, or targetUri, but not both</remarks>
-        public static async Task<IEnumerable<string>?> GetConceptMapsBySourceAndTarget(this PackageContext scope, string? sourceUri, string? targetUri)
+        public static async Task<IEnumerable<string>> GetConceptMapsBySourceAndTarget(this PackageContext scope, string? sourceUri, string? targetUri)
         {
-            if (sourceUri == null && targetUri == null)
-                return null;
+            var conceptMapReferences = Enumerable.Empty<PackageFileReference>();
 
-            var conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
+            if (sourceUri == null && targetUri == null)
+                return Enumerable.Empty<string>();
+            else if (sourceUri is not null && targetUri is null)
+            {
+                conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.SourceUri == sourceUri);
+            }
+            else if (sourceUri is null && targetUri is not null)
+            {
+                conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.TargetUri == targetUri);
+            }
+            else
+            {
+                conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
+            }
             return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.getFileContent(i).ConfigureAwait(false))).ConfigureAwait(false);
         }
 
