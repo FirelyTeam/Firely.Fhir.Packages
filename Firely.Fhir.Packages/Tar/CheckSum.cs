@@ -9,6 +9,7 @@
 
 #nullable enable    
 
+using System;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -20,9 +21,21 @@ namespace Firely.Fhir.Packages
     public static class CheckSum
     {
         /// <summary>
-        /// A package server that serves packages, needs to provide a checksum in the package listing.
+        /// A package server that serves packages, needs to provide a sha256 checksum in the package listing.
         /// This method can be used for that purpose.
         /// </summary>
+        public static byte[] Sha256Sum(byte[] buffer)
+        {
+            using var sha256 = SHA256.Create();
+            var hash = sha256.ComputeHash(buffer);
+            return hash;
+        }
+
+        /// <summary>
+        /// A package server that serves packages, needs to provide a sha1 checksum in the package listing.
+        /// This method can be used for that purpose.
+        /// </summary>
+        [Obsolete("ShaSum is deprecated because sha1 hash function is not secure enough, please use Sha256Sum instead.", false)]
         public static byte[] ShaSum(byte[] buffer)
         {
             using var sha = SHA1.Create();
