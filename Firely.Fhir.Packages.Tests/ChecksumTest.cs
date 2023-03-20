@@ -37,7 +37,7 @@ namespace Firely.Fhir.Packages.Tests
 
             var buffer = client.GetPackage(reference).Result;
 
-            var bytehash = CheckSum.Sha256Sum(buffer);
+            var bytehash = CheckSum.ShaSum(buffer);
             var hash = CheckSum.HashToHexString(bytehash);
             Assert.AreEqual(original_hash, hash);
         }
