@@ -6,6 +6,7 @@ namespace Firely.Fhir.Packages
     using Hl7.Fhir.Introspection;
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
+    using Hl7.Fhir.Specification;
     using Hl7.Fhir.Specification.Source;
     using Hl7.Fhir.Utility;
     using System;
@@ -40,6 +41,20 @@ namespace Firely.Fhir.Packages
         {
             _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(packageServer, packageNames)));
             _provider = provider;
+        }
+
+        public static FhirPackageSource? CreateCorePackageSource(ModelInspector provider, FhirRelease version, string packageServer)
+        {
+            return version switch
+            {
+                FhirRelease.DSTU1 => null,
+                FhirRelease.DSTU2 => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r2.core@1.0.2", "hl7.fhir.r2.expansions@1.0.2" }),
+                FhirRelease.STU3 => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r3.core@3.0.2", "hl7.fhir.r3.expansions@3.0.2" }),
+                FhirRelease.R4 => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r4.core@4.0.1", "hl7.fhir.r4.expansions@4.0.1" }),
+                FhirRelease.R4B => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r4b.core@4.3.0", "hl7.fhir.r4b.expansions@4.3.0" }),
+                FhirRelease.R5 => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r5.core@5.0.0", "hl7.fhir.r5.expansions@5.0.0", "hl7.fhir.uv.extensions.r5@1.0.0" }),
+                _ => null,
+            };
         }
 
         private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames)

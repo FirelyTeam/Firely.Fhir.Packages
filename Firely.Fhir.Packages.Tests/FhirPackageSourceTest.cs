@@ -133,5 +133,18 @@ namespace Hl7.Fhir.Support.Poco.Tests
             pat.Should().NotBeNull();
             pat.Should().Contain("\"url\":\"http://hl7.org/fhir/StructureDefinition/Patient\"");
         }
+
+        [TestMethod]
+        public async Task TestFhirCorePackages()
+        {
+            var packageSource = FhirPackageSource.CreateCorePackageSource(new ModelInspector(FhirRelease.R5), FhirRelease.R5, "http://packages2.fhir.org/packages/");
+            var pat = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/Patient");
+            pat.Should().NotBeNull();
+
+            var extension = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName");
+            extension.Should().NotBeNull();
+
+        }
+
     }
 }
