@@ -26,8 +26,14 @@ namespace Firely.Fhir.Packages
             return await server.GetVersions(dependency.Name);
         }
 
-
-        internal static async ValueTask<PackageReference> Resolve(this IPackageServer server, PackageDependency dependency, bool stable = false)
+        /// <summary>
+        /// Resolve asks the configured server of this context to resolve a package
+        /// </summary>
+        /// <param name="server">package server</param>
+        /// <param name="dependency">package dependency that needs to be resolved</param>
+        /// <param name="stable">whether to only look for stable versions.</param>
+        /// <returns>Resolved package</returns>
+        public static async ValueTask<PackageReference> Resolve(this IPackageServer server, PackageDependency dependency, bool stable = false)
         {
             var versions = await server.GetVersions(dependency.Name);
             var version = (dependency.Range == null) ? null : versions?.Resolve(dependency.Range, stable)?.ToString(); //null => NotFound

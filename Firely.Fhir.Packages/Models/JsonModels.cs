@@ -580,7 +580,13 @@ namespace Firely.Fhir.Packages
                 : dto.PackageReferences.Select(i => (PackageReference)i);
         }
 
-        internal static void AddDependency(this PackageManifest manifest, string name, string? version)
+        /// <summary>
+        /// Adds a package dependendy to this manifest
+        /// </summary>
+        /// <param name="manifest"></param>
+        /// <param name="name">Name of the dependency</param>
+        /// <param name="name">Version of the dependency</param>
+        public static void AddDependency(this PackageManifest manifest, string name, string? version)
         {
             if (version is null) version = "latest";
             if (manifest.Dependencies is null) manifest.Dependencies = new Dictionary<string, string?>();
