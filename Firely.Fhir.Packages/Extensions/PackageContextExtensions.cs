@@ -33,7 +33,7 @@ namespace Firely.Fhir.Packages
                 ? scope.GetIndex().ResolveBestCandidateByCanonical(uri, version)
                 : scope.GetIndex().ResolveCanonical(uri, version);
 
-            return reference is not null ? await scope.getFileContent(reference).ConfigureAwait(false) : null;
+            return reference is not null ? await scope.GetFileContent(reference).ConfigureAwait(false) : null;
         }
 
         /// <summary>
@@ -63,7 +63,13 @@ namespace Firely.Fhir.Packages
                 : scope.GetIndex().ResolveCanonical(uri, version);
         }
 
-        private static async Task<string> getFileContent(this PackageContext scope, PackageFileReference reference)
+        /// <summary>
+        /// Retrieve the content of a specific file in a package
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="reference">File reference that represents the file</param>
+        /// <returns>Content of the file</returns>
+        public static async Task<string> GetFileContent(this PackageContext scope, PackageFileReference reference)
         {
             return !reference.Package.Found
                 ? await scope.Project.GetFileContent(reference.FilePath).ConfigureAwait(false)
@@ -79,7 +85,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var reference in scope.GetIndex())
             {
-                var content = TaskHelper.Await(() => scope.getFileContent(reference));
+                var content = TaskHelper.Await(() => scope.GetFileContent(reference));
                 yield return content;
             }
         }
@@ -94,7 +100,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var item in references)
             {
-                var content = TaskHelper.Await(() => scope.getFileContent(item));
+                var content = TaskHelper.Await(() => scope.GetFileContent(item));
                 yield return content;
             }
         }
@@ -159,7 +165,7 @@ namespace Firely.Fhir.Packages
         public static async Task<string?> GetFileContentById(this PackageContext scope, string resourceType, string id)
         {
             var reference = scope.getFileReference(resourceType, id);
-            return reference is null ? null : await scope.getFileContent(reference).ConfigureAwait(false);
+            return reference is null ? null : await scope.GetFileContent(reference).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -183,7 +189,7 @@ namespace Firely.Fhir.Packages
             var reference = scope.GetIndex().Where(i => i.FileName == fileName).FirstOrDefault();
             if (reference is null) return null;
 
-            var content = await scope.getFileContent(reference).ConfigureAwait(false);
+            var content = await scope.GetFileContent(reference).ConfigureAwait(false);
             return content;
         }
 
@@ -198,7 +204,7 @@ namespace Firely.Fhir.Packages
             var reference = scope.GetIndex().Where(i => i.FilePath == filePath).FirstOrDefault();
             if (reference is null) return null;
 
-            var content = await scope.getFileContent(reference).ConfigureAwait(false);
+            var content = await scope.GetFileContent(reference).ConfigureAwait(false);
             return content;
         }
 
@@ -272,7 +278,7 @@ namespace Firely.Fhir.Packages
             {
                 conceptMapReferences = scope.GetIndex().Where(i => i.ConceptMapUris?.SourceUri == sourceUri && i.ConceptMapUris?.TargetUri == targetUri);
             }
-            return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.getFileContent(i).ConfigureAwait(false))).ConfigureAwait(false);
+            return await Task.WhenAll(conceptMapReferences.Select(async i => await scope.GetFileContent(i).ConfigureAwait(false))).ConfigureAwait(false);
         }
 
         /// <summary>Finds a NamingSystem resource by matching any of a system's UniqueIds.</summary>
@@ -283,7 +289,7 @@ namespace Firely.Fhir.Packages
         {
             var namingSystemIndex = scope.GetIndex().Where(i => i.NamingSystemUniqueId?.Contains(uniqueId) == true).FirstOrDefault();
 
-            return namingSystemIndex is not null ? await scope.getFileContent(namingSystemIndex).ConfigureAwait(false) : null;
+            return namingSystemIndex is not null ? await scope.GetFileContent(namingSystemIndex).ConfigureAwait(false) : null;
         }
     }
 }

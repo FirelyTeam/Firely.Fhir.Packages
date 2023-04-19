@@ -9,6 +9,7 @@
 
 #nullable enable    
 
+using System;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -17,6 +18,8 @@ namespace Firely.Fhir.Packages
     /// <summary>
     /// A package server that serves packages, needs to provide a checksum in the package listing.
     /// </summary>
+
+    [Obsolete("Users should implement their own SHA checksum")]
     public static class CheckSum
     {
         /// <summary>
