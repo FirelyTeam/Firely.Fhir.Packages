@@ -137,7 +137,7 @@ namespace Hl7.Fhir.Support.Poco.Tests
 
 
         [DataTestMethod]
-        [DataRow(FhirRelease.R5, "5.0.0", "http://packages2.fhir.org/packages/", DisplayName = "R5")]
+        //[DataRow(FhirRelease.R5, "5.0.0", "http://packages2.fhir.org/packages", DisplayName = "R5")] //Not supported by simplifier and packages2 is down.
         [DataRow(FhirRelease.R4B, "4.3.0", "http://packages.simplifier.net", DisplayName = "R4B")]
         [DataRow(FhirRelease.R4, "4.0.1", "http://packages.simplifier.net", DisplayName = "R4")]
         [DataRow(FhirRelease.STU3, "3.0.2", "http://packages.simplifier.net", DisplayName = "STU3")]
@@ -152,7 +152,5 @@ namespace Hl7.Fhir.Support.Poco.Tests
             extension.Should().NotBeNull();
             extension.Should().Contain("\"url\":\"http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName\"");
         }
-
-
     }
 }
