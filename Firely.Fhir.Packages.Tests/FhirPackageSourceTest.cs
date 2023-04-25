@@ -134,17 +134,25 @@ namespace Hl7.Fhir.Support.Poco.Tests
             pat.Should().Contain("\"url\":\"http://hl7.org/fhir/StructureDefinition/Patient\"");
         }
 
-        [TestMethod]
-        public async Task TestFhirCorePackages()
+
+
+        [DataTestMethod]
+        [DataRow(FhirRelease.R5, "5.0.0", "http://packages2.fhir.org/packages/", DisplayName = "R5")]
+        [DataRow(FhirRelease.R4B, "4.3.0", "http://packages.simplifier.net", DisplayName = "R4B")]
+        [DataRow(FhirRelease.R4, "4.0.1", "http://packages.simplifier.net", DisplayName = "R4")]
+        [DataRow(FhirRelease.STU3, "3.0.2", "http://packages.simplifier.net", DisplayName = "STU3")]
+        public async Task TestFhirCorePackages(FhirRelease release, string version, string packageServer)
         {
-            var packageSource = FhirPackageSource.CreateCorePackageSource(new ModelInspector(FhirRelease.R5), FhirRelease.R5, "http://packages2.fhir.org/packages/");
+            var packageSource = FhirPackageSource.CreateCorePackageSource(new ModelInspector(release), release, packageServer);
             var pat = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/Patient");
             pat.Should().NotBeNull();
+            pat.Should().Contain($"\"fhirVersion\":\"{version}\"");
 
             var extension = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName");
             extension.Should().NotBeNull();
-
+            extension.Should().Contain("\"url\":\"http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName\"");
         }
+
 
     }
 }
