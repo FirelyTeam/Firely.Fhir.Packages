@@ -11,7 +11,7 @@
     <!-- Solution-wide properties for NuGet packaging -->
     <PropertyGroup>
         <LangVersion>9.0</LangVersion>
-        <VersionPrefix>4.0.1</VersionPrefix>
+        <VersionPrefix>4.1.1</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
