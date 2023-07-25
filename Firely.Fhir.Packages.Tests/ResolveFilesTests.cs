@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages.Tests
@@ -18,6 +19,33 @@ namespace Firely.Fhir.Packages.Tests
             var adm_gender = context.GetIndex().ResolveBestCandidateByCanonical("http://hl7.org/fhir/ValueSet/administrative-gender");
             adm_gender.Should().NotBeNull();
             adm_gender!.HasExpansion.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void ResolveBestCandidateByVersionTest()
+        {
+            var url = "http://fire.ly/StructureDefinition/example";
+            var index = new FileIndex();
+            var files = new List<PackageFileReference>(){
+                 new PackageFileReference("file1.xml")
+                {
+                    Canonical = url,
+                    Version = "1.0.1",
+                },
+                new PackageFileReference("file2.xml")
+                {
+                    Canonical = url,
+                    Version = "1.0.3",
+                },
+                new PackageFileReference("file3.xml")
+                {
+                    Canonical = url,
+                    Version = "1.0.2",
+                }
+            };
+
+            index.AddRange(files);
+            index.ResolveBestCandidateByCanonical(url)!.FileName.Should().Be("file2.xml");
         }
 
         [TestMethod]
