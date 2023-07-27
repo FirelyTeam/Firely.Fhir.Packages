@@ -82,7 +82,7 @@ namespace Firely.Fhir.Packages
         }
 
         private static List<PackageFileReference> filterOnHighestVersions(IEnumerable<PackageFileReference> candidates) => candidates
-                                                .GroupBy(file => new Version(file.Version is not null ? file.Version : "0.0.0"))
+                                                .GroupBy(file => new Version(file.Version ?? "0.0.0"))
                                                 .OrderByDescending(group => group.Key)
                                                 .First()
                                                 .ToList();
