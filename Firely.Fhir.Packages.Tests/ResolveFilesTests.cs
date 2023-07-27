@@ -21,8 +21,12 @@ namespace Firely.Fhir.Packages.Tests
             adm_gender!.HasExpansion.Should().BeTrue();
         }
 
-        [TestMethod]
-        public void ResolveBestCandidateByVersionTest()
+        [DataRow("1.0.1", "1.0.2", "1.0.2")]
+        [DataRow("2.0.1", "1.0.1", "2.0.1")]
+        [DataRow("1.1.0", "10.0.2", "10.0.2")]
+        [DataRow("2.0.1", "10.0.1", "10.0.1")]
+        [DataTestMethod]
+        public void ResolveBestCandidateByVersionTest(string version1, string version2, string expectedResult)
         {
             var url = "http://fire.ly/StructureDefinition/example";
             var index = new FileIndex();
@@ -30,22 +34,17 @@ namespace Firely.Fhir.Packages.Tests
                  new PackageFileReference("file1.xml")
                 {
                     Canonical = url,
-                    Version = "1.0.1",
+                    Version = version1
                 },
                 new PackageFileReference("file2.xml")
                 {
                     Canonical = url,
-                    Version = "1.0.3",
-                },
-                new PackageFileReference("file3.xml")
-                {
-                    Canonical = url,
-                    Version = "1.0.2",
+                    Version = version2
                 }
             };
 
             index.AddRange(files);
-            index.ResolveBestCandidateByCanonical(url)!.FileName.Should().Be("file2.xml");
+            index.ResolveBestCandidateByCanonical(url)!.Version.Should().Be(expectedResult);
         }
 
         [TestMethod]
