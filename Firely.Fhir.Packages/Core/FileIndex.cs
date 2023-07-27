@@ -65,16 +65,39 @@ namespace Firely.Fhir.Packages
 
         private static PackageFileReference resolveFromMultipleCandidates(IEnumerable<PackageFileReference> candidates)
         {
-            candidates = candidates.Where(c => c.HasSnapshot == true || c.HasExpansion == true);
-            return candidates.Count() == 1
-                ? candidates.First()
-                : throw new InvalidOperationException("Found multiple conflicting conformance resources with the same canonical url identifier.");
+            //first check which has the file has the highest version
+            List<PackageFileReference> highestVersionedFiles = filterOnHighestVersions(candidates);
+
+            if (highestVersionedFiles.Count == 1)
+            {
+                return highestVersionedFiles[0];
+            }
+
+            //If there are multiple, check if they have a snapshot or expansion, prefer those.
+            else
+            {
+                candidates = filterOnSnapshotOrExapnsions(candidates);
+                return candidates.First();
+            }
         }
 
+        private static List<PackageFileReference> filterOnHighestVersions(IEnumerable<PackageFileReference> candidates) => candidates
+                                                .GroupBy(file => new Version(file.Version ?? "0.0.0"))
+                                                .OrderByDescending(group => group.Key)
+                                                .First()
+                                                .ToList();
 
+        private static IEnumerable<PackageFileReference> filterOnSnapshotOrExapnsions(IEnumerable<PackageFileReference> candidates)
+        {
+            var snapshotsOrExpansions = candidates.Where(c => c.HasSnapshot == true || c.HasExpansion == true);
+            if (snapshotsOrExpansions.Any())
+            {
+                candidates = snapshotsOrExpansions;
+            }
 
+            return candidates;
+        }
     }
-
 }
 
 #nullable restore
