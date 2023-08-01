@@ -12,9 +12,9 @@ namespace Firely.Fhir.Packages.Tests
             var listed = new List<string> { "3.0.1", "3.0.2", "4.0.0" };
             var unlisted = new List<string> { "3.0.3" };
             var versions = new Versions(listed, unlisted);
-            var version = versions.Resolve("3.0"); 
+            var version = versions.Resolve("3.0");
 
-            Assert.AreEqual("3.0.2", version.ToString());
+            Assert.AreEqual("3.0.2", version!.ToString());
         }
 
         [TestMethod]
@@ -26,7 +26,7 @@ namespace Firely.Fhir.Packages.Tests
 
             var version = versions.Resolve("3.0.3");
 
-            Assert.AreEqual("3.0.3", version.ToString());
+            Assert.AreEqual("3.0.3", version!.ToString());
         }
 
         [TestMethod]
@@ -37,7 +37,7 @@ namespace Firely.Fhir.Packages.Tests
 
             var version = versions.Resolve("latest");
 
-            Assert.AreEqual("3.0.2", version.ToString());
+            Assert.AreEqual("3.0.2", version!.ToString());
         }
 
         [TestMethod]

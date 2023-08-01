@@ -37,8 +37,10 @@ namespace Firely.Fhir.Packages.Tests
 
             var buffer = client.GetPackage(reference).Result;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var bytehash = CheckSum.ShaSum(buffer);
             var hash = CheckSum.HashToHexString(bytehash);
+#pragma warning restore CS0618 // Type or member is obsolete
             Assert.AreEqual(original_hash, hash);
         }
     }
