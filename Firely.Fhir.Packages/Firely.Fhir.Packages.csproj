@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="..\Firely.Fhir.Packages.props" />
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.*" />
 		<PackageReference Include="SemanticVersioning" Version="1.2.0" />
 		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-		<PackageReference Include="SharpZipLib" Version="1.3.3" />
+		<PackageReference Include="SharpZipLib" Version="1.4.2" />
 		<PackageReference Include="System.Memory" Version="4.5.5" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 	</ItemGroup>	
