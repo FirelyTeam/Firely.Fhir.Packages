@@ -9,7 +9,7 @@
 
 #nullable enable
 
-using SemVer;
+using SemanticVersioning;
 using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
