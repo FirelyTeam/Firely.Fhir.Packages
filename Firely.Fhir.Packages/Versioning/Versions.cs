@@ -134,10 +134,13 @@ namespace Firely.Fhir.Packages
             if (pattern == "latest" || string.IsNullOrEmpty(pattern))
                 return this.Latest(stable);
 
-            var range = new Range(pattern);
-            Version? version = Resolve(range);
+            Version? version;
 
-            if (version is not null) return version;
+            if (Range.TryParse(pattern, out var range))
+            {
+                version = Resolve(range);
+                return version;
+            }
 
             return TryParseVersion(pattern, out version) && existsUnlisted(version)
                 ? version
