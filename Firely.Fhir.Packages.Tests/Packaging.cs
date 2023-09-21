@@ -53,9 +53,7 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         [DataRow(true, 0)]
         [DataRow(true, 1)]
-        [DataRow(true, 1)]
         [DataRow(false, 0)]
-        [DataRow(false, 1)]
         [DataRow(false, 1)]
         public async Task HandleInvalidPackagesOnRestore(bool includeValidPackage, int invalidPackageCount)
         {
@@ -69,7 +67,7 @@ namespace Firely.Fhir.Packages.Tests
                 dependencies.Add(IndexGenerationTest.HL7_CORE_PACKAGE_R4);
 
             for (int i = 0; i < invalidPackageCount; i++)
-                dependencies.Add($"{packageName}{i+1}@{i+1}.{packageRange}");
+                dependencies.Add($"{packageName}{i + 1}@{i + 1}.{packageRange}");
 
             var fixtureDirectory = TestHelper.InitializeTemporary("integration-test", dependencies.ToArray()).Result;
 

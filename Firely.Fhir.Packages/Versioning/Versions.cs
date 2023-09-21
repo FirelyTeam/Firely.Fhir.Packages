@@ -56,7 +56,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var s in versions)
             {
-                if (TryParseVersion(s, out Version? version))
+                if (Version.TryParse(s, out Version? version))
                 {
                     if (version != null)
                         _list.Add(version);
@@ -91,6 +91,7 @@ namespace Firely.Fhir.Packages
         /// <param name="s">string to be parsed</param>
         /// <param name="v">Semver version object</param>
         /// <returns>Whether the string was succesfully parsed to a SemVer version object</returns>
+        [System.Obsolete("Use Version.TryParse() instead")]
         [System.CLSCompliant(false)]
         public static bool TryParseVersion(string s, out Version? v)
         {
@@ -112,7 +113,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var value in values)
             {
-                if (TryParseVersion(value, out Version? version))
+                if (Version.TryParse(value, out Version? version))
                 {
                     if (version is not null)
                         list.Add(version);
@@ -142,7 +143,7 @@ namespace Firely.Fhir.Packages
                 return version;
             }
 
-            return TryParseVersion(pattern, out version) && existsUnlisted(version)
+            return Version.TryParse(pattern, out version) && existsUnlisted(version)
                 ? version
                 : null;
         }
