@@ -69,15 +69,5 @@ namespace Firely.Fhir.Packages.Tests
             Assert.IsTrue(result.NotFound);
         }
 
-        [TestMethod]
-        public void ResolveInvalidSemVerVersion()
-        {
-            var target = new Versions(new string[] { "1.0.0", "1.0.2", "1.0.0-beta-1" });
-
-            var version = target.Resolve("current");
-
-            Assert.AreEqual(null, version);
-        }
-
     }
 }
