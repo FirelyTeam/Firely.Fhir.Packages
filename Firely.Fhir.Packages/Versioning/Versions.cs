@@ -129,6 +129,7 @@ namespace Firely.Fhir.Packages
         /// <param name="range">Range of versions to be used during the resolving</param>
         /// <param name="stable">Indication of allowing only non-preview versions</param>
         /// <returns>Semver Version object if the best matching version</returns>
+        /// <exception cref="System.ArgumentException">Throw argument exception when an invalid pattern is supplied</exception>
         [System.CLSCompliant(false)]
         public Version? Resolve(string pattern, bool stable = true)
         {
