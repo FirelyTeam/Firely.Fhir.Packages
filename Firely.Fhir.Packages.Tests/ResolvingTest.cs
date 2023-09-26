@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages.Tests
@@ -49,6 +51,14 @@ namespace Firely.Fhir.Packages.Tests
             var version = versions.Resolve("latest", stable: true);
 
             Assert.AreEqual(null, version);
+        }
+
+        [TestMethod]
+        public void ResolveInvalidSemVerVersion()
+        {
+            var target = new Versions(new string[] { "1.0.0", "1.0.2", "1.0.0-beta-1" });
+            var version = () => target.Resolve("current");
+            version.Should().Throw<ArgumentException>();
         }
     }
 }

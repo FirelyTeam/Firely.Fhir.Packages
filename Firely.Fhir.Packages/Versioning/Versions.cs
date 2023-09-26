@@ -56,7 +56,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var s in versions)
             {
-                if (TryParseVersion(s, out Version? version))
+                if (Version.TryParse(s, out Version? version))
                 {
                     if (version != null)
                         _list.Add(version);
@@ -91,6 +91,7 @@ namespace Firely.Fhir.Packages
         /// <param name="s">string to be parsed</param>
         /// <param name="v">Semver version object</param>
         /// <returns>Whether the string was succesfully parsed to a SemVer version object</returns>
+        [System.Obsolete("Use Version.TryParse() instead")]
         [System.CLSCompliant(false)]
         public static bool TryParseVersion(string s, out Version? v)
         {
@@ -112,7 +113,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var value in values)
             {
-                if (TryParseVersion(value, out Version? version))
+                if (Version.TryParse(value, out Version? version))
                 {
                     if (version is not null)
                         list.Add(version);
@@ -128,6 +129,7 @@ namespace Firely.Fhir.Packages
         /// <param name="range">Range of versions to be used during the resolving</param>
         /// <param name="stable">Indication of allowing only non-preview versions</param>
         /// <returns>Semver Version object if the best matching version</returns>
+        /// <exception cref="System.ArgumentException">Throw argument exception when an invalid pattern is supplied</exception>
         [System.CLSCompliant(false)]
         public Version? Resolve(string pattern, bool stable = true)
         {
@@ -139,7 +141,7 @@ namespace Firely.Fhir.Packages
 
             if (version is not null) return version;
 
-            return TryParseVersion(pattern, out version) && existsUnlisted(version)
+            return Version.TryParse(pattern, out version) && existsUnlisted(version)
                 ? version
                 : null;
         }
