@@ -60,15 +60,15 @@ jobs:
     condition: and(succeeded(), eq('${{ parameters.useVersionSuffix }}', 'true'))
 
   - powershell: |    
-    Write-Host "Determining if version suffix should be used"
-    
-    [bool]$useVersionSuffix = $true
-    if ([string]::IsNullOrEmpty($VersionSuffix)) 
-    {
-      $useVersionSuffix = $false
-    }
-    Write-Host "Use Version Suffix: $useVersionSuffix"
-    Write-Host "##vso[task.setvariable variable=UseVersionSuffix]$useVersionSuffix"
+      Write-Host "Determining if version suffix should be used"
+      
+      [bool]$useVersionSuffix = $true
+      if ([string]::IsNullOrEmpty($VersionSuffix)) 
+      {
+        $useVersionSuffix = $false
+      }
+      Write-Host "Use Version Suffix: $useVersionSuffix"
+      Write-Host "##vso[task.setvariable variable=UseVersionSuffix]$useVersionSuffix"
   displayName: 'Determine version suffix use'
 
   - ${{ if eq(parameters.restoreDependencies, 'true') }}:
