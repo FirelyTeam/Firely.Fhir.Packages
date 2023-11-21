@@ -62,10 +62,10 @@ jobs:
   - powershell: |    
       Write-Host "Determining if version suffix should be used"
       
-      [bool]$useVersionSuffix = $true
+      [string]$useVersionSuffix = 'true'
       if ([string]::IsNullOrEmpty($VersionSuffix)) 
       {
-        $useVersionSuffix = $false
+        $useVersionSuffix = 'false'
       }
       Write-Host "Use Version Suffix: $useVersionSuffix"
       Write-Host "##vso[task.setvariable variable=UseVersionSuffix]$useVersionSuffix"
@@ -79,19 +79,19 @@ jobs:
       
   - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix) --no-restore
     displayName: 'dotnet build $(buildConfiguration) with no restore'
-    condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'true'), eq($(UseVersionSuffix), $false)))
+    condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'true'), eq($(UseVersionSuffix), 'false')))
 
   - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix)
     displayName: 'dotnet build $(buildConfiguration)'
-    condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'false'), eq($(UseVersionSuffix), $false)))
+    condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'false'), eq($(UseVersionSuffix), 'false')))
 
   - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix) --no-restore
     displayName: 'dotnet build $(buildConfiguration) with version suffix and with no restore'
-    condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'true'), eq($(UseVersionSuffix), $true)))
+    condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'true'), eq($(UseVersionSuffix), 'true')))
 
   - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix)
     displayName: 'dotnet build $(buildConfiguration) with version suffix'
-    condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'false'), eq($(UseVersionSuffix), $true)))
+    condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'false'), eq($(UseVersionSuffix), 'true')))
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet test UnitTests'

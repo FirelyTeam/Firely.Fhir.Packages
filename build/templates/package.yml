@@ -21,10 +21,10 @@ steps:
   - powershell: |    
       Write-Host "Determining if version suffix should be used"
      
-      [bool]$useVersionSuffix = $true
+      [string]$useVersionSuffix = 'true'
       if ([string]::IsNullOrEmpty($VersionSuffix)) 
       {
-        $useVersionSuffix = $false
+        $useVersionSuffix = 'false'
       }
       Write-Host "Use Version Suffix: $useVersionSuffix"
       Write-Host "##vso[task.setvariable variable=UseVersionSuffix]$useVersionSuffix"
@@ -33,11 +33,11 @@ steps:
   # Package nugets
   - script: dotnet pack --no-build --configuration $(buildConfiguration) --version-suffix $(build.buildNumber) --output $(Build.artifactStagingDirectory)/packages
     displayName: 'dotnet pack $(buildConfiguration) with version suffix'
-    condition: and(succeeded(), eq($(UseVersionSuffix), $true))
+    condition: and(succeeded(), eq($(UseVersionSuffix), 'true'))
 
   - script: dotnet pack --no-build --configuration $(buildConfiguration) --output $(Build.artifactStagingDirectory)/packages
     displayName: 'dotnet pack $(buildConfiguration)'
-    condition: and(succeeded(), eq($(UseVersionSuffix), $false))
+    condition: and(succeeded(), eq($(UseVersionSuffix), 'false'))
 
   - template: codesign-nuget-packages.yml@templates
     parameters:
