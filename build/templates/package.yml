@@ -18,7 +18,7 @@ steps:
       
       Write-Host "Version Suffix: $versionSuffix"
       Write-Host "##vso[task.setvariable variable=VersionSuffix]$versionSuffix"
-    displayName: 'Retrieve version suffix for publishing'
+    displayName: 'Retrieve version suffix for packaging'
 
   - powershell: |    
       Write-Host "Determining if version suffix should be used"
