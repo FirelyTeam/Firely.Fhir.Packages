@@ -5,7 +5,7 @@
 		<TargetFrameworks>net6.0;netstandard2.0;</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<FhirNetSdkVersion>5.3.0</FhirNetSdkVersion>
+		<FhirNetSdkVersion>5.4.0</FhirNetSdkVersion>
 	</PropertyGroup>
 	
     <!-- Solution-wide properties for NuGet packaging -->
@@ -40,7 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
 	</ItemGroup>
     
 </Project>
