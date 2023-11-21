@@ -62,7 +62,7 @@ jobs:
   - powershell: |    
     Write-Host "Determining if version suffix should be used"
     
-    [string]$useVersionSuffix = $true
+    [bool]$useVersionSuffix = $true
     if ([string]::IsNullOrEmpty($VersionSuffix)) 
     {
       $useVersionSuffix = $false
