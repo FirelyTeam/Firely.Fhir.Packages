@@ -69,7 +69,7 @@ jobs:
       }
       Write-Host "Use Version Suffix: $useVersionSuffix"
       Write-Host "##vso[task.setvariable variable=UseVersionSuffix]$useVersionSuffix"
-  displayName: 'Determine version suffix use'
+    displayName: 'Determine version suffix use'
 
   - ${{ if eq(parameters.restoreDependencies, 'true') }}:
     - template: restore.yml@templates
