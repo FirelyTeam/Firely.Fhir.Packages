@@ -1,15 +1,15 @@
 parameters:
   # Default values
-  useVersionSuffix: true
+  useVersionSuffix: true #add build number to version suffix
   versionSuffix: ''
   artifactName: 'NuGetPackages'
 
 steps:
   - powershell: |
       [string] $versionSuffix = '${{ parameters.versionSuffix }}'
-      [string] $useVersionSuffix = ${{ parameters.useVersionSuffix }}
+      [string] $addBuildNumber = ${{ parameters.useVersionSuffix }}
       
-      if ([string]::IsNullOrEmpty($versionSuffix) -and $useVersionSuffix -eq 'true') 
+      if ([string]::IsNullOrEmpty($versionSuffix) -and $addBuildNumber -eq 'true') 
       {
         $versionSuffix = $env:BUILD_BUILDNUMBER
       }
@@ -18,10 +18,26 @@ steps:
       Write-Host "##vso[task.setvariable variable=VersionSuffix]$versionSuffix"
     displayName: 'Retrieve version suffix for packaging'
 
+  - powershell: |    
+      Write-Host "Determining if version suffix should be used"
+     
+      [string]$useVersionSuffix = $true
+      if ([string]::IsNullOrEmpty($VersionSuffix)) 
+      {
+        $useVersionSuffix = $false
+      }
+      Write-Host "Use Version Suffix: $useVersionSuffix"
+      Write-Host "##vso[task.setvariable variable=UseVersionSuffix]$useVersionSuffix"
+    displayName: 'Determine version suffix use'
+
   # Package nugets
-  - script: dotnet pack --no-build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix) --output $(Build.artifactStagingDirectory)/packages
+  - script: dotnet pack --no-build --configuration $(buildConfiguration) --version-suffix $(build.buildNumber) --output $(Build.artifactStagingDirectory)/packages
+    displayName: 'dotnet pack $(buildConfiguration) with version suffix'
+    condition: and(succeeded(), eq($(UseVersionSuffix), $true))
+
+  - script: dotnet pack --no-build --configuration $(buildConfiguration) --output $(Build.artifactStagingDirectory)/packages
     displayName: 'dotnet pack $(buildConfiguration)'
-    condition: succeeded()
+    condition: and(succeeded(), eq($(UseVersionSuffix), $false))
 
   - template: codesign-nuget-packages.yml@templates
     parameters:
