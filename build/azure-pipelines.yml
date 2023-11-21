@@ -30,7 +30,7 @@ stages:
     - template: templates/build.yml  # Template reference
       parameters:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
-        useVersionSuffix: true
+        useVersionSuffix: false
         propsFile: 'Firely.Fhir.Packages.props'
         packageArtifacts: true
         restoreDependencies: true

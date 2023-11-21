@@ -12,7 +12,7 @@
     <PropertyGroup>
         <LangVersion>9.0</LangVersion>
         <VersionPrefix>4.2.1</VersionPrefix>
-        <VersionSuffix>alpha</VersionSuffix>
+        <!--<VersionSuffix>alpha</VersionSuffix>-->
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
         <Copyright>Copyright 2013-2022 Firely</Copyright>
