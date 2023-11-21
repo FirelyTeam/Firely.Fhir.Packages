@@ -7,8 +7,10 @@ parameters:
 steps:
   - powershell: |
       [string] $versionSuffix = '${{ parameters.versionSuffix }}'
-      [string] $addBuildNumber = ${{ parameters.useVersionSuffix }}
+      [string] $addBuildNumber = '${{ parameters.useVersionSuffix }}'
       
+      Write-Host "Add Build Number: $addBuildNumber"
+
       if ([string]::IsNullOrEmpty($versionSuffix) -and $addBuildNumber -eq 'true') 
       {
         $versionSuffix = $env:BUILD_BUILDNUMBER
@@ -16,7 +18,7 @@ steps:
       
       Write-Host "Version Suffix: $versionSuffix"
       Write-Host "##vso[task.setvariable variable=VersionSuffix]$versionSuffix"
-    displayName: 'Retrieve version suffix for packaging'
+    displayName: 'Retrieve version suffix for publishing'
 
   - powershell: |    
       Write-Host "Determining if version suffix should be used"
