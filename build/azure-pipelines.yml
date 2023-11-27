@@ -31,6 +31,7 @@ stages:
       parameters:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
         useVersionSuffix: true
+        propsFile: 'Firely.Fhir.Packages.props'
         packageArtifacts: true
         restoreDependencies: true
         nuGetServiceConnections: GitHubPackageGetFeed
@@ -43,6 +44,7 @@ stages:
       parameters:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
         useVersionSuffix: false
+        propsFile: 'Firely.Fhir.Packages.props'
         packageArtifacts: true
         restoreDependencies: true
         pool: 
