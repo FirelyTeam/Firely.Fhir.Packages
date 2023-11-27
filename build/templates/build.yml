@@ -82,19 +82,19 @@ jobs:
         nuGetServiceConnections: ${{ parameters.nuGetServiceConnections }}
         nuGetSources: ${{ parameters.nuGetSources }}
       
-  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix) --no-restore
+  - script: dotnet build --configuration $(buildConfiguration) /p:ContinuousIntegrationBuild=true --version-suffix $(VersionSuffix) --no-restore
     displayName: 'dotnet build $(buildConfiguration) with no restore'
     condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'true'), eq(variables.UseVersionSuffix, 'false')))
 
-  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix)
+  - script: dotnet build --configuration $(buildConfiguration) /p:ContinuousIntegrationBuild=true --version-suffix $(VersionSuffix)
     displayName: 'dotnet build $(buildConfiguration)'
     condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'false'), eq(variables.UseVersionSuffix, 'false')))
 
-  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix) --no-restore
+  - script: dotnet build --configuration $(buildConfiguration) /p:ContinuousIntegrationBuild=true --version-suffix $(VersionSuffix) --no-restore
     displayName: 'dotnet build $(buildConfiguration) with version suffix and with no restore'
     condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'true'), eq(variables.UseVersionSuffix, 'true')))
 
-  - script: dotnet build --configuration $(buildConfiguration) --version-suffix $(VersionSuffix)
+  - script: dotnet build --configuration $(buildConfiguration) /p:ContinuousIntegrationBuild=true --version-suffix $(VersionSuffix)
     displayName: 'dotnet build $(buildConfiguration) with version suffix'
     condition: and(succeeded(), and(eq('${{ parameters.restoreDependencies }}', 'false'), eq(variables.UseVersionSuffix, 'true')))
 
