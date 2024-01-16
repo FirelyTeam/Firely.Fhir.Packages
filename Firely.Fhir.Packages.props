@@ -5,7 +5,7 @@
 		<TargetFrameworks>net6.0;netstandard2.0;</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<FhirNetSdkVersion>5.4.0</FhirNetSdkVersion>
+		<FhirNetSdkVersion>5.5.1</FhirNetSdkVersion>
 	</PropertyGroup>
 	
     <!-- Solution-wide properties for NuGet packaging -->
@@ -15,7 +15,7 @@
         <VersionSuffix>alpha</VersionSuffix>
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
-        <Copyright>Copyright 2013-2022 Firely</Copyright>
+        <Copyright>Copyright 2013-2024 Firely</Copyright>
         <RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>        
 		<PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>

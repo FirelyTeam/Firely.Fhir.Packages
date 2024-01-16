@@ -142,7 +142,7 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="entries">package files</param>
         /// <returns>a package manifest, and a list of file names</returns>
-        public static (PackageManifest manifest, IEnumerable<string> files) GetPackageSummary(this IEnumerable<FileEntry> entries)
+        public static (PackageManifest? manifest, IEnumerable<string> files) GetPackageSummary(this IEnumerable<FileEntry> entries)
         {
             var files = new List<string>();
             var manifest = new PackageManifest("", ""); //TODO: discuss what to do here
