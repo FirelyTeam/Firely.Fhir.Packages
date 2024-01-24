@@ -141,10 +141,12 @@ namespace Firely.Fhir.Packages
         {
             if (file.match(PackageFileNames.MANIFEST))
                 return file.ChangeFolder(PackageFileNames.PACKAGEFOLDER);
-
             else if (file.hasExtension(".xml", ".json"))
-                return file.ChangeFolder(PackageFileNames.PACKAGEFOLDER);
-
+            {
+                return file.FilePath.StartsWith(PackageFileNames.EXAMPLEFOLDERPATH)
+                    ? file.ChangeFolder(PackageFileNames.EXAMPLEFOLDERPATH)
+                    : file.ChangeFolder(PackageFileNames.PACKAGEFOLDER);
+            }
             else
                 return file.ChangeFolder(FOLDER_OTHER);
         }
