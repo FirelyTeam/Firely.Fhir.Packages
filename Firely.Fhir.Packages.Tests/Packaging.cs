@@ -29,7 +29,22 @@ namespace Firely.Fhir.Packages.Tests
 
             Assert.AreEqual(@"package\patient.xml", file.FilePath);
 
+            //example files already in the correct structure should stay in the example folder
+            file =
+                new FileEntry(@"package\examples\example-patient.json", System.Array.Empty<byte>())
+                .OrganizeToPackageStructure();
+
+            Assert.AreEqual(@"package\examples\example-patient.json", file.FilePath);
+
+            //example files already in the correct structure should stay in the example folder, but subfolders should be flattened
+            file =
+                new FileEntry(@"package\examples\random\example-patient.json", System.Array.Empty<byte>())
+                .OrganizeToPackageStructure();
+
+            Assert.AreEqual(@"package\examples\example-patient.json", file.FilePath);
+
         }
+
 
         [TestMethod]
         public void TestGeneratingIndexFiles()
