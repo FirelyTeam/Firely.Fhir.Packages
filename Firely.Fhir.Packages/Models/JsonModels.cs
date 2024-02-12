@@ -144,8 +144,24 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Author of the package.
         /// </summary>
+        public string? Author
+        {
+            get => AuthorInformation?.FullAuthorString;
+            set => setAuthorInformation(value);
+        }
+
+
+
+        /// </summary>
+        private void setAuthorInformation(string? value)
+        {
+            if (value is not null)
+                AuthorInformation = AuthorParser.Parse(value);
+        }
+
+        [JsonConverter(typeof(AuthorJsonConverter))]
         [JsonProperty(PropertyName = "author")]
-        public string? Author;
+        public AuthorInfo? AuthorInformation;
 
         /// <summary>
         /// Other packages that the contents of this packages depend on.
@@ -683,6 +699,91 @@ namespace Firely.Fhir.Packages
         {
             manifest.FhirVersions = new List<string> { version };
         }
+    }
+
+
+
+    public class AuthorInfo
+    {
+        [JsonProperty(PropertyName = "name")]
+        public string? Name;
+
+        [JsonProperty(PropertyName = "email")]
+        public string? Email;
+
+        [JsonProperty(PropertyName = "url")]
+        public string? Url;
+
+        public string? FullAuthorString;
+    }
+
+
+    /// <summary>
+    /// Parse AuthorInfo object based on the following pattern "name <email> (url)"
+    /// </summary>
+    internal static class AuthorParser
+    {
+
+        private const char EMAIL_START_CHAR = '<';
+        private const char EMAIL_END_CHAR = '>';
+        private const char URL_START_CHAR = '(';
+        private const char URL_END_CHAR = ')';
+
+        internal static AuthorInfo Parse(string authorString)
+        {
+            var authorInfo = new AuthorInfo();
+
+            // Extract name
+            authorInfo.Name = getName(authorString);
+
+            // Extract email
+            authorInfo.Email = getStringBetweenCharacters(EMAIL_START_CHAR, EMAIL_END_CHAR, authorString);
+
+            // Extract Url
+            authorInfo.Url = getStringBetweenCharacters(URL_START_CHAR, URL_END_CHAR, authorString);
+
+            authorInfo.FullAuthorString = authorString;
+
+            return authorInfo;
+        }
+
+        private static string? getStringBetweenCharacters(char start, char end, string input)
+        {
+            // Extract email
+            var urlStartIndex = input.IndexOf(start);
+            if (urlStartIndex != -1)
+            {
+                var urlEndIndex = input.IndexOf(end, urlStartIndex);
+                if (urlEndIndex != -1)
+                {
+                    return input.Substring(urlStartIndex + 1, urlEndIndex - urlStartIndex - 1).Trim();
+                }
+            }
+            return null;
+        }
+
+        private static string? getName(string input)
+        {
+            if (input[0] == EMAIL_START_CHAR || input[0] == URL_START_CHAR)
+                return null;
+
+            var nameStartIndex = 0;
+
+            var nameEndIndex = input.IndexOf(EMAIL_START_CHAR, nameStartIndex);
+            if (nameEndIndex != -1)
+            {
+                return input.Substring(nameStartIndex, nameEndIndex - nameStartIndex).Trim();
+            }
+            else
+            {
+                nameEndIndex = input.IndexOf(URL_START_CHAR, nameStartIndex);
+                return nameEndIndex != -1
+                    ? input.Substring(nameStartIndex, nameEndIndex - nameStartIndex).Trim()
+                    : input.Substring(nameStartIndex).Trim();
+            }
+        }
+
+
     }
 }
 
