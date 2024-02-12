@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Firely.Fhir.Packages
 {
@@ -144,19 +145,16 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Author of the package.
         /// </summary>
+        [JsonIgnore]
         public string? Author
         {
-            get => AuthorInformation?.FullAuthorString;
-            set => setAuthorInformation(value);
-        }
+            get => (AuthorInformation != null ? AuthorSerializer.Serialize(AuthorInformation) : null);
+            set
+            {
+                if (value is not null)
+                    AuthorInformation = AuthorSerializer.Deserialize(value);
 
-
-
-        /// </summary>
-        private void setAuthorInformation(string? value)
-        {
-            if (value is not null)
-                AuthorInformation = AuthorParser.Parse(value);
+            }
         }
 
         [JsonConverter(typeof(AuthorJsonConverter))]
@@ -713,15 +711,14 @@ namespace Firely.Fhir.Packages
 
         [JsonProperty(PropertyName = "url")]
         public string? Url;
-
-        public string? FullAuthorString;
+        [JsonIgnore]
+        public bool parseAsString = false;
     }
-
 
     /// <summary>
     /// Parse AuthorInfo object based on the following pattern "name <email> (url)"
     /// </summary>
-    internal static class AuthorParser
+    internal static class AuthorSerializer
     {
 
         private const char EMAIL_START_CHAR = '<';
@@ -729,7 +726,7 @@ namespace Firely.Fhir.Packages
         private const char URL_START_CHAR = '(';
         private const char URL_END_CHAR = ')';
 
-        internal static AuthorInfo Parse(string authorString)
+        internal static AuthorInfo Deserialize(string authorString)
         {
             var authorInfo = new AuthorInfo();
 
@@ -742,9 +739,28 @@ namespace Firely.Fhir.Packages
             // Extract Url
             authorInfo.Url = getStringBetweenCharacters(URL_START_CHAR, URL_END_CHAR, authorString);
 
-            authorInfo.FullAuthorString = authorString;
+            //If author was set using parsing of a string, we will think it should be deserialized as a string too.
+            authorInfo.parseAsString = true;
 
             return authorInfo;
+        }
+
+        internal static string Serialize(AuthorInfo authorInfo)
+        {
+            var builder = new StringBuilder();
+            if (authorInfo.Name != null)
+            {
+                builder.Append(authorInfo.Name);
+            }
+            if (authorInfo.Email != null)
+            {
+                builder.Append($" {EMAIL_START_CHAR}{authorInfo.Email}{EMAIL_END_CHAR}");
+            }
+            if (authorInfo.Url != null)
+            {
+                builder.Append($" {URL_START_CHAR}{authorInfo.Url}{URL_END_CHAR}");
+            }
+            return builder.ToString().TrimStart();
         }
 
         private static string? getStringBetweenCharacters(char start, char end, string input)
@@ -782,7 +798,6 @@ namespace Firely.Fhir.Packages
                     : input.Substring(nameStartIndex).Trim();
             }
         }
-
 
     }
 }

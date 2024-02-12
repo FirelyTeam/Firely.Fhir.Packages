@@ -28,8 +28,11 @@ namespace Firely.Fhir.Packages
             }
             else if (reader.TokenType == JsonToken.String && reader.Path == "author")
             {
-                //Skip AuthorInformation, this is just a string, this is set through the string in the model.
-                return null;
+                if (reader.Value?.ToString() is { } value)
+                {
+                    var author = AuthorSerializer.Deserialize(value);
+                    return author;
+                }
             }
             return serializer.Deserialize(reader);
         }
@@ -38,7 +41,7 @@ namespace Firely.Fhir.Packages
         {
             if (value is AuthorInfo author)
             {
-                serializer.Serialize(writer, author.FullAuthorString ?? value);
+                serializer.Serialize(writer, author.parseAsString ? AuthorSerializer.Serialize(author) : value);
             }
             else
             {
