@@ -41,6 +41,82 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
+        public void TestAuthorSerialization()
+        {
+            PackageManifest manif = new(name: "author.test", version: "1.0.1")
+            {
+                Author = "Marten"
+            };
+
+            var json = PackageParser.SerializeManifest(manif);
+
+            json.Should().Contain("\"author\": \"Marten\"");
+            var manif2 = PackageParser.ParseManifest(json);
+            manif2.Should().BeEquivalentTo(manif);
+            manif2?.AuthorInformation?.Name.Should().Be("Marten");
+
+            //Test the other way around
+
+            manif = new(name: "author.test", version: "1.0.1")
+            {
+                AuthorInformation = new() { Name = "Marten", Url = "https://foo.bar", Email = "foo@bar.nl" }
+            };
+
+            json = PackageParser.SerializeManifest(manif);
+
+            json.Should().Contain("  \"author\": {\r\n    \"name\": \"Marten\",\r\n    \"email\": \"foo@bar.nl\",\r\n    \"url\": \"https://foo.bar\"\r\n  }");
+            manif2 = PackageParser.ParseManifest(json);
+            manif2.Should().BeEquivalentTo(manif);
+            manif2?.Author?.Should().Be("Marten <foo@bar.nl> (https://foo.bar)");
+        }
+
+        [TestMethod]
+        public void TestReadingAComplexAuthorProperty()
+        {
+            var json = File.ReadAllText($"TestData/unknown-properties-package.json");
+            var manifest = PackageParser.ParseManifest(json);
+            //manifest.AuthorInformation()
+            manifest.Should().NotBeNull();
+        }
+
+        [DataRow("foo <foo@bar> (http://foo.bar)", "foo", "foo@bar", "http://foo.bar")]
+        [DataRow("foo (http://foo.bar)", "foo", null, "http://foo.bar")]
+        [DataRow("foo <foo@bar>", "foo", "foo@bar", null)]
+        [DataRow("<foo@bar> (http://foo.bar)", null, "foo@bar", "http://foo.bar")]
+        [DataTestMethod]
+        public void TestAuthorStringParsing(string? fullAuthor, string? name, string? email, string? url)
+        {
+            PackageManifest manif = new(name: "authot.test", version: "1.0.1")
+            {
+                Author = fullAuthor
+            };
+
+            manif.AuthorInformation?.Name.Should().Be(name);
+            manif.AuthorInformation?.Email.Should().Be(email);
+            manif.AuthorInformation?.Url.Should().Be(url);
+        }
+
+        [DataRow("foo <foo@bar> (http://foo.bar)", "foo", "foo@bar", "http://foo.bar")]
+        [DataRow("foo (http://foo.bar)", "foo", null, "http://foo.bar")]
+        [DataRow("foo <foo@bar>", "foo", "foo@bar", null)]
+        [DataRow("<foo@bar> (http://foo.bar)", null, "foo@bar", "http://foo.bar")]
+        [DataTestMethod]
+        public void TestAuthorStringSerializing(string? fullAuthor, string? name, string? email, string? url)
+        {
+            PackageManifest manif = new(name: "authot.test", version: "1.0.1")
+            {
+                AuthorInformation = new()
+                {
+                    Name = name,
+                    Email = email,
+                    Url = url
+                }
+            };
+
+            manif.Author.Should().Be(fullAuthor);
+        }
+
+        [TestMethod]
         public void DoesNotWriteNulls()
         {
             PackageManifest manif = ManifestFile.Create("a-b-c", "4.0.1");

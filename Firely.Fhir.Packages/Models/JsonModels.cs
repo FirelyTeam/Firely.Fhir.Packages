@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Firely.Fhir.Packages
 {
@@ -144,8 +145,21 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Author of the package.
         /// </summary>
+        [JsonIgnore]
+        public string? Author
+        {
+            get => (AuthorInformation != null ? AuthorSerializer.Serialize(AuthorInformation) : null);
+            set
+            {
+                if (value is not null)
+                    AuthorInformation = AuthorSerializer.Deserialize(value);
+
+            }
+        }
+
+        [JsonConverter(typeof(AuthorJsonConverter))]
         [JsonProperty(PropertyName = "author")]
-        public string? Author;
+        public AuthorInfo? AuthorInformation;
 
         /// <summary>
         /// Other packages that the contents of this packages depend on.
@@ -683,6 +697,114 @@ namespace Firely.Fhir.Packages
         {
             manifest.FhirVersions = new List<string> { version };
         }
+    }
+
+
+
+    public class AuthorInfo
+    {
+        [JsonProperty(PropertyName = "name")]
+        public string? Name;
+
+        [JsonProperty(PropertyName = "email")]
+        public string? Email;
+
+        [JsonProperty(PropertyName = "url")]
+        public string? Url;
+
+        /// <summary>
+        /// The npm specification allows author information to be serialized in json as a single string, or as a complext object. 
+        /// This boolean keeps track of it was parsed from either one, so it can be serialized to the same output again.
+        /// </summary>
+        /// See issue: https://github.com/FirelyTeam/Firely.Fhir.Packages/issues/94
+        [JsonIgnore]
+        internal bool ParsedFromString = false;
+    }
+
+    /// <summary>
+    /// Parse AuthorInfo object based on the following pattern "name <email> (url)"
+    /// </summary>
+    internal static class AuthorSerializer
+    {
+
+        private const char EMAIL_START_CHAR = '<';
+        private const char EMAIL_END_CHAR = '>';
+        private const char URL_START_CHAR = '(';
+        private const char URL_END_CHAR = ')';
+
+        internal static AuthorInfo Deserialize(string authorString)
+        {
+            var authorInfo = new AuthorInfo();
+
+            // Extract name
+            authorInfo.Name = getName(authorString);
+
+            // Extract email
+            authorInfo.Email = getStringBetweenCharacters(EMAIL_START_CHAR, EMAIL_END_CHAR, authorString);
+
+            // Extract Url
+            authorInfo.Url = getStringBetweenCharacters(URL_START_CHAR, URL_END_CHAR, authorString);
+
+            //If author was set using parsing of a string, we will think it should be deserialized as a string too.
+            authorInfo.ParsedFromString = true;
+
+            return authorInfo;
+        }
+
+        internal static string Serialize(AuthorInfo authorInfo)
+        {
+            var builder = new StringBuilder();
+            if (authorInfo.Name != null)
+            {
+                builder.Append(authorInfo.Name);
+            }
+            if (authorInfo.Email != null)
+            {
+                builder.Append($" {EMAIL_START_CHAR}{authorInfo.Email}{EMAIL_END_CHAR}");
+            }
+            if (authorInfo.Url != null)
+            {
+                builder.Append($" {URL_START_CHAR}{authorInfo.Url}{URL_END_CHAR}");
+            }
+            return builder.ToString().TrimStart();
+        }
+
+        private static string? getStringBetweenCharacters(char start, char end, string input)
+        {
+            // Extract email
+            var urlStartIndex = input.IndexOf(start);
+            if (urlStartIndex != -1)
+            {
+                var urlEndIndex = input.IndexOf(end, urlStartIndex);
+                if (urlEndIndex != -1)
+                {
+                    return input.Substring(urlStartIndex + 1, urlEndIndex - urlStartIndex - 1).Trim();
+                }
+            }
+            return null;
+        }
+
+        private static string? getName(string input)
+        {
+            if (input[0] == EMAIL_START_CHAR || input[0] == URL_START_CHAR)
+                return null;
+
+            var nameStartIndex = 0;
+
+            var nameEndIndex = input.IndexOf(EMAIL_START_CHAR, nameStartIndex);
+            if (nameEndIndex != -1)
+            {
+                return input.Substring(nameStartIndex, nameEndIndex - nameStartIndex).Trim();
+            }
+            else
+            {
+                nameEndIndex = input.IndexOf(URL_START_CHAR, nameStartIndex);
+                return nameEndIndex != -1
+                    ? input.Substring(nameStartIndex, nameEndIndex - nameStartIndex).Trim()
+                    : input.Substring(nameStartIndex).Trim();
+            }
+        }
+
     }
 }
 

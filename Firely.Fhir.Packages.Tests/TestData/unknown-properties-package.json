@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "hl7.fhir.r4.core": "4.0.1"
+  },
+  "fhirVersions": [
+    "4.0.1"
+  ],
+  "author": {
+    "name": "Barney Rubble",
+    "email": "b@rubble.com",
+    "url": "http://barnyrubble.tumblr.com/"
+  }
+}
