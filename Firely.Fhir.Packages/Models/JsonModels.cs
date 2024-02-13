@@ -711,8 +711,14 @@ namespace Firely.Fhir.Packages
 
         [JsonProperty(PropertyName = "url")]
         public string? Url;
+
+        /// <summary>
+        /// The npm specification allows author information to be serialized in json as a single string, or as a complext object. 
+        /// This boolean keeps track of it was parsed from either one, so it can be serialized to the same output again.
+        /// </summary>
+        /// See issue: https://github.com/FirelyTeam/Firely.Fhir.Packages/issues/94
         [JsonIgnore]
-        public bool parseAsString = false;
+        internal bool ParsedFromString = false;
     }
 
     /// <summary>
@@ -740,7 +746,7 @@ namespace Firely.Fhir.Packages
             authorInfo.Url = getStringBetweenCharacters(URL_START_CHAR, URL_END_CHAR, authorString);
 
             //If author was set using parsing of a string, we will think it should be deserialized as a string too.
-            authorInfo.parseAsString = true;
+            authorInfo.ParsedFromString = true;
 
             return authorInfo;
         }

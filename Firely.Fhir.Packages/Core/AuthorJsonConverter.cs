@@ -41,7 +41,7 @@ namespace Firely.Fhir.Packages
         {
             if (value is AuthorInfo author)
             {
-                serializer.Serialize(writer, author.parseAsString ? AuthorSerializer.Serialize(author) : value);
+                serializer.Serialize(writer, author.ParsedFromString ? AuthorSerializer.Serialize(author) : value);
             }
             else
             {
