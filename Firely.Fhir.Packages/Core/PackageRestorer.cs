@@ -10,6 +10,8 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -33,14 +35,25 @@ namespace Firely.Fhir.Packages
         /// Restore packages dependencies
         /// </summary>
         /// <returns>Package closure</returns>
-        /// <exception cref="Exception">Exeption thrown when a package doesn't have a manifest file</exception>
+        /// <exception cref="AggregateException">AggregateException thrown when a package doesn't have a manifest file and/or a package is invalid.
+        /// The inner exceptions can be examined for more detailed information. The inner exceptions can contain exceptions of type
+        /// <see cref="PackageRestoreException"/> that contain additional information on the erroneous package.
+        /// </exception>
         public async Task<PackageClosure> Restore()
         {
             _closure = new();
             var manifest = await _context.Project.ReadManifest().ConfigureAwait(false);
-            if (manifest is null) throw new Exception("This context does not have a package manifest (package.json)");
 
-            await restoreManifest(manifest).ConfigureAwait(false);
+            if (manifest is null)
+                throw new Exception("This context does not have a package manifest (package.json)");
+
+            var errors = new List<Exception>();
+
+            await restoreManifest(manifest, errors, new Stack<PackageDependency>()).ConfigureAwait(false);
+
+            if (errors.Any())
+                throw new AggregateException(errors);
+
             await SaveClosure().ConfigureAwait(false);
             return _closure;
         }
@@ -54,34 +67,47 @@ namespace Firely.Fhir.Packages
             await _context.Project.WriteClosure(_closure).ConfigureAwait(false);
         }
 
-        private async Task restoreManifest(PackageManifest manifest)
+        private async Task restoreManifest(PackageManifest manifest, List<Exception> errors, Stack<PackageDependency> dependencyChain)
         {
             foreach (PackageDependency dependency in manifest.GetDependencies())
             {
-                await restoreDependency(dependency).ConfigureAwait(false);
+                dependencyChain.Push(dependency);
+                await restoreDependency(dependency, errors, dependencyChain).ConfigureAwait(false);
+                dependencyChain.Pop();
             }
         }
 
-        private async Task restoreDependency(PackageDependency dependency)
+        private async Task restoreDependency(PackageDependency dependency, List<Exception> errors, Stack<PackageDependency> dependencyChain)
         {
-            var reference = await _context.CacheInstall(dependency).ConfigureAwait(false);
-            if (reference.Found)
+            try
             {
-                _closure.Add(reference);
-                await restoreReference(reference).ConfigureAwait(false);
+                var reference = await _context.CacheInstall(dependency).ConfigureAwait(false);
+
+                if (reference.Found)
+                {
+                    bool added = _closure.Add(reference);
+                    if (added)
+                    {
+                        await restoreReference(reference, errors, dependencyChain).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    _closure.AddMissing(dependency);
+                }
             }
-            else
+            catch (Exception e)
             {
-                _closure.AddMissing(dependency);
+                errors.Add(new PackageRestoreException(dependencyChain.Reverse(), e));
             }
         }
 
-        private async Task restoreReference(PackageReference reference)
+        private async Task restoreReference(PackageReference reference, List<Exception> errors, Stack<PackageDependency> dependencyChain)
         {
             var manifest = await _context.Cache.ReadManifest(reference);
             if (manifest is not null)
             {
-                await restoreManifest(manifest).ConfigureAwait(false);
+                await restoreManifest(manifest, errors, dependencyChain).ConfigureAwait(false);
             }
         }
     }

@@ -62,7 +62,12 @@ namespace Firely.Fhir.Packages
         private readonly HttpClient _httpClient;
 
 
-        internal async ValueTask<string?> DownloadListingRawAsync(string? pkgname)
+        /// <summary>
+        /// Download the raw json package listing
+        /// </summary>
+        /// <param name="pkgname">Name of the package</param>
+        /// <returns>Raw package listing in json format</returns>
+        public async ValueTask<string?> DownloadListingRawAsync(string? pkgname)
         {
             if (pkgname is null)
             {

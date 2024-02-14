@@ -9,6 +9,8 @@
 
 #nullable enable
 
+using System.IO;
+
 namespace Firely.Fhir.Packages
 {
     public static class PackageFileNames
@@ -18,6 +20,11 @@ namespace Firely.Fhir.Packages
         public const string CANONICALINDEXFILE = ".firely.index.json";
         public const string INDEXJSONFILE = ".index.json";
         public const string PACKAGEFOLDER = "package";
+        public const string EXAMPLEFOLDER = "examples";
+        public static string EXAMPLEFOLDERPATH => PACKAGEFOLDER + Path.DirectorySeparatorChar + EXAMPLEFOLDER;
+
+        public static readonly string[] ALL_PACKAGE_FILENAMES = { MANIFEST, LOCKFILE, CANONICALINDEXFILE, INDEXJSONFILE };
+
     }
 
 }

@@ -1,7 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\Firely.Fhir.Packages.Tests.props" />
- 
+
+	<ItemGroup>
+		<Content Include="TestData\**\*.xml;TestData\**\*.json;TestData\testPackage.tgz">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\Firely.Fhir.Packages\Firely.Fhir.Packages.csproj" />
   </ItemGroup>

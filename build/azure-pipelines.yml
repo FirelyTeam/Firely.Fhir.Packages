@@ -10,6 +10,7 @@ resources:
 
 variables:
   - group: CodeSigning
+  - group: APIKeys
   - template: variables.yml  
 
 pool: 
@@ -30,6 +31,7 @@ stages:
       parameters:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
         useVersionSuffix: true
+        propsFile: 'Firely.Fhir.Packages.props'
         packageArtifacts: true
         restoreDependencies: true
         nuGetServiceConnections: GitHubPackageGetFeed
@@ -42,6 +44,7 @@ stages:
       parameters:
         dotNetCoreVersion: $(DOTNET_CORE_SDK)
         useVersionSuffix: false
+        propsFile: 'Firely.Fhir.Packages.props'
         packageArtifacts: true
         restoreDependencies: true
         pool: 
@@ -61,7 +64,7 @@ stages:
           steps:
           - template: push-nuget-package.yml@templates
             parameters:
-              artifact: 'NuGet Packages'
+              artifact: 'NuGetPackages'
               source: https://nuget.pkg.github.com/FirelyTeam/index.json
               apiKey: $(GITHUB_PACKAGES_APIKEY)                
 
@@ -79,6 +82,6 @@ stages:
           steps:
           - template: push-nuget-package.yml@templates
             parameters:
-              artifact: 'NuGet Packages'
+              artifact: 'NuGetPackages'
               source: https://api.nuget.org/v3/index.json
               apiKey: $(NUGET_APIKEY)

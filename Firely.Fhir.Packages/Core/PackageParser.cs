@@ -36,7 +36,8 @@ namespace Firely.Fhir.Packages
 
         public static PackageManifest? ParseManifest(string content)
         {
-            return JsonConvert.DeserializeObject<PackageManifest>(content);
+            var authorConverter = new AuthorJsonConverter();
+            return JsonConvert.DeserializeObject<PackageManifest>(content, authorConverter);
         }
 
         public static PackageManifest? ParseManifest(byte[] buffer)

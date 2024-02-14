@@ -9,6 +9,8 @@
 
 #nullable enable
 
+using System.IO;
+
 namespace Firely.Fhir.Packages
 {
     /// <summary>
@@ -24,6 +26,16 @@ namespace Firely.Fhir.Packages
         public PackageFileReference(string filename, string filepath) : base(filename, filepath)
         {
             FileName = filename;
+            FilePath = filepath;
+        }
+
+        /// <summary>
+        /// Initialized a new <see cref="PackageFileReference"/>
+        /// </summary>
+        /// <param name="filepath">File path, relative to the package root</param>
+        public PackageFileReference(string filepath) : base(filepath)
+        {
+            FileName = Path.GetFileName(filepath);
             FilePath = filepath;
         }
 

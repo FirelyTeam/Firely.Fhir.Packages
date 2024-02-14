@@ -7,14 +7,15 @@
  */
 
 using System;
+using System.Runtime.CompilerServices;
 
 [assembly: CLSCompliant(true)]
 
 #if DEBUG
-//[assembly: InternalsVisibleTo("something")]
+[assembly: InternalsVisibleTo("Firely.Fhir.Packages.Tests")]
 #endif
 
 #if RELEASE
 // https://docs.microsoft.com/en-us/dotnet/standard/assembly/create-signed-friend
-//[assembly: InternalsVisibleTo("Hl7.Fhir.Core.Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001717d77343870eca52515a2ff9ba7ef2ff314f2f1e651f4a069401e35193d4d5124b33379a6380d510239044f012f720d395064192157eae8f67b3e4d524b79daadebd4e65ce67db327949b77bf26ca6c0f97c4ca1a578811202a537e4d112fffb2e42e852afdd71c3295c694911cdf0535f709b72ba172c40a2b1f2b607ffdc")]
+[assembly: InternalsVisibleTo("Firely.Fhir.Packages.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100f159829565775710a5baa5bb45cd80aabd633478bc2b5a180939336ca884181152db2b507ffec768d01372005f851df65546707a0f3ee530af138f7cfa9dd5d73997820c385fd166c0eae480bdf14920d5780fb1163da88fbb09f97dd4af4e3b55003051f01e47e0691e21e61d048fc95b2e10901b33f05699d8edd3207845d0")]
 #endif

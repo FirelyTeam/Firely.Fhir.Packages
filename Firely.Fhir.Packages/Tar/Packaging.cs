@@ -96,11 +96,15 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="manifest">Package manifest</param>
         /// <param name="entries">Package files</param>
+        /// <param name="moveToPackageFolder">Move all file entries to the "package" folder</param>
         /// <returns>The actual newly created FHIR package</returns>
-        public static byte[] CreatePackage(PackageManifest manifest, IEnumerable<FileEntry> entries)
+        public static byte[] CreatePackage(PackageManifest manifest, IEnumerable<FileEntry> entries, bool moveToPackageFolder = true)
         {
             var entry = manifest.toFileEntry();
-            entries = entries.ChangeFolder(PACKAGE);
+
+            if (moveToPackageFolder)
+                entries = entries.ChangeFolder(PACKAGE);
+
             return Tar.Pack(entry, entries);
         }
 
@@ -108,10 +112,13 @@ namespace Firely.Fhir.Packages
         /// Create a package
         /// </summary>
         /// <param name="entries">Package files</param>
+        /// <param name="moveToPackageFolder">Move all file entries to the "package" folder</param>
         /// <returns>The actual newly created FHIR package</returns>
-        public static byte[] CreatePackage(IEnumerable<FileEntry> entries)
+        public static byte[] CreatePackage(IEnumerable<FileEntry> entries, bool moveToPackageFolder = true)
         {
-            entries = entries.ChangeFolder(PACKAGE);
+            if (moveToPackageFolder)
+                entries = entries.ChangeFolder(PACKAGE);
+
             return Tar.Pack(entries);
         }
 
@@ -135,7 +142,7 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="entries">package files</param>
         /// <returns>a package manifest, and a list of file names</returns>
-        public static (PackageManifest manifest, IEnumerable<string> files) GetPackageSummary(this IEnumerable<FileEntry> entries)
+        public static (PackageManifest? manifest, IEnumerable<string> files) GetPackageSummary(this IEnumerable<FileEntry> entries)
         {
             var files = new List<string>();
             var manifest = new PackageManifest("", ""); //TODO: discuss what to do here

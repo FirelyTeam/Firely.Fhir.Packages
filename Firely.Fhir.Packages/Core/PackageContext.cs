@@ -9,7 +9,6 @@
 
 #nullable enable
 
-using Hl7.Fhir.Utility;
 using System;
 using System.Threading.Tasks;
 
@@ -27,7 +26,6 @@ namespace Firely.Fhir.Packages
         public readonly IProject Project;
         public readonly IPackageServer? Server;
         internal readonly Action<PackageReference>? onInstalled;
-
         private FileIndex? _index;
 
         /// <summary>
@@ -54,10 +52,19 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Read's the the full FileIndex from the current scope. This includes all resource files from all dependencies.
         /// </summary>
+        public async Task<FileIndex> GetIndexAsync()
+        {
+            return _index ??= await buildIndex();
+        }
+
+        /// <summary>
+        /// Read's the the full FileIndex from the current scope. This includes all resource files from all dependencies.
+        /// </summary>
         public FileIndex GetIndex()
         {
-            return _index ??= TaskHelper.Await(() => buildIndex());
+            return Task.Run(() => GetIndexAsync()).Result;
         }
+
 
         private async Task<FileIndex> buildIndex()
         {
