@@ -95,7 +95,7 @@ namespace Firely.Fhir.Packages
                         yield return new PackageDependency(dep, "latest");
                     else
                     {
-                        var versionDep = "=" + splitDependency[1];
+                        var versionDep = splitDependency[1];
                         yield return new PackageDependency(splitDependency[0], versionDep);
                     }
                 }
