@@ -150,6 +150,13 @@ namespace Firely.Fhir.Packages.Tests
             var extension = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName");
             extension.Should().NotBeNull();
             extension.Should().Contain("\"url\":\"http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName\"");
+
+            if (release == FhirRelease.R5)
+            {
+                var toolingextension = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/tools/StructureDefinition/elementdefinition-date-format");
+                toolingextension.Should().NotBeNull();
+                toolingextension.Should().Contain("\"url\":\"http://hl7.org/fhir/tools/StructureDefinition/elementdefinition-date-format\"");
+            }
         }
     }
 }
