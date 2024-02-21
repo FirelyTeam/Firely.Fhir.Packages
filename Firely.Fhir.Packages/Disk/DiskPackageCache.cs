@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -106,12 +107,21 @@ namespace Firely.Fhir.Packages
             {
                 var name = Disk.GetFolderName(folder);
 
-                var reference = parseFoldernameToReference(name);
-                references.Add(reference);
+                if (isValidPackageFolder(name))
+                {
+                    var reference = parseFoldernameToReference(name);
+                    references.Add(reference);
+                }
             }
 
             return Task.FromResult(references.AsEnumerable());
         }
+
+        //check whether the folder name has contains a single # sign which is not at the beginning or the end.
+        string pattern = @"^[^#]+#[^#]+$";
+
+        private bool isValidPackageFolder(string folderName) => Regex.IsMatch(folderName, pattern);
+
 
         private static PackageReference parseFoldernameToReference(string foldername)
         {
