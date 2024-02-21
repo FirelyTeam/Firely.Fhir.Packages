@@ -76,18 +76,18 @@ namespace Firely.Fhir.Packages
             //If there are multiple, check if they have a snapshot or expansion, prefer those.
             else
             {
-                candidates = filterOnSnapshotOrExapnsions(candidates);
+                candidates = filterOnSnapshotOrExpansions(candidates);
                 return candidates.First();
             }
         }
 
         private static List<PackageFileReference> filterOnHighestVersions(IEnumerable<PackageFileReference> candidates) => candidates
-                                                .GroupBy(file => new Version(file.Version ?? "0.0.0"))
+                                                .GroupBy(file => Version.TryParse(file.Version, out var result) ? result : new Version("0.0.0"))
                                                 .OrderByDescending(group => group.Key)
                                                 .First()
                                                 .ToList();
 
-        private static IEnumerable<PackageFileReference> filterOnSnapshotOrExapnsions(IEnumerable<PackageFileReference> candidates)
+        private static IEnumerable<PackageFileReference> filterOnSnapshotOrExpansions(IEnumerable<PackageFileReference> candidates)
         {
             var snapshotsOrExpansions = candidates.Where(c => c.HasSnapshot == true || c.HasExpansion == true);
             if (snapshotsOrExpansions.Any())

@@ -67,8 +67,8 @@ namespace Firely.Fhir.Packages
 
         private static PackageReference highest(PackageReference A, PackageReference B)
         {
-            var versionA = new Version(A.Version);
-            var versionB = new Version(B.Version);
+            var versionA = Version.TryParse(A.Version, out var resultA) ? resultA : new Version("0.0.0");
+            var versionB = Version.TryParse(B.Version, out var resultB) ? resultB : new Version("0.0.0");
             var highest = (versionA > versionB) ? A : B;
 
             return highest;

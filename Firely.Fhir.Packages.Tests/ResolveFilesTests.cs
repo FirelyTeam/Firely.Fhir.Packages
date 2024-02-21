@@ -25,6 +25,7 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("2.0.1", "1.0.1", "2.0.1")]
         [DataRow("1.1.0", "10.0.2", "10.0.2")]
         [DataRow("2.0.1", "10.0.1", "10.0.1")]
+        [DataRow("2024-01-01", "2.0.0", "2.0.0")] //dates are not allowed as version, a legal version will always be resolved in favor of an illegal version.
         [DataTestMethod]
         public void ResolveBestCandidateByVersionTest(string version1, string version2, string expectedResult)
         {
