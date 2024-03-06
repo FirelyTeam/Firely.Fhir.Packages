@@ -90,14 +90,7 @@ namespace Firely.Fhir.Packages
             {
                 foreach (var dep in dependencies)
                 {
-                    var splitDependency = dep.Split('@');
-                    if (splitDependency.Length == 1)
-                        yield return new PackageDependency(dep, "latest");
-                    else
-                    {
-                        var versionDep = splitDependency[1];
-                        yield return new PackageDependency(splitDependency[0], versionDep);
-                    }
+                    yield return (PackageDependency)dep;
                 }
             }
         }
