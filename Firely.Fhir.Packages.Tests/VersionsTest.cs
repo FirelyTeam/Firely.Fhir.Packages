@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Firely.Fhir.Packages.Tests
@@ -20,54 +21,60 @@ namespace Firely.Fhir.Packages.Tests
             Assert.AreEqual("hl7.fhir.r4.core", reference.Name);
             Assert.AreEqual("4.0.1", reference.Version);
         }
+
+        [TestMethod]
+        public void ParseDependencie()
+        {
+            var dependencie = (PackageDependency)"hl7.fhir.r4.core@4.0.1";
+
+            Assert.AreEqual("hl7.fhir.r4.core", dependencie.Name);
+            Assert.AreEqual("4.0.1", dependencie.Range);
+
+            dependencie = "hl7.fhir.r4.core@4.0.1";
+
+            Assert.AreEqual("hl7.fhir.r4.core", dependencie.Name);
+            Assert.AreEqual("4.0.1", dependencie.Range);
+        }
+
+        [TestMethod]
+        public void ParseDependencieWithoutVersion()
+        {
+            var dependencie = (PackageDependency)"hl7.fhir.r4.core";
+
+            Assert.AreEqual("hl7.fhir.r4.core", dependencie.Name);
+            Assert.AreEqual("latest", dependencie.Range);
+
+            dependencie = "hl7.fhir.r4.core";
+
+            Assert.AreEqual("hl7.fhir.r4.core", dependencie.Name);
+            Assert.AreEqual("latest", dependencie.Range);
+        }
     }
 
     [TestClass]
     public class VersionsTest
     {
-        [TestMethod]
-        public void Resolve_PackageDependencyExistsInVersionList_FixedVersionSearchFindsVersion()
+        [DataRow("1.0.0", "1.0.0")]
+        [DataRow("1.x", "1.0.0")]
+        [DataRow("latest", "2.0.0")]
+        [DataRow(null, "2.0.0")]
+        [DataRow("3.0.0", null)]
+        [DataRow("3.x", null)]
+        [DataTestMethod]
+        public void ResolveVersionTest(string? version, string? versionReturned)
         {
             var target = new Versions(new string[] { "1.0.0", "2.0.0" });
 
-            PackageReference result = target.Resolve(new PackageDependency("SomeName", "1.0.0"));
+            PackageReference result = target.Resolve(new PackageDependency("SomeName", version));
 
-            Assert.IsTrue(result.Found);
-            Assert.AreEqual("1.0.0", result.Version);
+            bool found = versionReturned is not null;
+            result.Found.Should().Be(found);
+            result.NotFound.Should().NotBe(found);
+
+            if (versionReturned != null)
+            {
+                result.Version.Should().Be(versionReturned);
+            }
         }
-
-        [TestMethod]
-        public void Resolve_PackageDependencyExistsInVersionList_RangedVersionSearchFindsVersion()
-        {
-            var target = new Versions(new string[] { "1.0.0", "2.0.0" });
-
-            PackageReference result = target.Resolve(new PackageDependency("SomeName", "1.x"));
-
-            Assert.IsTrue(result.Found);
-            Assert.AreEqual("1.0.0", result.Version);
-        }
-
-        [TestMethod]
-        public void Resolve_PackageDependencyDoesNotExistInVersionList_FixedVersionSearchReturnsNotFound()
-        {
-            var target = new Versions(new string[] { "1.0.0", "2.0.0" });
-
-            PackageReference result = target.Resolve(new PackageDependency("SomeName", "3.0.0"));
-
-            Assert.IsFalse(result.Found);
-            Assert.IsTrue(result.NotFound);
-        }
-
-        [TestMethod]
-        public void Resolve_PackageDependencyDoesNotExistInVersionList_RangedVersionSearchReturnsNotFound()
-        {
-            var target = new Versions(new string[] { "1.0.0", "2.0.0" });
-
-            PackageReference result = target.Resolve(new PackageDependency("SomeName", "3.x"));
-
-            Assert.IsFalse(result.Found);
-            Assert.IsTrue(result.NotFound);
-        }
-
     }
 }
