@@ -71,7 +71,7 @@ namespace Firely.Fhir.Packages.Tests
             result.Found.Should().Be(found);
             result.NotFound.Should().NotBe(found);
 
-            if (versionReturned != null)
+            if (found)
             {
                 result.Version.Should().Be(versionReturned);
             }
