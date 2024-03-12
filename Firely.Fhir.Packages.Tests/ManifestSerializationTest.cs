@@ -75,7 +75,6 @@ namespace Firely.Fhir.Packages.Tests
         {
             var json = File.ReadAllText($"TestData/unknown-properties-package.json");
             var manifest = PackageParser.ParseManifest(json);
-            //manifest.AuthorInformation()
             manifest.Should().NotBeNull();
         }
 
@@ -86,7 +85,7 @@ namespace Firely.Fhir.Packages.Tests
         [DataTestMethod]
         public void TestAuthorStringParsing(string? fullAuthor, string? name, string? email, string? url)
         {
-            PackageManifest manif = new(name: "authot.test", version: "1.0.1")
+            PackageManifest manif = new(name: "author.test", version: "1.0.1")
             {
                 Author = fullAuthor
             };
@@ -103,7 +102,7 @@ namespace Firely.Fhir.Packages.Tests
         [DataTestMethod]
         public void TestAuthorStringSerializing(string? fullAuthor, string? name, string? email, string? url)
         {
-            PackageManifest manif = new(name: "authot.test", version: "1.0.1")
+            PackageManifest manif = new(name: "author.test", version: "1.0.1")
             {
                 AuthorInformation = new()
                 {
