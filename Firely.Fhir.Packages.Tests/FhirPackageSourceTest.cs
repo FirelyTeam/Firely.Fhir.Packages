@@ -11,11 +11,13 @@ namespace Firely.Fhir.Packages.Tests
 {
 
     [TestClass]
-    public class CommonFhirPackageSourceTests
+    public class FhirPackageSourceTests
     {
         private const string PACKAGESERVER = "http://packages.simplifier.net";
         private const string PACKAGENAME = "TestData/testPackage.tgz";
         private const string US_CORE_PACKAGE = "hl7.fhir.us.core@4.1.0";
+        private const string FHIR_CORE_R3 = "hl7.fhir.r3.core@3.0.2";
+        private const string FHIR_CORE_R4 = "hl7.fhir.r4.core@4.0.1";
 
         //ModelInspector is needed for _resolver, but doesn't do anything in this case, since common doesn't have access to STU3 type information.
         private readonly FhirPackageSource _resolver = new(new ModelInspector(FhirRelease.STU3), PACKAGENAME);
@@ -157,6 +159,19 @@ namespace Firely.Fhir.Packages.Tests
                 toolingextension.Should().NotBeNull();
                 toolingextension.Should().Contain("\"url\":\"http://hl7.org/fhir/tools/StructureDefinition/elementdefinition-date-format\"");
             }
+        }
+
+        [TestMethod]
+        public async Task TestGetCanonicalOfCorrectFhirVersion()
+        {
+
+            var R4MultiPackageSource = new FhirPackageSource(new ModelInspector(FhirRelease.R4), PACKAGESERVER, new string[] { FHIR_CORE_R3, FHIR_CORE_R4 });
+            var R4Pat = await R4MultiPackageSource.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/Patient");
+            R4Pat.Should().Contain($"\"fhirVersion\":\"4.0.1\"");
+
+            var STU3MultiPackageSource = new FhirPackageSource(new ModelInspector(FhirRelease.STU3), PACKAGESERVER, new string[] { FHIR_CORE_R3, FHIR_CORE_R4 });
+            var STU3Pat = await STU3MultiPackageSource.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/Patient");
+            STU3Pat.Should().Contain($"\"fhirVersion\":\"3.0.2\"");
         }
     }
 }
