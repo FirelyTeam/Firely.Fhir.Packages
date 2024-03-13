@@ -9,6 +9,8 @@
 
 #nullable enable
 
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,12 +30,22 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="canonical">canonical URI used to identify the artifact</param>
         /// <param name="version">version of the artifact</param>
+        /// <param name="fhirVersion">Only resolve files that conform to this FHIR version</param>
         /// <returns>First file found with a specific canonical URI and optional version</returns>
-        public PackageFileReference? ResolveCanonical(string canonical, string? version = null)
+        public PackageFileReference? ResolveCanonical(string canonical, string? version = null, FHIRVersion? fhirVersion = null)
         {
-            return !string.IsNullOrEmpty(version)
-                ? this.FirstOrDefault(r => r.Canonical == canonical && r.Version == version)
-                : this.FirstOrDefault(r => r.Canonical == canonical);
+            var candidates = !string.IsNullOrEmpty(version)
+                ? this.Where(r => r.Canonical == canonical && r.Version == version)
+                : this.Where(r => r.Canonical == canonical);
+
+            if (fhirVersion.GetLiteral() is { } fhirVersionString)
+            {
+                return candidates.Where(r => r.FhirVersion == fhirVersionString).FirstOrDefault();
+            }
+            else
+            {
+                return candidates.FirstOrDefault();
+            }
         }
 
         /// <summary>
@@ -41,12 +53,19 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="canonical">canonical URI used to identify the artifact</param>
         /// <param name="version">version of the artifact</param>
+        /// <param name="fhirVersion">Only resolve files that conform to this FHIR version</param>
         /// <returns>Returns the best candidate found with a specific canonical URI and optional version.</returns>
-        public PackageFileReference? ResolveBestCandidateByCanonical(string canonical, string? version = null)
+        public PackageFileReference? ResolveBestCandidateByCanonical(string canonical, string? version = null, FHIRVersion? fhirVersion = null)
         {
             var candidates = !string.IsNullOrEmpty(version)
                 ? this.Where(r => r.Canonical == canonical && r.Version == version)
                 : this.Where(r => r.Canonical == canonical);
+
+
+            if (fhirVersion.GetLiteral() is { } fhirVersionString)
+            {
+                candidates = candidates.Where(r => r.FhirVersion == fhirVersionString);
+            }
 
             return candidates.Count() > 1 ? resolveFromMultipleCandidates(candidates) : candidates.SingleOrDefault();
         }
