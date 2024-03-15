@@ -5,17 +5,20 @@
 		<TargetFrameworks>net8.0;netstandard2.0;</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<FhirNetSdkVersion>5.6.1</FhirNetSdkVersion>
+		<FhirNetSdkVersion>5.7.0</FhirNetSdkVersion>
 	</PropertyGroup>
 	
     <!-- Solution-wide properties for NuGet packaging -->
     <PropertyGroup>
         <LangVersion>9.0</LangVersion>
-        <VersionPrefix>4.4.0</VersionPrefix>
+        <VersionPrefix>4.5.0</VersionPrefix>
         <VersionSuffix></VersionSuffix>
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
         <Copyright>Copyright 2013-2024 Firely</Copyright>
+		<Title>Firely's HL7 FHIR Package Library</Title>
+		<Description>This is Firely's support library for anyone who wants to work with HL7 FHIR packages.</Description>
+		<PackageTags>HL7;FHIR;Firely;Package;SDK;</PackageTags>
         <RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</RepositoryUrl>        
 		<PackageProjectUrl>https://github.com/FirelyTeam/Firely.Fhir.Packages</PackageProjectUrl>

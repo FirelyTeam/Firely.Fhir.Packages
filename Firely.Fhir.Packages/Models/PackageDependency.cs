@@ -11,17 +11,17 @@ namespace Firely.Fhir.Packages
     public struct PackageDependency
     {
         public string Name;
-        public string? Range;  // 3.x, 3.1 - 3.3, 1.1 | 1.2
+        public string Range;  // 3.x, 3.1 - 3.3, 1.1 | 1.2
 
         /// <summary>
         /// Initializes a new package dependency
         /// </summary>
         /// <param name="name">name of the package</param>
-        /// <param name="range">the version range for a specific package</param>
+        /// <param name="range">the version range for a specific package, when no version range is specified, the dependency will be on "latest"</param>
         public PackageDependency(string name, string? range = null)
         {
             this.Name = name;
-            this.Range = range;
+            this.Range = range ?? "latest";
         }
 
         /// <summary>
@@ -39,7 +39,14 @@ namespace Firely.Fhir.Packages
         /// <param name="reference">a <see cref="string"/> defining a package name of a new package dependency</param>
         public static implicit operator PackageDependency(string reference)
         {
-            return new PackageDependency(reference, null); // latest
+            var splitDependency = reference.Split('@');
+            if (splitDependency.Length == 1)
+                return new PackageDependency(reference, null);
+            else
+            {
+                var versionDep = splitDependency[1];
+                return new PackageDependency(splitDependency[0], versionDep);
+            }
         }
 
         /// <summary>
@@ -48,8 +55,7 @@ namespace Firely.Fhir.Packages
         /// <returns>A <see cref="string"/> including the package name and the version</returns>
         public override string ToString()
         {
-            string? range = string.IsNullOrEmpty(Range) ? "(latest)" : Range;
-            return $"{Name} {range}";
+            return $"{Name} ({Range})";
         }
     }
 }

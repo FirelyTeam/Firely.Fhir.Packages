@@ -88,8 +88,7 @@ namespace Firely.Fhir.Packages
         /// <returns>Whether of not a specific version is present in the <see cref="Versions"/> object </returns>
         public static bool Has(this Versions versions, string version)
         {
-            var v = new Version(version);
-            return versions.Has(v);
+            return Version.TryParse(version, out var v) && versions.Has(v);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace Firely.Fhir.Packages
                 FhirRelease.STU3 => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r3.core@3.0.2", "hl7.fhir.r3.expansions@3.0.2" }),
                 FhirRelease.R4 => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r4.core@4.0.1", "hl7.fhir.r4.expansions@4.0.1", "hl7.fhir.uv.extensions.r4@1.0.0" }),
                 FhirRelease.R4B => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r4b.core@4.3.0", "hl7.fhir.r4b.expansions@4.3.0", "hl7.fhir.uv.extensions.r4@1.0.0" }),
-                FhirRelease.R5 => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r5.core@5.0.0", "hl7.fhir.r5.expansions@5.0.0", "hl7.fhir.uv.extensions.r5@1.0.0" }),
+                FhirRelease.R5 => new FhirPackageSource(provider, packageServer, new string[] { "hl7.fhir.r5.core@5.0.0", "hl7.fhir.r5.expansions@5.0.0", "hl7.fhir.uv.extensions.r5@1.0.0", "hl7.fhir.uv.tools@<=1.0.0" }),
                 _ => null,
             };
         }
@@ -90,14 +90,7 @@ namespace Firely.Fhir.Packages
             {
                 foreach (var dep in dependencies)
                 {
-                    var splitDependency = dep.Split('@');
-                    if (splitDependency.Length == 1)
-                        yield return new PackageDependency(dep, "latest");
-                    else
-                    {
-                        var versionDep = "=" + splitDependency[1];
-                        yield return new PackageDependency(splitDependency[0], versionDep);
-                    }
+                    yield return (PackageDependency)dep;
                 }
             }
         }
