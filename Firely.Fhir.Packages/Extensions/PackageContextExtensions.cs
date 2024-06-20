@@ -9,6 +9,7 @@
 
 #nullable enable
 
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Utility;
 using System;
 using System.Collections.Generic;
@@ -26,12 +27,13 @@ namespace Firely.Fhir.Packages
         /// <param name="uri">Canonical uri of the resource</param>
         /// <param name="version">Version of the conformance resource</param>
         /// <param name="resolveBestCandidate">If there are multiple candidates, try to resolve the best instead of the first</param>
+        /// <param name="fhirVersion">Only resolve files that conform to this FHIR version</param>
         /// <returns>File content of the conformance resource</returns>
-        public static async Task<string?> GetFileContentByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = false)
+        public static async Task<string?> GetFileContentByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = false, FHIRVersion? fhirVersion = null)
         {
             var reference = resolveBestCandidate
-                ? scope.GetIndex().ResolveBestCandidateByCanonical(uri, version)
-                : scope.GetIndex().ResolveCanonical(uri, version);
+                ? scope.GetIndex().ResolveBestCandidateByCanonical(uri, version, fhirVersion)
+                : scope.GetIndex().ResolveCanonical(uri, version, fhirVersion);
 
             return reference is not null ? await scope.GetFileContent(reference).ConfigureAwait(false) : null;
         }

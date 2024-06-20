@@ -208,9 +208,9 @@ namespace Firely.Fhir.Packages
         internal async Task<string?> ResolveByCanonicalUriAsyncAsString(string uri)
         {
             (var url, var version) = splitCanonical(uri);
-            return await _context.Value.GetFileContentByCanonical(url, version, resolveBestCandidate: true).ConfigureAwait(false);
+            var fhirVersion = EnumUtility.ParseLiteral<FHIRVersion>(FhirReleaseParser.FhirVersionFromRelease(_provider.FhirRelease));
+            return await _context.Value.GetFileContentByCanonical(url, version, resolveBestCandidate: true, fhirVersion).ConfigureAwait(false);
         }
-
 
         private static (string url, string version) splitCanonical(string canonical)
         {
@@ -223,7 +223,6 @@ namespace Firely.Fhir.Packages
                 (canonical, "")
                 : (canonical.Substring(0, position), canonical.Substring(position + 1));
         }
-
 
         ///<inheritdoc/>
         public async Task<Resource?> ResolveByUriAsync(string uri)
