@@ -69,11 +69,25 @@ namespace Firely.Fhir.Packages
 
         private async Task restoreManifest(PackageManifest manifest, List<Exception> errors, Stack<PackageDependency> dependencyChain)
         {
-            foreach (PackageDependency dependency in manifest.GetDependencies())
+            foreach (PackageDependency dependency in upgradeDependencies(manifest.GetDependencies()))
             {
                 dependencyChain.Push(dependency);
                 await restoreDependency(dependency, errors, dependencyChain).ConfigureAwait(false);
                 dependencyChain.Pop();
+            }
+        }
+
+        // Even when we don't use version ranges, HL7 expects us to upgrade core 4.0.0 dependencies to
+        // 4.0.1 due to a publication error. This is a temporary fix until the next release, so we'll have
+        // to manually fix this here.
+        private static IEnumerable<PackageDependency> upgradeDependencies(IEnumerable<PackageDependency> original)
+        {
+            foreach (var dep in original)
+            {
+                if (dep is { Name: "hl7.fhir.r4.core", Range: "4.0.0" })
+                    yield return new PackageDependency(dep.Name, "4.0.1");
+                else
+                    yield return dep;
             }
         }
 
