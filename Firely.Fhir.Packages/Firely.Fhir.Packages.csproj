@@ -6,7 +6,7 @@
 		<PackageReference Include="SemanticVersioning" Version="3.0.0" />
 		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
 		<PackageReference Include="SharpZipLib" Version="1.4.2" />
-		<PackageReference Include="System.Memory" Version="4.6.2" />
+		<PackageReference Include="System.Memory" Version="4.6.3" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 	</ItemGroup>	
 
