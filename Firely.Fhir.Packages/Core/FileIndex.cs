@@ -67,7 +67,7 @@ namespace Firely.Fhir.Packages
             var exactCandidates = this.Where(r => r.Canonical == canonical && r.Version == version);
             if (exactCandidates.Any())
             {
-                return exactCandidates.Count() > 1 ? resolveFromMultipleCandidates(exactCandidates) : exactCandidates.Single();
+                return exactCandidates.Count() > 1 ? resolveFromMultipleCandidates(exactCandidates) : exactCandidates.SingleOrDefault();
             }
 
             // If no exact match, try partial version matching
