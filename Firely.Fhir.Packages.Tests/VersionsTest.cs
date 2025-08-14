@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages.Tests
 {
@@ -75,6 +76,21 @@ namespace Firely.Fhir.Packages.Tests
             {
                 result.Version.Should().Be(versionReturned);
             }
+        }
+    }
+
+    [TestClass]
+    public class VersionsExtensionsTests
+    {
+        [TestMethod]
+        public void IsListedTest()
+        {
+            var includedVersion = new Versions(["1.0.0", "2.0.0"]);
+            var excludedVersion = new Versions(["1.0.1", "2.0.0"]);
+            var versions = new List<Versions> { includedVersion };
+
+            Assert.IsTrue(versions.Contains(includedVersion));
+            Assert.IsFalse(versions.Contains(excludedVersion));
         }
     }
 }
