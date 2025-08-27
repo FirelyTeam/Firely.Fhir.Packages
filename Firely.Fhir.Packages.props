@@ -5,7 +5,7 @@
 		<TargetFrameworks>net8.0;netstandard2.0;</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<FhirNetSdkVersion>5.12.2</FhirNetSdkVersion>
+    <FhirNetSdkVersion>5.12.2</FhirNetSdkVersion>
 	</PropertyGroup>
 
     <!-- Solution-wide properties for NuGet packaging -->
@@ -38,12 +38,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\LICENSE" Pack="true" PackagePath=""/>
-		<None Include="..\README.md" Pack="true" PackagePath=""/>
+		<None Include="..\LICENSE" Pack="true" PackagePath="" />
+		<None Include="..\README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 	</ItemGroup>
     
 </Project>
