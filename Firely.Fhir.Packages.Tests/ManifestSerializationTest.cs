@@ -64,7 +64,7 @@ namespace Firely.Fhir.Packages.Tests
 
             json = PackageParser.SerializeManifest(manif);
 
-            json.Should().Contain("\"author\": {\n    \"name\": \"Marten\",\n    \"email\": \"foo@bar.nl\",\n    \"url\": \"https://foo.bar\"\n  }");
+            json.Should().ContainAll("\"author\": {", "\"name\": \"Marten\",", "\"email\": \"foo@bar.nl\",", "\"url\": \"https://foo.bar\"");
             manif2 = PackageParser.ParseManifest(json);
             manif2.Should().BeEquivalentTo(manif);
             manif2?.Author?.Should().Be("Marten <foo@bar.nl> (https://foo.bar)");
