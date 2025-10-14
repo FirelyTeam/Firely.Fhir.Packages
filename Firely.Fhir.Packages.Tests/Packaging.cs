@@ -19,7 +19,7 @@ namespace Firely.Fhir.Packages.Tests
                 .MakeRelativePath(@"C:\random\project\")
                 .OrganizeToPackageStructure();
 
-            Assert.AreEqual(@"package\other\myresource.txt", file.FilePath);
+            Assert.AreEqual(@"package/other/myresource.txt", file.FilePath);
 
 
             file =
@@ -27,21 +27,21 @@ namespace Firely.Fhir.Packages.Tests
                 .MakeRelativePath(@"C:\random\project\")
                 .OrganizeToPackageStructure();
 
-            Assert.AreEqual(@"package\patient.xml", file.FilePath);
+            Assert.AreEqual(@"package/patient.xml", file.FilePath);
 
             //example files already in the correct structure should stay in the example folder
             file =
-                new FileEntry(@"package\examples\example-patient.json", System.Array.Empty<byte>())
+                new FileEntry(@"package/examples/example-patient.json", System.Array.Empty<byte>())
                 .OrganizeToPackageStructure();
 
-            Assert.AreEqual(@"package\examples\example-patient.json", file.FilePath);
+            Assert.AreEqual(@"package/examples/example-patient.json", file.FilePath);
 
             //example files already in the correct structure should stay in the example folder, but subfolders should be flattened
             file =
-                new FileEntry(@"package\examples\random\example-patient.json", System.Array.Empty<byte>())
+                new FileEntry(@"package/examples/random/example-patient.json", System.Array.Empty<byte>())
                 .OrganizeToPackageStructure();
 
-            Assert.AreEqual(@"package\examples\example-patient.json", file.FilePath);
+            Assert.AreEqual(@"package/examples/example-patient.json", file.FilePath);
 
         }
 
@@ -69,8 +69,8 @@ namespace Firely.Fhir.Packages.Tests
             var package = files.Select(FileEntries.OrganizeToPackageStructure)
                                .AddIndexFiles();
 
-            package.Should().Contain(e => e.FilePath == @"package\.index.json");
-            package.Should().Contain(e => e.FilePath == @"package\other\.index.json");
+            package.Should().Contain(e => e.FilePath == @"package/.index.json");
+            package.Should().Contain(e => e.FilePath == @"package/other/.index.json");
 
 
         }
