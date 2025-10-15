@@ -2,7 +2,7 @@
 	<Import Project="..\Firely.Fhir.Packages.props" />
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SemanticVersioning" Version="3.0.0" />
 		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
 		<PackageReference Include="SharpZipLib" Version="1.4.2" />
