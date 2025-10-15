@@ -2,10 +2,10 @@
 
 	<!-- Build properties -->
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;netstandard2.1;</TargetFrameworks>
+		<TargetFrameworks>net8.0;netstandard2.0;</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FhirNetSdkVersion>6.0.0-rc2-20251014.4</FhirNetSdkVersion>
+    <FhirNetSdkVersion>5.12.2</FhirNetSdkVersion>
 	</PropertyGroup>
 
     <!-- Solution-wide properties for NuGet packaging -->
