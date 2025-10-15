@@ -89,8 +89,10 @@ namespace Firely.Fhir.Packages
 
         internal static FileEntry ChangeFolder(this FileEntry entry, string folder)
         {
-            string filename = Path.GetFileName(entry.FilePath);
-            entry.FilePath = Path.Combine(folder, Path.GetFileName(filename));
+            // Normalize path separators before extracting filename
+            var normalizedPath = entry.FilePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+            string filename = Path.GetFileName(normalizedPath);
+            entry.FilePath = Path.Combine(folder, filename);
             return entry;
         }
 
@@ -143,9 +145,19 @@ namespace Firely.Fhir.Packages
                 return file.ChangeFolder(PackageFileNames.PACKAGEFOLDER);
             else if (file.hasExtension(".xml", ".json"))
             {
-                return file.FilePath.StartsWith(PackageFileNames.EXAMPLEFOLDERPATH)
-                    ? file.ChangeFolder(PackageFileNames.EXAMPLEFOLDERPATH)
-                    : file.ChangeFolder(PackageFileNames.PACKAGEFOLDER);
+                // Normalize path separators for comparison
+                var normalizedFilePath = file.FilePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+                var normalizedExamplePath = PackageFileNames.EXAMPLEFOLDERPATH;
+                
+                if (normalizedFilePath.StartsWith(normalizedExamplePath))
+                {
+                    // File is in examples folder - flatten subfolders to examples root
+                    return file.ChangeFolder(PackageFileNames.EXAMPLEFOLDERPATH);
+                }
+                else
+                {
+                    return file.ChangeFolder(PackageFileNames.PACKAGEFOLDER);
+                }
             }
             else
                 return file.ChangeFolder(FOLDER_OTHER);
