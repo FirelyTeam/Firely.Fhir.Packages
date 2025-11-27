@@ -5,7 +5,7 @@
 		<TargetFrameworks>net8.0;netstandard2.1;</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FhirNetSdkVersion>6.0.0</FhirNetSdkVersion>
+    <FhirNetSdkVersion>6.0.1</FhirNetSdkVersion>
 	</PropertyGroup>
 
     <!-- Solution-wide properties for NuGet packaging -->
