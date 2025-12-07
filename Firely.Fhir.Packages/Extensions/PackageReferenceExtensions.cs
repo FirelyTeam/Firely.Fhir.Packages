@@ -49,8 +49,11 @@ namespace Firely.Fhir.Packages
             var dict = new Dictionary<string, string?>();
             foreach (var reference in references)
             {
-                // If the key already exists, keep the first occurrence
-                // (since Range is a version range, not a specific version)
+                // If the key already exists, keep the first occurrence.
+                // PackageDependency.Range is a version range (e.g., "3.x", "3.1 - 3.3"), 
+                // not a specific version, so there's no meaningful way to determine which
+                // is "higher". Keeping the first occurrence maintains consistency with
+                // the order they appear in the package manifest.
                 if (!dict.ContainsKey(reference.Name))
                 {
                     dict.Add(reference.Name, reference.Range);
