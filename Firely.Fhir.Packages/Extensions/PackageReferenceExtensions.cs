@@ -9,6 +9,7 @@
 
 #nullable enable
 
+using SemanticVersioning;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,7 +22,24 @@ namespace Firely.Fhir.Packages
             var dict = new Dictionary<string, string?>();
             foreach (var reference in references.Where(r => r.Name is not null))
             {
-                dict.Add(reference.Name!, reference.Version);
+                if (dict.ContainsKey(reference.Name!))
+                {
+                    // If the key already exists, keep the highest version
+                    var existingVersion = dict[reference.Name!];
+                    var newVersion = reference.Version;
+                    
+                    var versionExisting = Version.TryParse(existingVersion, out var resultExisting) ? resultExisting : new Version("0.0.0");
+                    var versionNew = Version.TryParse(newVersion, out var resultNew) ? resultNew : new Version("0.0.0");
+                    
+                    if (versionNew > versionExisting)
+                    {
+                        dict[reference.Name!] = newVersion;
+                    }
+                }
+                else
+                {
+                    dict.Add(reference.Name!, reference.Version);
+                }
             }
             return dict;
         }
@@ -31,7 +49,12 @@ namespace Firely.Fhir.Packages
             var dict = new Dictionary<string, string?>();
             foreach (var reference in references)
             {
-                dict.Add(reference.Name, reference.Range);
+                // If the key already exists, keep the first occurrence
+                // (since Range is a version range, not a specific version)
+                if (!dict.ContainsKey(reference.Name))
+                {
+                    dict.Add(reference.Name, reference.Range);
+                }
             }
             return dict;
         }
