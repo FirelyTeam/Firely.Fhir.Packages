@@ -5,13 +5,13 @@
 		<TargetFrameworks>net8.0;netstandard2.1;</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FhirNetSdkVersion>6.0.1</FhirNetSdkVersion>
+    <FhirNetSdkVersion>6.0.2</FhirNetSdkVersion>
 	</PropertyGroup>
 
     <!-- Solution-wide properties for NuGet packaging -->
     <PropertyGroup>
         <LangVersion>12.0</LangVersion>
-        <VersionPrefix>5.0.0</VersionPrefix>
+        <VersionPrefix>5.0.1</VersionPrefix>
         <VersionSuffix></VersionSuffix>
         <Authors>Firely</Authors>
         <Company>Firely (https://fire.ly)</Company>
