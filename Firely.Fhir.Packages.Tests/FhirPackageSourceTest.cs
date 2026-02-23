@@ -138,24 +138,29 @@ public class CommonFhirPackageSourceTests
     [DataTestMethod]
     [DataRow(FhirRelease.R5, "5.0.0", "http://packages.simplifier.net", DisplayName = "R5")]
     [DataRow(FhirRelease.R4B, "4.3.0", "http://packages.simplifier.net", DisplayName = "R4B")]
-    [DataRow(FhirRelease.R4, "4.0.1", "http://packages.simplifier.net", DisplayName = "R4")]
-    [DataRow(FhirRelease.STU3, "3.0.2", "http://packages.simplifier.net", DisplayName = "STU3")]
-    public async Task TestFhirCorePackages(FhirRelease release, string version, string packageServer)
+    [DataRow(FhirRelease.R4, "4.0.1", null, DisplayName = "R4")]
+    [DataRow(FhirRelease.STU3, "3.0.2", null, DisplayName = "STU3")]
+    public async Task TestFhirCorePackages(FhirRelease release, string version, string? packageServer)
     {
         var packageSource = FhirPackageSource.CreateCorePackageSource(new ModelInspector(release), release, packageServer);
         var pat = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/Patient");
         pat.Should().NotBeNull();
         pat.Should().Contain($"\"fhirVersion\":\"{version}\"");
 
-        var extension = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName");
-        extension.Should().NotBeNull();
-        extension.Should().Contain("\"url\":\"http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName\"");
+        await checkCanonicalUri("http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName");
 
-        if (release == FhirRelease.R5)
+        if (release is not FhirRelease.R4B) // no tooling/externsion package available
         {
-            var toolingextension = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/tools/StructureDefinition/elementdefinition-date-format");
-            toolingextension.Should().NotBeNull();
-            toolingextension.Should().Contain("\"url\":\"http://hl7.org/fhir/tools/StructureDefinition/elementdefinition-date-format\"");
+            await checkCanonicalUri("http://hl7.org/fhir/StructureDefinition/structuredefinition-type-characteristics");
+            await checkCanonicalUri("http://hl7.org/fhir/ValueSet/type-characteristics-code");
+            await checkCanonicalUri("http://hl7.org/fhir/tools/StructureDefinition/snapshot-base-version");
+        }
+
+        async Task checkCanonicalUri(string canonicalUri)
+        {
+            var artifact = await packageSource.ResolveByCanonicalUriAsyncAsString(canonicalUri);
+            artifact.Should().NotBeNull();
+            artifact.Should().Contain($"\"url\":\"{canonicalUri}\"");
         }
     }
 
