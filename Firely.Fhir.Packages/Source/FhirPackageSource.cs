@@ -60,10 +60,10 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     /// <summary>
     /// Initializes a FhirPackageSource with the core FHIR packages of a specific FHIR version found on a package server.
     /// Terminology expansions and tools and extensions packages are included as well.
+    /// </summary>
     /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
     /// <param name="version">The FHIR version for which the core packages should be retrieved, if not specified, the FHIR version of the provided <see cref="ModelInspector"/> will be used.</param>
     /// <param name="packageServer">The package server from which to retrieve the FHIR packages, if not specified, the Simplifier.net package server will be used.</param>
-    /// </summary>
     public static FhirPackageSource CreateCorePackageSource(ModelInspector provider, FhirRelease? version = null, string? packageServer = null)
     {
         version ??= provider.FhirRelease;
