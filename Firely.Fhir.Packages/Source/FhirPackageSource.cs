@@ -49,7 +49,7 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     // No tools package available for R4B either.
 
     public static readonly string[] DSTU2_CORE_PACKAGES = ["hl7.fhir.r2.core@1.0.2", "hl7.fhir.r2.expansions@1.0.2"];
-    public static readonly string[] STU3_CORE_PACKAGES = ["hl7.fhir.r3.core@3.0.2", "hl7.fhir.r3.expansions@3.0.2", "hl7.fhir.uv.tools.r3@1.0.0"];
+    public static readonly string[] STU3_CORE_PACKAGES = ["hl7.fhir.r3.core@3.0.2", "hl7.fhir.r3.expansions@3.0.2", "hl7.fhir.uv.extensions.r3@5.2.0", "hl7.fhir.uv.tools.r3@1.0.0"];
     public static readonly string[] R4_CORE_PACKAGES = ["hl7.fhir.r4.core@4.0.1", "hl7.fhir.r4.expansions@4.0.1", "hl7.fhir.uv.extensions.r4@5.2.0", "hl7.fhir.uv.tools.r4@1.0.0"];
     public static readonly string[] R4B_CORE_PACKAGES = ["hl7.fhir.r4b.core@4.3.0", "hl7.fhir.r4b.expansions@4.3.0"];
     public static readonly string[] R5_CORE_PACKAGES = ["hl7.fhir.r5.core@5.0.0", "hl7.fhir.r5.expansions@5.0.0", "hl7.fhir.uv.extensions.r5@5.2.0", "hl7.fhir.uv.tools.r5@1.0.0"];
