@@ -43,21 +43,42 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         _provider = provider;
     }
 
-    public static FhirPackageSource? CreateCorePackageSource(ModelInspector provider, FhirRelease version, string packageServer)
+    // ReSharper disable MemberCanBePrivate.Global
+    // List the "core" packages for each FHIR version, these are the packages that contain the base FHIR resources and definitions, and are typically used as dependencies for other packages. Terminology expansions and tools and extensions packages are included as well.
+    // Note that for R4B, there is no 5.2.0 version of the extensions available for R4B, there will be a 5.3.0 (at this moment in ballot).
+    // No tools package available for R4B either.
+
+    public static readonly string[] DSTU2_CORE_PACKAGES = ["hl7.fhir.r2.core@1.0.2", "hl7.fhir.r2.expansions@1.0.2"];
+    public static readonly string[] STU3_CORE_PACKAGES = ["hl7.fhir.r3.core@3.0.2", "hl7.fhir.r3.expansions@3.0.2", "hl7.fhir.uv.extensions.r3@5.2.0", "hl7.fhir.uv.tools.r3@1.0.0"];
+    public static readonly string[] R4_CORE_PACKAGES = ["hl7.fhir.r4.core@4.0.1", "hl7.fhir.r4.expansions@4.0.1", "hl7.fhir.uv.extensions.r4@5.2.0", "hl7.fhir.uv.tools.r4@1.0.0"];
+    public static readonly string[] R4B_CORE_PACKAGES = ["hl7.fhir.r4b.core@4.3.0", "hl7.fhir.r4b.expansions@4.3.0"];
+    public static readonly string[] R5_CORE_PACKAGES = ["hl7.fhir.r5.core@5.0.0", "hl7.fhir.r5.expansions@5.0.0", "hl7.fhir.uv.extensions.r5@5.2.0", "hl7.fhir.uv.tools.r5@1.0.0"];
+
+    public const string DEFAULT_PACKAGE_SERVER = "https://packages.simplifier.net";
+    // ReSharper restore MemberCanBePrivate.Global
+
+    /// <summary>
+    /// Initializes a FhirPackageSource with the core FHIR packages of a specific FHIR version found on a package server.
+    /// Terminology expansions and tools and extensions packages are included as well.
+    /// </summary>
+    /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
+    /// <param name="version">The FHIR version for which the core packages should be retrieved, if not specified, the FHIR version of the provided <see cref="ModelInspector"/> will be used.</param>
+    /// <param name="packageServer">The package server from which to retrieve the FHIR packages, if not specified, the Simplifier.net package server will be used.</param>
+    public static FhirPackageSource CreateCorePackageSource(ModelInspector provider, FhirRelease? version = null, string? packageServer = null)
     {
+        version ??= provider.FhirRelease;
+        packageServer ??= DEFAULT_PACKAGE_SERVER;
+
         return version switch
         {
-            FhirRelease.DSTU1 => null,
-            FhirRelease.DSTU2 => new FhirPackageSource(provider, packageServer, [ "hl7.fhir.r2.core@1.0.2", "hl7.fhir.r2.expansions@1.0.2" ]),
-            FhirRelease.STU3 => new FhirPackageSource(provider, packageServer, ["hl7.fhir.r3.core@3.0.2", "hl7.fhir.r3.expansions@3.0.2"
-            ]),
-            FhirRelease.R4 => new FhirPackageSource(provider, packageServer, ["hl7.fhir.r4.core@4.0.1", "hl7.fhir.r4.expansions@4.0.1", "hl7.fhir.uv.extensions.r4@1.0.0"
-            ]),
-            FhirRelease.R4B => new FhirPackageSource(provider, packageServer, ["hl7.fhir.r4b.core@4.3.0", "hl7.fhir.r4b.expansions@4.3.0", "hl7.fhir.uv.extensions.r4@1.0.0"
-            ]),
-            FhirRelease.R5 => new FhirPackageSource(provider, packageServer, ["hl7.fhir.r5.core@5.0.0", "hl7.fhir.r5.expansions@5.0.0", "hl7.fhir.uv.extensions.r5@1.0.0", "hl7.fhir.uv.tools@<=1.0.0"
-            ]),
-            _ => null,
+            FhirRelease.DSTU1 => throw new NotSupportedException($"There are no packages available for FHIR version DSTU1."),
+            FhirRelease.DSTU2 => new FhirPackageSource(provider, packageServer, DSTU2_CORE_PACKAGES),
+            FhirRelease.STU3 => new FhirPackageSource(provider, packageServer, STU3_CORE_PACKAGES),
+            FhirRelease.R4 => new FhirPackageSource(provider, packageServer, R4_CORE_PACKAGES),
+            FhirRelease.R4B => new FhirPackageSource(provider, packageServer, R4B_CORE_PACKAGES),
+            FhirRelease.R5 => new FhirPackageSource(provider, packageServer, R5_CORE_PACKAGES),
+            FhirRelease.R6 => throw new NotSupportedException($"There are no packages available for FHIR version R6 yet."),
+            _ => throw new NotSupportedException($"{nameof(CreateCorePackageSource)} has no support yet for version '{version}', please report this to the developers.")
         };
     }
 
