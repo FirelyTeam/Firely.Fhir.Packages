@@ -149,7 +149,7 @@ public class CommonFhirPackageSourceTests
 
         await checkCanonicalUri("http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName");
 
-        if (release is not FhirRelease.R4B) // no tooling/externsion package available
+        if (release is not FhirRelease.R4B) // no tooling/extension package available
         {
             await checkCanonicalUri("http://hl7.org/fhir/StructureDefinition/structuredefinition-type-characteristics");
             await checkCanonicalUri("http://hl7.org/fhir/ValueSet/type-characteristics-code");
