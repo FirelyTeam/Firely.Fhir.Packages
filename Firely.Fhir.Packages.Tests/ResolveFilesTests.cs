@@ -48,6 +48,37 @@ namespace Firely.Fhir.Packages.Tests
             index.ResolveBestCandidateByCanonical(url)!.Version.Should().Be(expectedResult);
         }
 
+        [DataRow("1.0.1", "1.0.2", "1.0.2")]
+        [DataRow("2.0.1", "1.0.1", "2.0.1")]
+        [DataRow("1.1.0", "10.0.2", "10.0.2")]
+        [DataRow("2024-01-01", "2.0.0", "2.0.0")] // non-parseable versions lose to any parseable version
+        [DataRow("2024-01-01", "2024-02-01", "2024-01-01")] // both non-parseable: first is returned
+        [DataTestMethod]
+        public void SelectBestCandidatePicksHighestVersion(string version1, string version2, string expectedResult)
+        {
+            var candidates = new[]
+            {
+                new { Version = version1, Label = "a" },
+                new { Version = version2, Label = "b" }
+            };
+
+            var best = FileIndex.SelectBestCandidate(candidates, c => c.Version);
+            best.Version.Should().Be(expectedResult);
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateUsesPreferredFilterAsTieBreaker()
+        {
+            var candidates = new[]
+            {
+                new { Version = "1.0.0", HasSnapshot = false },
+                new { Version = "1.0.0", HasSnapshot = true }
+            };
+
+            var best = FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.HasSnapshot);
+            best.HasSnapshot.Should().BeTrue(because: "the preferred item should win the tie-break");
+        }
+
         [TestMethod]
         public async Task TestGetCodeSystemByValueSet()
         {

@@ -71,29 +71,34 @@ public class FileIndex : List<PackageFileReference>
         Add(reference);
     }
 
-    private static PackageFileReference resolveFromMultipleCandidates(List<PackageFileReference> candidates)
+    /// <summary>
+    /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
+    /// When multiple items share the highest version, the first is returned.
+    /// Non-parseable version strings (e.g. date-based) are treated as <c>0.0.0</c>.
+    /// </summary>
+    public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion) =>
+        SelectBestCandidate(candidates, getVersion, _ => false);
+
+    /// <summary>
+    /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
+    /// When multiple items share the highest version, <paramref name="preferred"/> is used as a tie-breaker.
+    /// Non-parseable version strings (e.g. date-based) are treated as <c>0.0.0</c>.
+    /// </summary>
+    public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion, Func<T, bool> preferred)
     {
-        //first check which has the file has the highest version
-        var highestVersionedFiles = filterOnHighestVersions(candidates);
+        var highestVersioned = candidates
+            .GroupBy(item => Version.TryParse(getVersion(item), out var v) ? v : new Version(0, 0, 0))
+            .OrderByDescending(g => g.Key)
+            .First()
+            .ToList();
 
-        if (highestVersionedFiles.Count == 1)
-            return highestVersionedFiles[0];
+        if (highestVersioned.Count == 1)
+            return highestVersioned[0];
 
-        //If there are multiple, check if they have a snapshot or expansion, prefer those.
-        candidates = filterOnSnapshotOrExpansions(candidates);
-        return candidates.First();
+        var preferredItems = highestVersioned.Where(preferred).ToList();
+        return preferredItems.Count > 0 ? preferredItems[0] : highestVersioned[0];
     }
 
-    private static List<PackageFileReference> filterOnHighestVersions(List<PackageFileReference> candidates) => candidates
-        .GroupBy(file => Version.TryParse(file.Version, out var result) ? result : new Version("0.0.0"))
-        .OrderByDescending(group => group.Key)
-        .First()
-        .ToList();
-
-    private static List<PackageFileReference> filterOnSnapshotOrExpansions(List<PackageFileReference> candidates)
-    {
-        var snapshotsOrExpansions = candidates.Where(c => c.HasSnapshot == true || c.HasExpansion == true).ToList();
-
-        return snapshotsOrExpansions.Any() ? snapshotsOrExpansions : candidates;
-    }
+    private static PackageFileReference resolveFromMultipleCandidates(List<PackageFileReference> candidates) =>
+        SelectBestCandidate(candidates, f => f.Version, f => f.HasSnapshot == true || f.HasExpansion == true);
 }
