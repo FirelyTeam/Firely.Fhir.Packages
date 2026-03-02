@@ -38,10 +38,11 @@ stages:
       packageArtifacts: true
       signingKeyFileName: 'FirelyPackages.snk' 
       filesForSigning: '$(Build.SourcesDirectory)\Firely.Fhir.Packages\bin\Release\*\Firely.Fhir.Packages.dll'
-      certificateProfileName: 'FirelyCodeSigning'
-      trustedSigningAccountEndpoint: 'https://weu.codesigning.azure.net/'
-      trustedSigningAccountName: 'FirelyCodeSigning'
-      azureServiceConnectionForSigning: 'AzureTrustedSigningPrincipal'
+      ${{ if startswith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
+        certificateProfileName: 'FirelyCodeSigning'
+        trustedSigningAccountEndpoint: 'https://weu.codesigning.azure.net/'
+        trustedSigningAccountName: 'FirelyCodeSigning'
+        azureServiceConnectionForSigning: 'AzureTrustedSigningPrincipal'
       pool: 
         vmImage: $(vmImage)
 
