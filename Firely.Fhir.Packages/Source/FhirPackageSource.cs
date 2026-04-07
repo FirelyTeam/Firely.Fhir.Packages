@@ -59,52 +59,50 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
 
     /// <summary>
     /// Initializes a FhirPackageSource with the core FHIR packages of a specific FHIR version found on a package server.
-    /// Terminology expansions and tools and extensions packages are included as well, using their latest available versions.
+    /// Terminology expansions and tools and extensions packages are included as well.
+    /// By default the latest available versions of the extensions and tools packages are used; pass <paramref name="extensionsVersion"/>
+    /// and/or <paramref name="toolsVersion"/> to pin those to specific versions instead.
     /// </summary>
     /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
     /// <param name="version">The FHIR version for which the core packages should be retrieved, if not specified, the FHIR version of the provided <see cref="ModelInspector"/> will be used.</param>
     /// <param name="packageServer">The package server from which to retrieve the FHIR packages, if not specified, the Simplifier.net package server will be used.</param>
-    public static FhirPackageSource CreateCorePackageSource(ModelInspector provider, FhirRelease? version = null, string? packageServer = null)
+    /// <param name="extensionsVersion">The version of the FHIR extensions package (hl7.fhir.uv.extensions) to use. When <c>null</c>, the latest available version is used.</param>
+    /// <param name="toolsVersion">The version of the FHIR tools package (hl7.fhir.uv.tools) to use. When <c>null</c>, the latest available version is used.</param>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the specified FHIR version is not supported. DSTU1 and R6 have no packages available.
+    /// DSTU2 and R4B do not have extensions or tools packages and therefore do not support <paramref name="extensionsVersion"/> or <paramref name="toolsVersion"/>.
+    /// </exception>
+    public static FhirPackageSource CreateCorePackageSource(ModelInspector provider, FhirRelease? version = null, string? packageServer = null,
+        string? extensionsVersion = null, string? toolsVersion = null)
     {
         version ??= provider.FhirRelease;
         packageServer ??= DEFAULT_PACKAGE_SERVER;
 
-        return version switch
+        // When no version pinning is requested, use the pre-built package lists (which default to @latest for extensions/tools).
+        if (extensionsVersion is null && toolsVersion is null)
         {
-            FhirRelease.DSTU1 => throw new NotSupportedException($"There are no packages available for FHIR version DSTU1."),
-            FhirRelease.DSTU2 => new FhirPackageSource(provider, packageServer, DSTU2_CORE_PACKAGES),
-            FhirRelease.STU3 => new FhirPackageSource(provider, packageServer, STU3_CORE_PACKAGES),
-            FhirRelease.R4 => new FhirPackageSource(provider, packageServer, R4_CORE_PACKAGES),
-            FhirRelease.R4B => new FhirPackageSource(provider, packageServer, R4B_CORE_PACKAGES),
-            FhirRelease.R5 => new FhirPackageSource(provider, packageServer, R5_CORE_PACKAGES),
-            FhirRelease.R6 => throw new NotSupportedException($"There are no packages available for FHIR version R6 yet."),
-            _ => throw new NotSupportedException($"{nameof(CreateCorePackageSource)} has no support yet for version '{version}', please report this to the developers.")
-        };
-    }
+            return version switch
+            {
+                FhirRelease.DSTU1 => throw new NotSupportedException($"There are no packages available for FHIR version DSTU1."),
+                FhirRelease.DSTU2 => new FhirPackageSource(provider, packageServer, DSTU2_CORE_PACKAGES),
+                FhirRelease.STU3 => new FhirPackageSource(provider, packageServer, STU3_CORE_PACKAGES),
+                FhirRelease.R4 => new FhirPackageSource(provider, packageServer, R4_CORE_PACKAGES),
+                FhirRelease.R4B => new FhirPackageSource(provider, packageServer, R4B_CORE_PACKAGES),
+                FhirRelease.R5 => new FhirPackageSource(provider, packageServer, R5_CORE_PACKAGES),
+                FhirRelease.R6 => throw new NotSupportedException($"There are no packages available for FHIR version R6 yet."),
+                _ => throw new NotSupportedException($"{nameof(CreateCorePackageSource)} has no support yet for version '{version}', please report this to the developers.")
+            };
+        }
 
-    /// <summary>
-    /// Initializes a FhirPackageSource with the core FHIR packages of a specific FHIR version found on a package server,
-    /// using specific versions for the extensions and tools packages.
-    /// Terminology expansions are included as well.
-    /// </summary>
-    /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
-    /// <param name="version">The FHIR version for which the core packages should be retrieved.</param>
-    /// <param name="extensionsVersion">The version of the FHIR extensions package (hl7.fhir.uv.extensions) to use.</param>
-    /// <param name="toolsVersion">The version of the FHIR tools package (hl7.fhir.uv.tools) to use, or <c>null</c> to omit it.</param>
-    /// <param name="packageServer">The package server from which to retrieve the FHIR packages, if not specified, the Simplifier.net package server will be used.</param>
-    /// <exception cref="NotSupportedException">Thrown when the specified FHIR version does not have extensions or tools packages (DSTU2, R4B).</exception>
-    public static FhirPackageSource CreateCorePackageSource(ModelInspector provider, FhirRelease version, string extensionsVersion, string? toolsVersion = null, string? packageServer = null)
-    {
-        packageServer ??= DEFAULT_PACKAGE_SERVER;
-
+        // Otherwise, build the package list with the specified versions, falling back to @latest for whichever is unspecified.
         var packages = version switch
         {
             FhirRelease.DSTU1 => throw new NotSupportedException($"There are no packages available for FHIR version DSTU1."),
             FhirRelease.DSTU2 => throw new NotSupportedException($"FHIR version DSTU2 does not have extensions or tools packages."),
-            FhirRelease.STU3 => buildCorePackagesWithVersions(["hl7.fhir.r3.core@3.0.2", "hl7.fhir.r3.expansions@3.0.2"], "r3", extensionsVersion, toolsVersion),
-            FhirRelease.R4 => buildCorePackagesWithVersions(["hl7.fhir.r4.core@4.0.1", "hl7.fhir.r4.expansions@4.0.1"], "r4", extensionsVersion, toolsVersion),
+            FhirRelease.STU3 => buildCorePackagesWithVersions(["hl7.fhir.r3.core@3.0.2", "hl7.fhir.r3.expansions@3.0.2"], "r3", extensionsVersion ?? "latest", toolsVersion ?? "latest"),
+            FhirRelease.R4 => buildCorePackagesWithVersions(["hl7.fhir.r4.core@4.0.1", "hl7.fhir.r4.expansions@4.0.1"], "r4", extensionsVersion ?? "latest", toolsVersion ?? "latest"),
             FhirRelease.R4B => throw new NotSupportedException($"FHIR version R4B does not have extensions or tools packages."),
-            FhirRelease.R5 => buildCorePackagesWithVersions(["hl7.fhir.r5.core@5.0.0", "hl7.fhir.r5.expansions@5.0.0"], "r5", extensionsVersion, toolsVersion),
+            FhirRelease.R5 => buildCorePackagesWithVersions(["hl7.fhir.r5.core@5.0.0", "hl7.fhir.r5.expansions@5.0.0"], "r5", extensionsVersion ?? "latest", toolsVersion ?? "latest"),
             FhirRelease.R6 => throw new NotSupportedException($"There are no packages available for FHIR version R6 yet."),
             _ => throw new NotSupportedException($"{nameof(CreateCorePackageSource)} has no support yet for version '{version}', please report this to the developers.")
         };
@@ -112,15 +110,11 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         return new FhirPackageSource(provider, packageServer, packages);
     }
 
-    private static string[] buildCorePackagesWithVersions(string[] basePackages, string fhirVersionLabel, string extensionsVersion, string? toolsVersion)
+    private static string[] buildCorePackagesWithVersions(string[] basePackages, string fhirVersionLabel, string extensionsVersion, string toolsVersion)
     {
-        var packages = new List<string>(basePackages)
-        {
-            $"hl7.fhir.uv.extensions.{fhirVersionLabel}@{extensionsVersion}"
-        };
-        if (toolsVersion is not null)
-            packages.Add($"hl7.fhir.uv.tools.{fhirVersionLabel}@{toolsVersion}");
-        return [.. packages];
+        return [.. basePackages,
+            $"hl7.fhir.uv.extensions.{fhirVersionLabel}@{extensionsVersion}",
+            $"hl7.fhir.uv.tools.{fhirVersionLabel}@{toolsVersion}"];
     }
 
     private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames)

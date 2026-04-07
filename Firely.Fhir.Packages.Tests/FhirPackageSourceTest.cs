@@ -173,7 +173,7 @@ public class CommonFhirPackageSourceTests
         var client = PackageClient.Create(FhirPackageSource.DEFAULT_PACKAGE_SERVER);
         var versions = await client.GetVersions("hl7.fhir.uv.extensions.r4");
 
-        var latestVersion = versions!.Resolve("latest");
+        var latestVersion = versions!.Resolve("latest", stable: false);
         var previouslyPinnedVersion = new SemVer("5.2.0");
 
         latestVersion.Should().NotBeNull();
