@@ -4,6 +4,7 @@ using Hl7.Fhir.Specification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using System.Threading.Tasks;
+using SemVer = SemanticVersioning.Version;
 
 #nullable enable
 
@@ -142,7 +143,7 @@ public class CommonFhirPackageSourceTests
     [DataRow(FhirRelease.STU3, "3.0.2", null, DisplayName = "STU3")]
     public async Task TestFhirCorePackages(FhirRelease release, string version, string? packageServer)
     {
-        var packageSource = FhirPackageSource.CreateCorePackageSource(new ModelInspector(release), release, packageServer);
+        var packageSource = FhirPackageSource.CreateCorePackageSource(new ModelInspector(release), release, packageServer: packageServer);
         var pat = await packageSource!.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/StructureDefinition/Patient");
         pat.Should().NotBeNull();
         pat.Should().Contain($"\"fhirVersion\":\"{version}\"");
@@ -162,6 +163,21 @@ public class CommonFhirPackageSourceTests
             artifact.Should().NotBeNull();
             artifact.Should().Contain($"\"url\":\"{canonicalUri}\"");
         }
+    }
+
+    [TestMethod, TestCategory("IntegrationTest")]
+    public async Task LatestExtensionsVersionIsNewerThanPreviouslyPinnedVersion()
+    {
+        // This test verifies that "latest" actually resolves to a version newer than the version we used
+        // to pin in the CORE_PACKAGES arrays (5.2.0), so that switching to @latest is a strict improvement.
+        var client = PackageClient.Create(FhirPackageSource.DEFAULT_PACKAGE_SERVER);
+        var versions = await client.GetVersions("hl7.fhir.uv.extensions.r4");
+
+        var latestVersion = versions!.Resolve("latest");
+        var previouslyPinnedVersion = new SemVer("5.2.0");
+
+        latestVersion.Should().NotBeNull();
+        latestVersion.Should().BeGreaterThanOrEqualTo(previouslyPinnedVersion);
     }
 
     [TestMethod]
