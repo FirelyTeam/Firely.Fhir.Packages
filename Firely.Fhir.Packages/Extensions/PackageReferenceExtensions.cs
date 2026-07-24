@@ -42,6 +42,7 @@ namespace Firely.Fhir.Packages
             var list = new List<LockFileDependency>();
             foreach (var reference in references)
             {
+                if (reference.Name is null) continue;
                 list.Add(new LockFileDependency(reference.Name, reference.Version));
             }
             return list;

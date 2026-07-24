@@ -170,7 +170,16 @@ namespace Firely.Fhir.Packages
 
         private void addMissingAcceptMultiple(PackageDependency dependency)
         {
-            if (!Missing.Contains(dependency)) Missing.Add(dependency);
+            foreach (var existing in Missing)
+            {
+                if (string.Compare(existing.Name, dependency.Name, ignoreCase: true) == 0
+                    && existing.Range == dependency.Range)
+                {
+                    return;
+                }
+            }
+
+            Missing.Add(dependency);
         }
 
         private static PackageDependency highest(PackageDependency A, PackageDependency B)
