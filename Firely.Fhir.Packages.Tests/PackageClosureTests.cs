@@ -236,6 +236,28 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
+        public void UnimplementedStrategyThrowsOnAddInsteadOfSilentlyDefaulting()
+        {
+            // A future ConflictResolutionStrategy value that Add()/AddMissing() haven't been updated to
+            // handle must fail loudly, not silently behave like HighestWins (see the exhaustive switch).
+            var closure = new PackageClosure((ConflictResolutionStrategy)999);
+
+            var add = () => closure.Add(new PackageReference("example", "1.0.0"));
+
+            add.Should().Throw<NotImplementedException>().WithMessage("*999*");
+        }
+
+        [TestMethod]
+        public void UnimplementedStrategyThrowsOnAddMissingInsteadOfSilentlyDefaulting()
+        {
+            var closure = new PackageClosure((ConflictResolutionStrategy)999);
+
+            var addMissing = () => closure.AddMissing(new PackageDependency("example", "1.0.0"));
+
+            addMissing.Should().Throw<NotImplementedException>().WithMessage("*999*");
+        }
+
+        [TestMethod]
         public void ReadingNewerLockFileVersionThrows()
         {
             var folder = createTempFolder();

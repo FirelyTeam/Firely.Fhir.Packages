@@ -77,7 +77,7 @@ namespace Firely.Fhir.Packages
         public static PackageReference Resolve(this Versions versions, PackageDependency dependency, bool stable = false)
         {
             var version = (dependency.Range is null) ? null : versions.Resolve(dependency.Range, stable);
-            return version is null ? PackageReference.None : new PackageReference(dependency.Name, version.ToString());
+            return version is null ? PackageReference.None : new PackageReference(null, dependency.Name, version.ToString(), dependency.Alias);
         }
 
         /// <summary>

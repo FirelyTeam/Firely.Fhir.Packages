@@ -54,22 +54,37 @@ namespace Firely.Fhir.Packages
         /// <returns>Whether the package reference is successfully added</returns>
         public bool Add(PackageReference reference)
         {
+            // An aliased reference (npm-style 'alias@npm:name') is an explicit request for this specific
+            // version, so it is always kept regardless of the conflict-resolution strategy - the same
+            // addIfNew used by AcceptMultiple below, since neither ever collapses/evicts, only rejects an
+            // exact duplicate.
+            if (reference.Alias is not null) return addIfNew(reference);
+
             return ConflictResolution switch
             {
                 ConflictResolutionStrategy.HighestWins => addHighestWins(reference),
-                ConflictResolutionStrategy.AcceptMultiple => addAcceptMultiple(reference),
+                ConflictResolutionStrategy.AcceptMultiple => addIfNew(reference),
                 _ => throw new System.NotImplementedException(
                     $"No implementation for conflict resolution strategy '{ConflictResolution}'.")
             };
         }
 
+        private bool addIfNew(PackageReference reference)
+        {
+            if (exists(reference.Name, reference.Version)) return false;
+
+            References.Add(reference);
+            return true;
+        }
+
         private bool addHighestWins(PackageReference reference)
         {
-            if (Find(reference.Name, out var existing))
-            {
-                if (existing == reference) return false;
+            if (exists(reference.Name, reference.Version)) return false;
 
+            if (findNonAliased(reference.Name, out var existing))
+            {
                 var highest = PackageClosure.highest(reference, existing);
+
                 if (highest != existing)
                 {
                     References.Remove(existing);
@@ -88,12 +103,18 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private bool addAcceptMultiple(PackageReference reference)
+        private bool findNonAliased(string? pkgname, out PackageReference reference)
         {
-            if (exists(reference.Name, reference.Version)) return false;
-
-            References.Add(reference);
-            return true;
+            foreach (var refx in References)
+            {
+                if (refx.Alias is null && string.Compare(refx.Name, pkgname, ignoreCase: true) == 0)
+                {
+                    reference = refx;
+                    return true;
+                }
+            }
+            reference = default;
+            return false;
         }
 
         /// <summary>
@@ -109,44 +130,72 @@ namespace Firely.Fhir.Packages
             return false;
         }
 
-        private static PackageReference highest(PackageReference A, PackageReference B)
-        {
-            var versionA = Version.TryParse(A.Version, out var resultA) ? resultA : new Version("0.0.0");
-            var versionB = Version.TryParse(B.Version, out var resultB) ? resultB : new Version("0.0.0");
-            var highest = (versionA > versionB) ? A : B;
-
-            return highest;
-        }
-
         /// <summary>
-        /// Find a package name in the lock file
+        /// Find a package by name in the closure.
         /// </summary>
+        /// <remarks>
+        /// The closure may hold more than one version of the same package name - under
+        /// <see cref="ConflictResolutionStrategy.AcceptMultiple"/>, or via an npm-style alias, which always
+        /// coexists regardless of strategy. Insertion order carries no meaning and cannot be predicted, so
+        /// this method picks deterministically instead: it returns the highest version among all matching
+        /// entries, aliased or not - the same choice <see cref="ConflictResolutionStrategy.HighestWins"/> would
+        /// have made if it applied to every entry. Use <see cref="FindAll"/> to retrieve every matching entry
+        /// rather than just one.
+        /// </remarks>
         /// <param name="pkgname">package name to be found</param>
         /// <param name="reference">package reference of the found package</param>
         /// <returns>whether the package was found</returns>
         public bool Find(string? pkgname, out PackageReference reference)
         {
+            PackageReference? highest = null;
             foreach (var refx in References)
             {
-                if (string.Compare(refx.Name, pkgname, ignoreCase: true) == 0)
-                {
-                    reference = refx;
-                    return true;
-                }
+                if (string.Compare(refx.Name, pkgname, ignoreCase: true) != 0) continue;
+                highest = highest is null || isHigherVersion(refx.Version, highest.Value.Version) ? refx : highest;
             }
+
+            if (highest is not null)
+            {
+                reference = highest.Value;
+                return true;
+            }
+
             reference = default;
             return false;
         }
 
+        /// <summary>
+        /// Returns every reference in the closure matching the given package name (case-insensitive). There
+        /// may be more than one - under <see cref="ConflictResolutionStrategy.AcceptMultiple"/>, or when
+        /// npm-style aliases are present alongside a plain version.
+        /// </summary>
+        /// <param name="pkgname">package name to match</param>
+        public IEnumerable<PackageReference> FindAll(string? pkgname)
+        {
+            foreach (var refx in References)
+            {
+                if (string.Compare(refx.Name, pkgname, ignoreCase: true) == 0)
+                    yield return refx;
+            }
+        }
+
         internal void AddMissing(PackageDependency dependency)
         {
+            // See Add(PackageReference): an aliased dependency is always kept regardless of strategy - the
+            // same addMissingIfNew used by AcceptMultiple below.
+            if (dependency.Alias is not null)
+            {
+                addMissingIfNew(dependency);
+                return;
+            }
+
             switch (ConflictResolution)
             {
                 case ConflictResolutionStrategy.HighestWins:
                     addMissingHighestWins(dependency);
                     break;
                 case ConflictResolutionStrategy.AcceptMultiple:
-                    addMissingAcceptMultiple(dependency);
+                    addMissingIfNew(dependency);
                     break;
                 default:
                     throw new System.NotImplementedException(
@@ -154,11 +203,19 @@ namespace Firely.Fhir.Packages
             }
         }
 
+        private void addMissingIfNew(PackageDependency dependency)
+        {
+            if (existsInMissing(dependency.Name, dependency.Range)) return;
+
+            Missing.Add(dependency);
+        }
+
         private void addMissingHighestWins(PackageDependency dependency)
         {
-            // Keep a single entry per package name (highest range), so a HighestWins closure holds one
-            // version per name in Missing just as it does in References.
-            var index = Missing.FindIndex(m => string.Compare(m.Name, dependency.Name, ignoreCase: true) == 0);
+            if (existsInMissing(dependency.Name, dependency.Range)) return;
+
+            var index = Missing.FindIndex(m => m.Alias is null && string.Compare(m.Name, dependency.Name, ignoreCase: true) == 0);
+
             if (index < 0)
             {
                 Missing.Add(dependency);
@@ -168,25 +225,26 @@ namespace Firely.Fhir.Packages
             Missing[index] = highest(dependency, Missing[index]);
         }
 
-        private void addMissingAcceptMultiple(PackageDependency dependency)
+        private bool existsInMissing(string? name, string? range)
         {
             foreach (var existing in Missing)
             {
-                if (string.Compare(existing.Name, dependency.Name, ignoreCase: true) == 0
-                    && existing.Range == dependency.Range)
-                {
-                    return;
-                }
+                if (string.Compare(existing.Name, name, ignoreCase: true) == 0 && existing.Range == range)
+                    return true;
             }
-
-            Missing.Add(dependency);
+            return false;
         }
 
-        private static PackageDependency highest(PackageDependency A, PackageDependency B)
+        private static PackageReference highest(PackageReference A, PackageReference B) => isHigherVersion(A.Version, B.Version) ? A : B;
+
+        private static PackageDependency highest(PackageDependency A, PackageDependency B) => isHigherVersion(A.Range, B.Range) ? A : B;
+
+        private static bool isHigherVersion(string? candidate, string? existing)
         {
-            var versionA = Version.TryParse(A.Range, out var resultA) ? resultA : new Version("0.0.0");
-            var versionB = Version.TryParse(B.Range, out var resultB) ? resultB : new Version("0.0.0");
-            return (versionA > versionB) ? A : B;
+            var candidateVersion = Version.TryParse(candidate, out var c) ? c : new Version("0.0.0");
+            var existingVersion = Version.TryParse(existing, out var e) ? e : new Version("0.0.0");
+
+            return candidateVersion > existingVersion;
         }
 
     }

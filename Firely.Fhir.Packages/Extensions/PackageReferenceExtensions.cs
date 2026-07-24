@@ -21,7 +21,7 @@ namespace Firely.Fhir.Packages
             foreach (var dependency in dependencies)
             {
                 if (dependency.Name is null) continue;
-                list.Add(new PackageReference { Name = dependency.Name, Version = dependency.Version });
+                list.Add(new PackageReference { Name = dependency.Name, Version = dependency.Version, Alias = dependency.Alias });
             }
             return list;
         }
@@ -32,7 +32,7 @@ namespace Firely.Fhir.Packages
             foreach (var dependency in dependencies)
             {
                 if (dependency.Name is null) continue;
-                list.Add(new PackageDependency(dependency.Name, dependency.Version));
+                list.Add(new PackageDependency(dependency.Name, dependency.Version) { Alias = dependency.Alias });
             }
             return list;
         }
@@ -43,7 +43,7 @@ namespace Firely.Fhir.Packages
             foreach (var reference in references)
             {
                 if (reference.Name is null) continue;
-                list.Add(new LockFileDependency(reference.Name, reference.Version));
+                list.Add(new LockFileDependency(reference.Name, reference.Version, reference.Alias));
             }
             return list;
         }
@@ -53,7 +53,7 @@ namespace Firely.Fhir.Packages
             var list = new List<LockFileDependency>();
             foreach (var dependency in dependencies)
             {
-                list.Add(new LockFileDependency(dependency.Name, dependency.Range));
+                list.Add(new LockFileDependency(dependency.Name, dependency.Range, dependency.Alias));
             }
             return list;
         }

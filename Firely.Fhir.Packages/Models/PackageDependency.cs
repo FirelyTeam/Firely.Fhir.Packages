@@ -1,5 +1,6 @@
 ﻿#nullable enable
 
+using System;
 using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
@@ -14,6 +15,12 @@ namespace Firely.Fhir.Packages
         public string Range;  // 3.x, 3.1 - 3.3, 1.1 | 1.2
 
         /// <summary>
+        /// Optional local alias, from an npm-style <c>alias@npm:name</c> dependency. When set, this dependency
+        /// is an explicit request for this specific version. <see cref="Name"/> always holds the real package name.
+        /// </summary>
+        public string? Alias;
+
+        /// <summary>
         /// Initializes a new package dependency
         /// </summary>
         /// <param name="name">name of the package</param>
@@ -24,13 +31,21 @@ namespace Firely.Fhir.Packages
             this.Range = range ?? "latest";
         }
 
+        private const string NPM_ALIAS_SEPARATOR = "@npm:";
+
         /// <summary>
         /// Converts a <see cref="KeyValuePair"/> of two strings to a <see cref="PackageDependency" /> where the key is the package name and the value is the version range
         /// </summary>
         /// <param name="pair"><see cref="KeyValuePair"/> defining a package dependency where the key is the package name and the value is the version range</param>
         public static implicit operator PackageDependency(KeyValuePair<string, string?> pair)
         {
-            return new PackageDependency(pair.Key, pair.Value);
+            var separator = pair.Key.IndexOf(NPM_ALIAS_SEPARATOR, StringComparison.Ordinal);
+            if (separator < 0)
+                return new PackageDependency(pair.Key, pair.Value);
+
+            var alias = pair.Key.Substring(0, separator);
+            var realName = pair.Key.Substring(separator + NPM_ALIAS_SEPARATOR.Length);
+            return new PackageDependency(realName, pair.Value) { Alias = alias };
         }
 
         /// <summary>

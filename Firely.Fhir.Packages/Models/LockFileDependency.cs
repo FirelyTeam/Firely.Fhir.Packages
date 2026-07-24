@@ -23,18 +23,22 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public class LockFileDependency
     {
-        /// <summary>Package name.</summary>
+        /// <summary>Real package name.</summary>
         public string? Name;
 
         /// <summary>Resolved version (or range for missing dependencies).</summary>
         public string? Version;
 
+        /// <summary>Optional npm-style local alias; null for normal entries.</summary>
+        public string? Alias;
+
         public LockFileDependency() { }
 
-        public LockFileDependency(string? name, string? version)
+        public LockFileDependency(string? name, string? version, string? alias = null)
         {
             Name = name;
             Version = version;
+            Alias = alias;
         }
     }
 
@@ -61,7 +65,7 @@ namespace Firely.Fhir.Packages
                     return null;
                 case JsonToken.StartArray:
                     return JArray.Load(reader)
-                        .Select(e => new LockFileDependency((string?)e["name"], (string?)e["version"]))
+                        .Select(e => new LockFileDependency((string?)e["name"], (string?)e["version"], (string?)e["alias"]))
                         .ToList();
                 case JsonToken.StartObject:
                     // legacy object form: { "name": "version" }
@@ -90,6 +94,11 @@ namespace Firely.Fhir.Packages
                 writer.WriteValue(dep.Name);
                 writer.WritePropertyName("version");
                 writer.WriteValue(dep.Version);
+                if (dep.Alias is not null)
+                {
+                    writer.WritePropertyName("alias");
+                    writer.WriteValue(dep.Alias);
+                }
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();
