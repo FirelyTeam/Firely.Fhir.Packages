@@ -55,10 +55,16 @@ namespace Firely.Fhir.Packages
         /// Restores a package
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="conflictResolution">
+        /// How to handle a package whose name already exists in the closure.
+        /// Defaults to <see cref="ConflictResolutionStrategy.HighestWins"/>. Pass
+        /// <see cref="ConflictResolutionStrategy.AcceptMultiple"/> to keep multiple versions of the same
+        /// package (e.g. pulled in via reuse-wrapper packages or transitive dependencies).
+        /// </param>
         /// <returns>Package lock file</returns>
-        public static async Task<PackageClosure> Restore(this PackageContext context)
+        public static async Task<PackageClosure> Restore(this PackageContext context, ConflictResolutionStrategy conflictResolution = ConflictResolutionStrategy.HighestWins)
         {
-            var restorer = new PackageRestorer(context);
+            var restorer = new PackageRestorer(context, conflictResolution);
             return await restorer.Restore();
         }
     }

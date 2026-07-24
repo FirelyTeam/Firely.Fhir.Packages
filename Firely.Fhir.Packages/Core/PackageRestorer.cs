@@ -19,16 +19,24 @@ namespace Firely.Fhir.Packages
     public class PackageRestorer
     {
         private readonly PackageContext _context;
+        private readonly ConflictResolutionStrategy _conflictResolution;
         private PackageClosure _closure;
 
         /// <summary>
         /// Restores package dependencies
         /// </summary>
         /// <param name="context">Package context of the package to be restored</param>
-        public PackageRestorer(PackageContext context)
+        /// <param name="conflictResolution">
+        /// How to handle a package whose name already exists in the closure.
+        /// Defaults to <see cref="ConflictResolutionStrategy.HighestWins"/>. Pass
+        /// <see cref="ConflictResolutionStrategy.AcceptMultiple"/> to keep multiple versions of the same
+        /// package (e.g. pulled in via reuse-wrapper packages or transitive dependencies).
+        /// </param>
+        public PackageRestorer(PackageContext context, ConflictResolutionStrategy conflictResolution = ConflictResolutionStrategy.HighestWins)
         {
             this._context = context;
-            _closure = new PackageClosure();
+            _conflictResolution = conflictResolution;
+            _closure = new PackageClosure(conflictResolution);
         }
 
         /// <summary>
@@ -41,7 +49,7 @@ namespace Firely.Fhir.Packages
         /// </exception>
         public async Task<PackageClosure> Restore()
         {
-            _closure = new();
+            _closure = new(_conflictResolution);
             var manifest = await _context.Project.ReadManifest().ConfigureAwait(false);
 
             if (manifest is null)

@@ -10,13 +10,19 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Firely.Fhir.Packages
 {
     public static class LockFile
     {
+        /// <summary>
+        /// Highest lock file format version this library can write and read.
+        /// Version 1 (or an absent version) is the legacy name-keyed object form; version 2 adds the
+        /// list form that can hold multiple versions of the same package.
+        /// </summary>
+        internal const int CURRENT_LOCKFILE_VERSION = 2;
+
         private static PackageClosure? read(string path)
         {
             if (File.Exists(path))
@@ -24,14 +30,18 @@ namespace Firely.Fhir.Packages
                 var content = File.ReadAllText(path);
                 var dto = PackageParser.ParseLockFileJson(content);
 
-                return dto is null
-                    ? null
-                    : new PackageClosure
-                    {
-                        References = dto.PackageReferences?.ToPackageReferences() ?? new List<PackageReference>(),
-                        Missing = dto.MissingDependencies?.ToPackageDependencies() ?? new List<PackageDependency>(),
-                    };
+                if (dto is null) return null;
 
+                if (dto.LockFileVersion > CURRENT_LOCKFILE_VERSION)
+                    throw new NotSupportedException(
+                        $"The lock file '{path}' has format version {dto.LockFileVersion}, but this version of " +
+                        $"Firely.Fhir.Packages supports up to version {CURRENT_LOCKFILE_VERSION}. Please update the library.");
+
+                return new PackageClosure
+                {
+                    References = dto.PackageReferences?.ToPackageReferences() ?? [],
+                    Missing = dto.MissingDependencies?.ToPackageDependencies() ?? [],
+                };
             }
             else return null;
         }
@@ -96,8 +106,9 @@ namespace Firely.Fhir.Packages
         {
             return new LockFileJson
             {
-                PackageReferences = closure.References.ToDictionary(),
-                MissingDependencies = closure.Missing.ToDictionary()
+                LockFileVersion = CURRENT_LOCKFILE_VERSION,
+                PackageReferences = closure.References?.ToLockFileDependencies(),
+                MissingDependencies = closure.Missing?.ToLockFileDependencies()
             };
         }
     }
