@@ -23,6 +23,9 @@ namespace Firely.Fhir.Packages.Tests
     }
 
     [TestClass]
+    // ConflictResolutionStrategy.HighestWins is obsolete but still fully supported for backward compatibility;
+    // this file deliberately exercises it, so CS0618 is expected here rather than a real usage smell.
+#pragma warning disable CS0618
     public class PackageAliasTests
     {
         [TestMethod]
@@ -424,4 +427,5 @@ namespace Firely.Fhir.Packages.Tests
             return folder;
         }
     }
+#pragma warning restore CS0618
 }

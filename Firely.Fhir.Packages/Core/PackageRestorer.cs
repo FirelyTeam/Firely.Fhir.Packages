@@ -28,11 +28,12 @@ namespace Firely.Fhir.Packages
         /// <param name="context">Package context of the package to be restored</param>
         /// <param name="conflictResolution">
         /// How to handle a package whose name already exists in the closure.
-        /// Defaults to <see cref="ConflictResolutionStrategy.HighestWins"/>. Pass
-        /// <see cref="ConflictResolutionStrategy.AcceptMultiple"/> to keep multiple versions of the same
-        /// package (e.g. pulled in via reuse-wrapper packages or transitive dependencies).
+        /// Defaults to <see cref="ConflictResolutionStrategy.AcceptMultiple"/>, which keeps multiple versions
+        /// of the same package. Pass the obsolete
+        /// <see cref="ConflictResolutionStrategy.HighestWins"/> only if this consumer is not yet ready to
+        /// handle multiple package versions.
         /// </param>
-        public PackageRestorer(PackageContext context, ConflictResolutionStrategy conflictResolution = ConflictResolutionStrategy.HighestWins)
+        public PackageRestorer(PackageContext context, ConflictResolutionStrategy conflictResolution = ConflictResolutionStrategy.AcceptMultiple)
         {
             this._context = context;
             _conflictResolution = conflictResolution;

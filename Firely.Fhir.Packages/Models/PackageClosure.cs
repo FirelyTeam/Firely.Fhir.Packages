@@ -22,9 +22,9 @@ namespace Firely.Fhir.Packages
     /// </remarks>
     /// <param name="conflictResolution">
     /// How to handle adding a package whose name already exists in the closure.
-    /// Defaults to <see cref="ConflictResolutionStrategy.HighestWins"/>.
+    /// Defaults to <see cref="ConflictResolutionStrategy.AcceptMultiple"/>.
     /// </param>
-    public class PackageClosure(ConflictResolutionStrategy conflictResolution = ConflictResolutionStrategy.HighestWins)
+    public class PackageClosure(ConflictResolutionStrategy conflictResolution = ConflictResolutionStrategy.AcceptMultiple)
     {
         /// <summary>
         /// Whether the lock is complete
@@ -60,6 +60,7 @@ namespace Firely.Fhir.Packages
             // exact duplicate.
             if (reference.Alias is not null) return addIfNew(reference);
 
+#pragma warning disable CS0618 // HighestWins is obsolete but still fully supported for backward compatibility
             return ConflictResolution switch
             {
                 ConflictResolutionStrategy.HighestWins => addHighestWins(reference),
@@ -67,6 +68,7 @@ namespace Firely.Fhir.Packages
                 _ => throw new System.NotImplementedException(
                     $"No implementation for conflict resolution strategy '{ConflictResolution}'.")
             };
+#pragma warning restore CS0618
         }
 
         private bool addIfNew(PackageReference reference)
@@ -147,16 +149,16 @@ namespace Firely.Fhir.Packages
         /// <returns>whether the package was found</returns>
         public bool Find(string? pkgname, out PackageReference reference)
         {
-            PackageReference? highest = null;
+            PackageReference? highestVer = null;
             foreach (var refx in References)
             {
                 if (string.Compare(refx.Name, pkgname, ignoreCase: true) != 0) continue;
-                highest = highest is null || isHigherVersion(refx.Version, highest.Value.Version) ? refx : highest;
+                highestVer = highestVer is null ? refx : highest(refx, highestVer.Value);
             }
 
-            if (highest is not null)
+            if (highestVer is not null)
             {
-                reference = highest.Value;
+                reference = highestVer.Value;
                 return true;
             }
 
@@ -189,6 +191,7 @@ namespace Firely.Fhir.Packages
                 return;
             }
 
+#pragma warning disable CS0618 // HighestWins is obsolete but still fully supported for backward compatibility
             switch (ConflictResolution)
             {
                 case ConflictResolutionStrategy.HighestWins:
@@ -201,6 +204,7 @@ namespace Firely.Fhir.Packages
                     throw new System.NotImplementedException(
                         $"No implementation for conflict resolution strategy '{ConflictResolution}'.");
             }
+#pragma warning restore CS0618
         }
 
         private void addMissingIfNew(PackageDependency dependency)
@@ -235,16 +239,32 @@ namespace Firely.Fhir.Packages
             return false;
         }
 
-        private static PackageReference highest(PackageReference A, PackageReference B) => isHigherVersion(A.Version, B.Version) ? A : B;
 
-        private static PackageDependency highest(PackageDependency A, PackageDependency B) => isHigherVersion(A.Range, B.Range) ? A : B;
-
-        private static bool isHigherVersion(string? candidate, string? existing)
+        private static PackageReference highest(PackageReference A, PackageReference B)
         {
-            var candidateVersion = Version.TryParse(candidate, out var c) ? c : new Version("0.0.0");
-            var existingVersion = Version.TryParse(existing, out var e) ? e : new Version("0.0.0");
+            var versionA = Version.TryParse(A.Version, out var resultA) ? resultA : new Version("0.0.0");
+            var versionB = Version.TryParse(B.Version, out var resultB) ? resultB : new Version("0.0.0");
+            var highest = (versionA > versionB) ? A : B;
 
-            return candidateVersion > existingVersion;
+            return highest;
+        }
+
+        private static PackageDependency highest(PackageDependency A, PackageDependency B)
+        {
+            // Unlike PackageReference.Version (always an exact, resolved version), PackageDependency.Range is
+            // a version RANGE (e.g. "3.x", "3.1 - 3.3", "latest") that generally cannot be parsed as a single
+            // SemanticVersioning.Version. "latest" represents an unbounded upper request, so it is always
+            // treated as the highest. Otherwise, only compare numerically when BOTH sides are exact,
+            // parseable versions; if either side is a genuine range there is no general total order between
+            // them, so keep the existing entry (B) to stay stable and deterministic rather than picking
+            // arbitrarily.
+            if (A.Range == PackageVersion.LATEST) return A;
+            if (B.Range == PackageVersion.LATEST) return B;
+
+            if (Version.TryParse(A.Range, out var versionA) && Version.TryParse(B.Range, out var versionB))
+                return versionA > versionB ? A : B;
+
+            return B;
         }
 
     }
