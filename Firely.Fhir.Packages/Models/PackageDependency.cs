@@ -16,8 +16,8 @@ namespace Firely.Fhir.Packages
 
         /// <summary>
         /// Optional local alias, from an npm-style <c>alias@npm:name</c> dependency. When set, this dependency
-        /// is an explicit request for this specific version. <see cref="Name"/> always holds the real package name.
-        /// </summary>
+        /// is an explicit request that should be kept even if other versions/ranges of the same package are present.
+        /// <see cref="Name"/> always holds the real package name.
         public string? Alias;
 
         /// <summary>
