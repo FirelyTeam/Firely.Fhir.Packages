@@ -188,9 +188,20 @@ namespace Firely.Fhir.Packages
 
         private static PackageDependency highest(PackageDependency A, PackageDependency B)
         {
-            var versionA = Version.TryParse(A.Range, out var resultA) ? resultA : new Version("0.0.0");
-            var versionB = Version.TryParse(B.Range, out var resultB) ? resultB : new Version("0.0.0");
-            return (versionA > versionB) ? A : B;
+            // Unlike PackageReference.Version (always an exact, resolved version), PackageDependency.Range is
+            // a version RANGE (e.g. "3.x", "3.1 - 3.3", "latest") that generally cannot be parsed as a single
+            // SemanticVersioning.Version. "latest" represents an unbounded upper request, so it is always
+            // treated as the highest. Otherwise, only compare numerically when BOTH sides are exact,
+            // parseable versions; if either side is a genuine range there is no general total order between
+            // them, so keep the existing entry (B) to stay stable and deterministic rather than picking
+            // arbitrarily.
+            if (A.Range == PackageVersion.LATEST) return A;
+            if (B.Range == PackageVersion.LATEST) return B;
+
+            if (Version.TryParse(A.Range, out var versionA) && Version.TryParse(B.Range, out var versionB))
+                return versionA > versionB ? A : B;
+
+            return B;
         }
 
     }

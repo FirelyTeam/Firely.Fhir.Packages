@@ -231,6 +231,53 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
+        public void HighestWinsTreatsLatestAsHigherThanAnyOtherRange()
+        {
+            // "latest" is an unbounded upper request, not a low/unparseable value - it must not lose to an
+            // exact version just because it falls back to 0.0.0 when parsed as a SemanticVersioning.Version.
+            var candidateFirst = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            candidateFirst.AddMissing(new PackageDependency("hl7.terminology.r4", "6.5.0"));
+            candidateFirst.AddMissing(new PackageDependency("hl7.terminology.r4", "latest"));
+
+            var latestFirst = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            latestFirst.AddMissing(new PackageDependency("hl7.terminology.r4", "latest"));
+            latestFirst.AddMissing(new PackageDependency("hl7.terminology.r4", "6.5.0"));
+
+            candidateFirst.Missing.Should().ContainSingle().Which.Range.Should().Be("latest");
+            latestFirst.Missing.Should().ContainSingle().Which.Range.Should().Be("latest");
+        }
+
+        [TestMethod]
+        public void HighestWinsKeepsExistingRangeWhenNeitherSideIsAnExactVersion()
+        {
+            // Range can be a genuine range expression (e.g. "3.x", "3.1 - 3.3"), which cannot be parsed as a
+            // single version and has no general total order against another range. Rather than picking
+            // arbitrarily (both falling back to 0.0.0 and comparing equal), the existing entry is kept.
+            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            closure.AddMissing(new PackageDependency("hl7.terminology.r4", "3.1 - 3.3"));
+            closure.AddMissing(new PackageDependency("hl7.terminology.r4", "3.x"));
+
+            closure.Missing.Should().ContainSingle().Which.Range.Should().Be("3.1 - 3.3", "the existing entry is kept when neither range is an exact version");
+        }
+
+        [TestMethod]
+        public void HighestWinsKeepsExistingRangeWhenOnlyOneSideIsAnExactVersion()
+        {
+            // Even when the new candidate happens to be an exact version and the existing entry is a genuine
+            // range (or vice versa), there is no sound way to compare them - stay with the existing entry.
+            var exactCandidate = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            exactCandidate.AddMissing(new PackageDependency("hl7.terminology.r4", "3.x"));
+            exactCandidate.AddMissing(new PackageDependency("hl7.terminology.r4", "6.1.0"));
+
+            var exactExisting = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            exactExisting.AddMissing(new PackageDependency("hl7.terminology.r4", "6.1.0"));
+            exactExisting.AddMissing(new PackageDependency("hl7.terminology.r4", "3.x"));
+
+            exactCandidate.Missing.Should().ContainSingle().Which.Range.Should().Be("3.x");
+            exactExisting.Missing.Should().ContainSingle().Which.Range.Should().Be("6.1.0");
+        }
+
+        [TestMethod]
         public void AcceptMultipleKeepsEveryMissingRangeAndRoundTrips()
         {
             // Under AcceptMultiple the same package name is kept at every range in Missing, and the list-form
