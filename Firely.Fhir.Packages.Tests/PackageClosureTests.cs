@@ -7,13 +7,30 @@ using System.Linq;
 namespace Firely.Fhir.Packages.Tests
 {
     [TestClass]
+    // ConflictResolutionStrategy.HighestWins is obsolete but still fully supported for backward compatibility;
+    // this file deliberately exercises it, so CS0618 is expected here rather than a real usage smell.
+#pragma warning disable CS0618
     public class PackageClosureTests
     {
         [TestMethod]
-        public void DefaultStrategyIsHighestWins()
+        public void DefaultStrategyIsAcceptMultiple()
         {
             var closure = new PackageClosure();
-            closure.ConflictResolution.Should().Be(ConflictResolutionStrategy.HighestWins);
+            closure.ConflictResolution.Should().Be(ConflictResolutionStrategy.AcceptMultiple);
+        }
+
+        [TestMethod]
+        public void DefaultClosureKeepsMultipleVersions()
+        {
+            // AcceptMultiple is the default: a FHIR dependency graph can legitimately need several versions
+            // of the same package at once (e.g. canonical references pinned to a specific version), so the
+            // default must not silently discard any of them.
+            var closure = new PackageClosure();
+
+            closure.Add("example@1.0.0").Should().BeTrue();
+            closure.Add("example@2.0.0").Should().BeTrue("the default strategy keeps every distinct version");
+
+            closure.References.Should().HaveCount(2);
         }
 
         [TestMethod]
@@ -260,4 +277,5 @@ namespace Firely.Fhir.Packages.Tests
             return folder;
         }
     }
+#pragma warning restore CS0618
 }

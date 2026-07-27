@@ -22,9 +22,9 @@ namespace Firely.Fhir.Packages
     /// </remarks>
     /// <param name="conflictResolution">
     /// How to handle adding a package whose name already exists in the closure.
-    /// Defaults to <see cref="ConflictResolutionStrategy.HighestWins"/>.
+    /// Defaults to <see cref="ConflictResolutionStrategy.AcceptMultiple"/>.
     /// </param>
-    public class PackageClosure(ConflictResolutionStrategy conflictResolution = ConflictResolutionStrategy.HighestWins)
+    public class PackageClosure(ConflictResolutionStrategy conflictResolution = ConflictResolutionStrategy.AcceptMultiple)
     {
         /// <summary>
         /// Whether the lock is complete
@@ -54,6 +54,7 @@ namespace Firely.Fhir.Packages
         /// <returns>Whether the package reference is successfully added</returns>
         public bool Add(PackageReference reference)
         {
+#pragma warning disable CS0618 // HighestWins is obsolete but still fully supported for backward compatibility
             return ConflictResolution switch
             {
                 ConflictResolutionStrategy.HighestWins => addHighestWins(reference),
@@ -61,6 +62,7 @@ namespace Firely.Fhir.Packages
                 _ => throw new System.NotImplementedException(
                     $"No implementation for conflict resolution strategy '{ConflictResolution}'.")
             };
+#pragma warning restore CS0618
         }
 
         private bool addHighestWins(PackageReference reference)
@@ -140,6 +142,7 @@ namespace Firely.Fhir.Packages
 
         internal void AddMissing(PackageDependency dependency)
         {
+#pragma warning disable CS0618 // HighestWins is obsolete but still fully supported for backward compatibility
             switch (ConflictResolution)
             {
                 case ConflictResolutionStrategy.HighestWins:
@@ -152,6 +155,7 @@ namespace Firely.Fhir.Packages
                     throw new System.NotImplementedException(
                         $"No implementation for conflict resolution strategy '{ConflictResolution}'.");
             }
+#pragma warning restore CS0618
         }
 
         private void addMissingHighestWins(PackageDependency dependency)
