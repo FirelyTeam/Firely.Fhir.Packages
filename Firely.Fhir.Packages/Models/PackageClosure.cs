@@ -105,11 +105,19 @@ namespace Firely.Fhir.Packages
         {
             foreach (var refx in References)
             {
-                if (string.Compare(refx.Name, name, ignoreCase: true) == 0 && refx.Version == version)
+                if (sameName(refx.Name, name) && refx.Version == version)
                     return true;
             }
             return false;
         }
+
+        /// <summary>
+        /// Compares two package names. Package names are case-insensitive, and are compared using
+        /// ordinal rules: culture-aware casing would, for example, consider "fhir" and "FHIR" different
+        /// names under Turkish/Azeri cultures because of their dotless-i casing rules.
+        /// </summary>
+        private static bool sameName(string? left, string? right)
+            => string.Equals(left, right, System.StringComparison.OrdinalIgnoreCase);
 
         private static PackageReference highest(PackageReference A, PackageReference B)
         {
@@ -130,7 +138,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var refx in References)
             {
-                if (string.Compare(refx.Name, pkgname, ignoreCase: true) == 0)
+                if (sameName(refx.Name, pkgname))
                 {
                     reference = refx;
                     return true;
@@ -162,7 +170,7 @@ namespace Firely.Fhir.Packages
         {
             // Keep a single entry per package name (highest range), so a HighestWins closure holds one
             // version per name in Missing just as it does in References.
-            var index = Missing.FindIndex(m => string.Compare(m.Name, dependency.Name, ignoreCase: true) == 0);
+            var index = Missing.FindIndex(m => sameName(m.Name, dependency.Name));
             if (index < 0)
             {
                 Missing.Add(dependency);
@@ -176,7 +184,7 @@ namespace Firely.Fhir.Packages
         {
             foreach (var existing in Missing)
             {
-                if (string.Compare(existing.Name, dependency.Name, ignoreCase: true) == 0
+                if (sameName(existing.Name, dependency.Name)
                     && existing.Range == dependency.Range)
                 {
                     return;
