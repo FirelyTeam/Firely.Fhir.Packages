@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Firely.Fhir.Packages.Tests
 {
@@ -10,87 +11,79 @@ namespace Firely.Fhir.Packages.Tests
         private const string TEST_URL = "http://example.org/StructureDefinition/TestProfile";
 
         [TestMethod]
-        public void ResolveCanonical_ExactVersionMatch_ShouldWork()
+        // ResolveCanonical is obsolete, but still supported: this pins down exactly the behaviour that made it
+        // obsolete, so callers relying on it keep working until it is removed. CS0618 is expected here.
+#pragma warning disable CS0618
+        public void ObsoleteResolveCanonical_ReturnsFirstMatchNotHighest()
         {
-            // Test that exact version matching still works (backward compatibility)
             var index = CreateTestIndex();
-            
-            var result = index.ResolveCanonical(TEST_URL, "1.5.0");
-            
-            result.Should().NotBeNull();
-            result!.Version.Should().Be("1.5.0");
-            result.FileName.Should().Be("profile-1.5.0.json");
-        }
 
-        [TestMethod]
-        public void ResolveCanonical_PartialVersionMatch_ShouldWork()
-        {
-            // Test that partial version "1.5" matches "1.5.0"
-            var index = CreateTestIndex();
-            
-            var result = index.ResolveCanonical(TEST_URL, "1.5");
-            
-            result.Should().NotBeNull();
-            result!.Version.Should().Be("1.5.0", "Should match the first 1.5.x version found");
-            result.FileName.Should().Be("profile-1.5.0.json");
-        }
+            var first = index.ResolveCanonical(TEST_URL, "1.5");
+            var best = index.ResolveBestCandidateByCanonical(TEST_URL, "1.5");
 
-        [TestMethod]
-        public void ResolveCanonical_NoVersionSpecified_ShouldReturnAny()
-        {
-            // Test that not specifying a version returns any version
-            var index = CreateTestIndex();
-            
-            var result = index.ResolveCanonical(TEST_URL);
-            
-            result.Should().NotBeNull();
-            // Should return the first match found (any version)
+            first!.Version.Should().Be("1.5.0", "ResolveCanonical returns the first 1.5.x in index order");
+            best!.Version.Should().Be("1.5.1", "ResolveBestCandidateByCanonical returns the highest 1.5.x");
         }
-
-        [TestMethod]
-        public void ResolveCanonical_NonExistentPartialVersion_ShouldReturnNull()
-        {
-            // Test that requesting a non-existent partial version returns null
-            var index = CreateTestIndex();
-            
-            var result = index.ResolveCanonical(TEST_URL, "2.0");
-            
-            result.Should().BeNull("No 2.0.x versions exist");
-        }
-
-        [TestMethod]
-        public void ResolveCanonical_NonExistentExactVersion_ShouldReturnNull()
-        {
-            // Test that requesting a non-existent exact version returns null
-            var index = CreateTestIndex();
-            
-            var result = index.ResolveCanonical(TEST_URL, "1.6.0");
-            
-            result.Should().BeNull("Version 1.6.0 does not exist");
-        }
+#pragma warning restore CS0618
 
         [TestMethod]
         public void ResolveBestCandidateByCanonical_ExactVersionMatch_ShouldWork()
         {
             // Test that exact version matching works with best candidate resolution
             var index = CreateTestIndex();
-            
+
             var result = index.ResolveBestCandidateByCanonical(TEST_URL, "1.5.0");
-            
+
             result.Should().NotBeNull();
             result!.Version.Should().Be("1.5.0");
+            result.FileName.Should().Be("profile-1.5.0.json");
         }
 
         [TestMethod]
         public void ResolveBestCandidateByCanonical_PartialVersionMatch_ShouldWork()
         {
-            // Test that partial version matching works with best candidate resolution
+            // Test that partial version "1.5" matches the highest 1.5.x, and not 1.4.9
             var index = CreateTestIndex();
-            
+
             var result = index.ResolveBestCandidateByCanonical(TEST_URL, "1.5");
-            
+
             result.Should().NotBeNull();
-            result!.Version.Should().StartWith("1.5.", "Should match a 1.5.x version");
+            result!.Version.Should().Be("1.5.1", "Should match the highest 1.5.x version");
+            result.FileName.Should().Be("profile-1.5.1.json");
+        }
+
+        [TestMethod]
+        public void ResolveBestCandidateByCanonical_NoVersionSpecified_ShouldReturnHighest()
+        {
+            // Test that not specifying a version returns the highest version available
+            var index = CreateTestIndex();
+
+            var result = index.ResolveBestCandidateByCanonical(TEST_URL);
+
+            result.Should().NotBeNull();
+            result!.Version.Should().Be("1.5.1");
+        }
+
+        [TestMethod]
+        public void ResolveBestCandidateByCanonical_NonExistentPartialVersion_ShouldReturnNull()
+        {
+            // Test that requesting a non-existent partial version returns null
+            var index = CreateTestIndex();
+
+            var result = index.ResolveBestCandidateByCanonical(TEST_URL, "2.0");
+
+            result.Should().BeNull("No 2.0.x versions exist");
+        }
+
+        [TestMethod]
+        public void ResolveBestCandidateByCanonical_NonExistentExactVersion_ShouldReturnNull()
+        {
+            // Test that requesting a non-existent exact version returns null
+            var index = CreateTestIndex();
+
+            var result = index.ResolveBestCandidateByCanonical(TEST_URL, "1.6.0");
+
+            result.Should().BeNull("Version 1.6.0 does not exist");
         }
 
         [TestMethod]
@@ -126,7 +119,7 @@ namespace Firely.Fhir.Packages.Tests
             
             // This mimics the issue: profile reference uses partial version "1.5"
             // but the actual profile has full version "1.5.0"
-            var result = index.ResolveCanonical(bundleProfileUrl, "1.5");
+            var result = index.ResolveBestCandidateByCanonical(bundleProfileUrl, "1.5");
             
             result.Should().NotBeNull("Should resolve partial version 1.5 to full version 1.5.0");
             result!.Version.Should().Be("1.5.0", "Should find the 1.5.0 version when requesting 1.5");
@@ -162,7 +155,7 @@ namespace Firely.Fhir.Packages.Tests
             
             index.Add(testFile);
             
-            var result = index.ResolveCanonical(TEST_URL, requestedVersion);
+            var result = index.ResolveBestCandidateByCanonical(TEST_URL, requestedVersion);
             
             if (shouldMatch)
             {
@@ -173,6 +166,38 @@ namespace Firely.Fhir.Packages.Tests
             {
                 result.Should().BeNull($"Version '{requestedVersion}' should not match '{candidateVersion}'");
             }
+        }
+
+        [TestMethod]
+        public void ResolveAllCanonical_ReturnsEveryVersion()
+        {
+            // A closure can hold several versions of the same package, so one canonical can legitimately
+            // resolve to more than one artifact - ResolveAllCanonical hands all of them to the caller
+            // instead of picking one.
+            var index = CreateTestIndex();
+
+            var results = index.ResolveAllCanonical(TEST_URL);
+
+            results.Select(r => r.Version).Should().BeEquivalentTo(["1.4.9", "1.5.0", "1.5.1"]);
+        }
+
+        [TestMethod]
+        public void ResolveAllCanonical_PartialVersionMatch_ReturnsOnlyMatchingVersions()
+        {
+            var index = CreateTestIndex();
+
+            var results = index.ResolveAllCanonical(TEST_URL, "1.5");
+
+            results.Select(r => r.Version).Should().BeEquivalentTo(["1.5.0", "1.5.1"], "1.4.9 is not a 1.5.x version");
+        }
+
+        [TestMethod]
+        public void ResolveAllCanonical_NoMatch_ReturnsEmpty()
+        {
+            var index = CreateTestIndex();
+
+            index.ResolveAllCanonical(TEST_URL, "2.0").Should().BeEmpty();
+            index.ResolveAllCanonical("http://example.org/StructureDefinition/Unknown").Should().BeEmpty();
         }
 
         private static FileIndex CreateTestIndex()

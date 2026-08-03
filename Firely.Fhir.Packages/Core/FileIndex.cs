@@ -28,14 +28,19 @@ public class FileIndex : List<PackageFileReference>
     /// <param name="canonical">canonical URI used to identify the artifact</param>
     /// <param name="version">version of the artifact</param>
     /// <returns>First file found with a specific canonical URI and optional version</returns>
+    /// <remarks>
+    /// "First" means first in index order, which follows the insertion order of the closure the index was
+    /// built from. A closure can hold several versions of the same package, so the same canonical can occur
+    /// at multiple resource versions and the one returned here is effectively arbitrary. Use
+    /// <see cref="ResolveBestCandidateByCanonical(string, string?)"/> to get the highest version, or
+    /// <see cref="ResolveAllCanonical(string, string?)"/> to inspect every match yourself.
+    /// </remarks>
+    [Obsolete("Returns an arbitrary match when the index contains a canonical at more than one version, " +
+        "which is normal now that a closure can hold several versions of the same package. Use " +
+        "ResolveBestCandidateByCanonical to get the highest version, or ResolveAllCanonical for every match.")]
     public PackageFileReference? ResolveCanonical(string canonical, string? version = null)
     {
-        if (version is null || string.IsNullOrEmpty(version))
-        {
-            return this.FirstOrDefault(r => r.Canonical == canonical);
-        }
-
-        return this.FirstOrDefault(r => r.Canonical == canonical && Canonical.MatchesVersion(r.Version,version));
+        return findCandidates(canonical, version).FirstOrDefault();
     }
 
     /// <summary>
@@ -47,9 +52,7 @@ public class FileIndex : List<PackageFileReference>
     /// <returns>Returns the best candidate found with a specific canonical URI and optional version.</returns>
     public PackageFileReference? ResolveBestCandidateByCanonical(string canonical, string? version = null)
     {
-        var candidates = version is null || string.IsNullOrEmpty(version)
-            ? this.Where(r => r.Canonical == canonical).ToList()
-            : this.Where(r => r.Canonical == canonical && Canonical.MatchesVersion(r.Version, version)).ToList();
+        var candidates = findCandidates(canonical, version).ToList();
 
         return candidates.Count switch
         {
@@ -57,6 +60,30 @@ public class FileIndex : List<PackageFileReference>
             1 => candidates.Single(),
             _ => null
         };
+    }
+
+    /// <summary>
+    /// Returns every file found with a specific canonical URI and optional version, in index order.
+    /// Supports partial version matching according to FHIR canonical matching specification.
+    /// </summary>
+    /// <param name="canonical">canonical URI used to identify the artifact</param>
+    /// <param name="version">version of the artifact</param>
+    /// <returns>All files matching the canonical URI and optional version; empty when there are none.</returns>
+    /// <remarks>
+    /// Because a closure can hold several versions of the same package, one canonical can legitimately
+    /// resolve to more than one artifact. Use this when the caller needs to see all of them rather than
+    /// have one picked for it.
+    /// </remarks>
+    public IReadOnlyList<PackageFileReference> ResolveAllCanonical(string canonical, string? version = null)
+    {
+        return [.. findCandidates(canonical, version)];
+    }
+
+    private IEnumerable<PackageFileReference> findCandidates(string canonical, string? version)
+    {
+        return string.IsNullOrEmpty(version)
+            ? this.Where(r => r.Canonical == canonical)
+            : this.Where(r => r.Canonical == canonical && Canonical.MatchesVersion(r.Version, version));
     }
 
     /// <summary>
