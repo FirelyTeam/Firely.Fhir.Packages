@@ -25,13 +25,15 @@ namespace Firely.Fhir.Packages
         /// <param name="scope"></param>
         /// <param name="uri">Canonical uri of the resource</param>
         /// <param name="version">Version of the conformance resource</param>
-        /// <param name="resolveBestCandidate">If there are multiple candidates, try to resolve the best instead of the first</param>
+        /// <param name="resolveBestCandidate">
+        /// If there are multiple candidates, resolve the best one instead of the first. Defaults to
+        /// <c>true</c>: a closure can hold several versions of the same package, so the first match in index
+        /// order is effectively arbitrary. Pass <c>false</c> only to keep the historic first-match behaviour.
+        /// </param>
         /// <returns>File content of the conformance resource</returns>
-        public static async Task<string?> GetFileContentByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = false)
+        public static async Task<string?> GetFileContentByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = true)
         {
-            var reference = resolveBestCandidate
-                ? scope.GetIndex().ResolveBestCandidateByCanonical(uri, version)
-                : scope.GetIndex().ResolveCanonical(uri, version);
+            var reference = scope.GetFileReferenceByCanonical(uri, version, resolveBestCandidate);
 
             return reference is not null ? await scope.GetFileContent(reference).ConfigureAwait(false) : null;
         }
@@ -54,13 +56,20 @@ namespace Firely.Fhir.Packages
         /// <param name="scope"></param>
         /// <param name="uri">Canonical uri of the resource</param>
         /// <param name="version">Version of the conformance resource</param>
-        /// <param name="resolveBestCandidate">If there are multiple candidates, try to resolve the best instead of the first</param>
+        /// <param name="resolveBestCandidate">
+        /// If there are multiple candidates, resolve the best one instead of the first. Defaults to
+        /// <c>true</c>: a closure can hold several versions of the same package, so the first match in index
+        /// order is effectively arbitrary. Pass <c>false</c> only to keep the historic first-match behaviour.
+        /// </param>
         /// <returns>File content of the conformance resource</returns>
-        public static PackageFileReference? GetFileReferenceByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = false)
+        public static PackageFileReference? GetFileReferenceByCanonical(this PackageContext scope, string uri, string? version = null, bool resolveBestCandidate = true)
         {
-            return resolveBestCandidate
-                ? scope.GetIndex().ResolveBestCandidateByCanonical(uri, version)
-                : scope.GetIndex().ResolveCanonical(uri, version);
+            if (resolveBestCandidate)
+                return scope.GetIndex().ResolveBestCandidateByCanonical(uri, version);
+
+#pragma warning disable CS0618 // deliberately kept reachable so callers can opt back into first-match resolution
+            return scope.GetIndex().ResolveCanonical(uri, version);
+#pragma warning restore CS0618
         }
 
         /// <summary>

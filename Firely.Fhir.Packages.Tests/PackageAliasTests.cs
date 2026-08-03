@@ -23,9 +23,6 @@ namespace Firely.Fhir.Packages.Tests
     }
 
     [TestClass]
-    // ConflictResolutionStrategy.HighestWins is obsolete but still fully supported for backward compatibility;
-    // this file deliberately exercises it, so CS0618 is expected here rather than a real usage smell.
-#pragma warning disable CS0618
     public class PackageAliasTests
     {
         [TestMethod]
@@ -68,46 +65,12 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
-        public void AliasedReferenceIsKeptUnderHighestWins()
-        {
-            // The whole point of an alias: force a specific version even when a higher one is also present.
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-
-            closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0")).Should().BeTrue();
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" })
-                .Should().BeTrue("an aliased reference is an explicit version request and is never collapsed");
-
-            closure.References
-                .Where(r => string.Equals(r.Name, "hl7.fhir.us.core", StringComparison.OrdinalIgnoreCase))
-                .Select(r => r.Version)
-                .Should().BeEquivalentTo(new[] { "7.0.0", "6.1.0" });
-        }
-
-        [TestMethod]
-        public void AliasedReferenceAddedFirstSurvivesLaterHigherPlainVersion()
-        {
-            // Same guarantee as AliasedReferenceIsKeptUnderHighestWins, but in the opposite insertion order:
-            // the aliased (lower) version is added FIRST, then a later, higher, non-aliased version of the
-            // same real package arrives. HighestWins must not find/evict the aliased entry when collapsing.
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" })
-                .Should().BeTrue();
-            closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0")).Should().BeTrue();
-
-            closure.References
-                .Where(r => string.Equals(r.Name, "hl7.fhir.us.core", StringComparison.OrdinalIgnoreCase))
-                .Select(r => r.Version)
-                .Should().BeEquivalentTo(new[] { "6.1.0", "7.0.0" }, "the aliased entry must not be evicted regardless of arrival order");
-        }
-
-        [TestMethod]
         public void PlainReferenceMatchingAnAliasedVersionExactlyIsRejectedAsDuplicate()
         {
-            // HighestWins must never blindly ADD a plain reference either: if an aliased entry already
-            // represents this exact (name, version), a plain copy of it is a redundant duplicate, not a
-            // distinct package to keep alongside it.
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            // An alias is not part of a closure entry's identity: if an aliased entry already represents this
+            // exact (name, version), a plain copy of it is a redundant duplicate, not a distinct package to
+            // keep alongside it.
+            var closure = new PackageClosure();
 
             closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" })
                 .Should().BeTrue();
@@ -120,7 +83,8 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void PlainMissingMatchingAnAliasedRangeExactlyIsRejectedAsDuplicate()
         {
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            // Missing-side twin of PlainReferenceMatchingAnAliasedVersionExactlyIsRejectedAsDuplicate.
+            var closure = new PackageClosure();
 
             closure.AddMissing(new PackageDependency("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" });
             closure.AddMissing(new PackageDependency("hl7.fhir.us.core", "6.1.0"));
@@ -129,23 +93,9 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
-        public void AliasedMissingAddedFirstSurvivesLaterHigherPlainRange()
-        {
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-
-            closure.AddMissing(new PackageDependency("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" });
-            closure.AddMissing(new PackageDependency("hl7.fhir.us.core", "7.0.0"));
-
-            closure.Missing
-                .Where(m => string.Equals(m.Name, "hl7.fhir.us.core", StringComparison.OrdinalIgnoreCase))
-                .Select(m => m.Range)
-                .Should().BeEquivalentTo(new[] { "6.1.0", "7.0.0" }, "the aliased missing entry must not be overwritten regardless of arrival order");
-        }
-
-        [TestMethod]
         public void AliasedReferenceRejectsExactDuplicate()
         {
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            var closure = new PackageClosure();
             var aliased = new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" };
 
             closure.Add(aliased).Should().BeTrue();
@@ -159,7 +109,7 @@ namespace Firely.Fhir.Packages.Tests
         {
             // Two different aliases resolving to the identical (name, version) convey no extra information -
             // only the first one reached should be kept, to avoid duplicating restore work and index entries.
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            var closure = new PackageClosure();
 
             closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscoreA" })
                 .Should().BeTrue();
@@ -174,7 +124,7 @@ namespace Firely.Fhir.Packages.Tests
         public void TwoDifferentAliasesForSameNameAndRangeInMissingAreDeduplicated()
         {
             // Missing-side twin of TwoDifferentAliasesForSameNameAndVersionAreDeduplicated.
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            var closure = new PackageClosure();
 
             closure.AddMissing(new PackageDependency("hl7.fhir.us.core", "6.1.0") { Alias = "uscoreA" });
             closure.AddMissing(new PackageDependency("hl7.fhir.us.core", "6.1.0") { Alias = "uscoreB" });
@@ -187,7 +137,7 @@ namespace Firely.Fhir.Packages.Tests
         public void AcceptMultipleKeepsPlainAndAliasedMissingEntriesTogether()
         {
             // Missing-side twin of PackageAliasCornerCaseTests.AcceptMultipleKeepsPlainAndAliasedVersionsTogether.
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
 
             closure.AddMissing(new PackageDependency("hl7.fhir.us.core", "5.0.0"));
             closure.AddMissing(new PackageDependency("hl7.fhir.us.core", "7.0.0"));
@@ -204,11 +154,11 @@ namespace Firely.Fhir.Packages.Tests
         {
             // Insertion order carries no meaning and cannot be predicted, so Find must not depend on it:
             // it returns the highest version among all matching entries, whichever order they arrived in.
-            var addedPlainFirst = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var addedPlainFirst = new PackageClosure();
             addedPlainFirst.Add(new PackageReference("hl7.fhir.us.core", "7.0.0"));
             addedPlainFirst.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
 
-            var addedAliasedFirst = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var addedAliasedFirst = new PackageClosure();
             addedAliasedFirst.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
             addedAliasedFirst.Add(new PackageReference("hl7.fhir.us.core", "7.0.0"));
 
@@ -224,7 +174,7 @@ namespace Firely.Fhir.Packages.Tests
         {
             // Alias status must not matter to Find, only the version does: here the ALIASED entry is the
             // higher version, and it must win over the plain (non-aliased) one.
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
             closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0"));
             closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "7.0.0", Alias = "uscore700" });
 
@@ -236,7 +186,7 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void FindReturnsHighestAmongMultipleAliasedVersions()
         {
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
             closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
             closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "7.0.0", Alias = "uscore700" });
 
@@ -248,7 +198,7 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void FindAllReturnsEveryMatchingEntry()
         {
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
             closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0"));
             closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
             closure.Add(new PackageReference("hl7.fhir.uv.extensions", "1.0.0"));
@@ -262,7 +212,7 @@ namespace Firely.Fhir.Packages.Tests
         public void AliasRoundTripsThroughLockFile()
         {
             var folder = createTempFolder();
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            var closure = new PackageClosure();
             closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0"));
             closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
 
@@ -361,7 +311,7 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void AcceptMultipleKeepsPlainAndAliasedVersionsTogether()
         {
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
 
             closure.Add(new PackageReference("hl7.fhir.us.core", "5.0.0")).Should().BeTrue();
             closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0")).Should().BeTrue();
@@ -378,7 +328,7 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public void SameAliasForTwoDifferentRealPackagesBothSurvive()
         {
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
+            var closure = new PackageClosure();
 
             closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "myalias" }).Should().BeTrue();
             closure.Add(new PackageReference { Name = "hl7.fhir.uv.extensions", Version = "1.0.0", Alias = "myalias" }).Should().BeTrue();
@@ -427,5 +377,4 @@ namespace Firely.Fhir.Packages.Tests
             return folder;
         }
     }
-#pragma warning restore CS0618
 }

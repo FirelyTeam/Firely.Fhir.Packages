@@ -7,30 +7,20 @@ using System.Linq;
 namespace Firely.Fhir.Packages.Tests
 {
     [TestClass]
-    // ConflictResolutionStrategy.HighestWins is obsolete but still fully supported for backward compatibility;
-    // this file deliberately exercises it, so CS0618 is expected here rather than a real usage smell.
-#pragma warning disable CS0618
     public class PackageClosureTests
     {
         [TestMethod]
-        public void DefaultStrategyIsAcceptMultiple()
+        public void ClosureKeepsMultipleVersions()
         {
-            var closure = new PackageClosure();
-            closure.ConflictResolution.Should().Be(ConflictResolutionStrategy.AcceptMultiple);
-        }
-
-        [TestMethod]
-        public void DefaultClosureKeepsMultipleVersions()
-        {
-            // AcceptMultiple is the default: a FHIR dependency graph can legitimately need several versions
-            // of the same package at once (e.g. canonical references pinned to a specific version), so the
-            // default must not silently discard any of them.
+            // A FHIR dependency graph can legitimately need several versions of the same package at once
+            // (e.g. canonical references pinned to a specific version), so no version is silently discarded.
             var closure = new PackageClosure();
 
             closure.Add("example@1.0.0").Should().BeTrue();
-            closure.Add("example@2.0.0").Should().BeTrue("the default strategy keeps every distinct version");
+            closure.Add("example@2.0.0").Should().BeTrue("a different version is kept alongside the existing one");
 
             closure.References.Should().HaveCount(2);
+            closure.References.Select(r => r.Version).Should().BeEquivalentTo(new[] { "1.0.0", "2.0.0" });
         }
 
         [TestMethod]
@@ -45,56 +35,9 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
-        public void HighestWinsKeepsSingleReferencePerName()
+        public void TreatsNameCaseInsensitively()
         {
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-
-            closure.Add("example@1.0.0").Should().BeTrue();
-            closure.Add("example@2.0.0").Should().BeTrue("a higher version replaces the existing one");
-
-            closure.References.Should().ContainSingle()
-                .Which.Version.Should().Be("2.0.0");
-        }
-
-        [TestMethod]
-        public void HighestWinsIgnoresLowerVersion()
-        {
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-
-            closure.Add("example@2.0.0").Should().BeTrue();
-            closure.Add("example@1.0.0").Should().BeFalse("a lower version does not replace the existing one");
-
-            closure.References.Should().ContainSingle()
-                .Which.Version.Should().Be("2.0.0");
-        }
-
-        [TestMethod]
-        public void AcceptMultipleKeepsAllVersions()
-        {
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
-
-            closure.Add("example@1.0.0").Should().BeTrue();
-            closure.Add("example@2.0.0").Should().BeTrue("a different version is kept alongside the existing one");
-
-            closure.References.Should().HaveCount(2);
-            closure.References.Select(r => r.Version).Should().BeEquivalentTo(new[] { "1.0.0", "2.0.0" });
-        }
-
-        [TestMethod]
-        public void AcceptMultipleStillRejectsExactDuplicates()
-        {
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
-
-            closure.Add("example@1.0.0").Should().BeTrue();
-            closure.Add("example@1.0.0").Should().BeFalse();
-
-            closure.References.Should().ContainSingle();
-        }
-
-        [TestMethod]
-        public void AcceptMultipleTreatsNameCaseInsensitively()
-        {
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
 
             closure.Add("Example@1.0.0").Should().BeTrue();
             closure.Add("example@1.0.0").Should().BeFalse("names differing only by case are the same package");
@@ -127,7 +70,7 @@ namespace Firely.Fhir.Packages.Tests
         public void MultipleVersionsWriteListFormAndRoundTrip()
         {
             var folder = createTempFolder();
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
             closure.Add("example@1.0.0");
             closure.Add("example@2.0.0");
             closure.Add("other@3.0.0");
@@ -183,7 +126,7 @@ namespace Firely.Fhir.Packages.Tests
             // See the dependency table at https://hl7.org/fhir/us/carin-bb/STU2.2/ (Dependencies section),
             // and the package manifest at https://packages.simplifier.net/hl7.fhir.us.carin-bb/2.2.0.
             var folder = createTempFolder();
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
             closure.Add("hl7.fhir.us.carin-bb@2.2.0");
             closure.Add("hl7.fhir.r4.core@4.0.1");
             closure.Add("hl7.fhir.us.core@7.0.0");        // direct
@@ -191,7 +134,7 @@ namespace Firely.Fhir.Packages.Tests
             closure.Add("hl7.fhir.us.core@6.1.0");        // real 6.1.0 content, pulled in via the wrapper
             closure.Add("hl7.terminology.r4@6.1.0");
 
-            closure.References.Should().HaveCount(6, "AcceptMultiple keeps both real us.core versions");
+            closure.References.Should().HaveCount(6, "both real us.core versions are kept");
 
             LockFile.WriteToFolder(closure, folder);
             var roundtripped = LockFile.ReadFromFolder(folder);
@@ -213,77 +156,16 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
-        public void HighestWinsCollapsesMissingToHighestPerName()
+        public void KeepsEveryMissingRangeAndRoundTrips()
         {
             // Regression for issue #183 (System.ArgumentException "An item with the same key has already
             // been added. Key: hl7.terminology.r4"), reproduced with the NGS TW IG (tw.gov.mohw.nhi.ngs@1.0.0,
             // https://nhicore.nhi.gov.tw/ngs/package.tgz): with no package server, its unresolved transitive
             // deps land in "missing" with the same package name at multiple ranges (6.5.0 direct, 6.1.0 + 5.0.0
-            // transitive). Under HighestWins the closure keeps one entry per name (highest) in Missing just as
-            // it does in References, so the content matches the historic single-version-per-name model.
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-            closure.AddMissing(new PackageDependency("hl7.terminology.r4", "6.1.0"));
-            closure.AddMissing(new PackageDependency("hl7.terminology.r4", "6.5.0"));
-            closure.AddMissing(new PackageDependency("hl7.terminology.r4", "5.0.0"));
-
-            closure.Missing.Should().ContainSingle()
-                .Which.Range.Should().Be("6.5.0", "HighestWins keeps a single entry per name, the highest range");
-        }
-
-        [TestMethod]
-        public void HighestWinsTreatsLatestAsHigherThanAnyOtherRange()
-        {
-            // "latest" is an unbounded upper request, not a low/unparseable value - it must not lose to an
-            // exact version just because it falls back to 0.0.0 when parsed as a SemanticVersioning.Version.
-            var candidateFirst = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-            candidateFirst.AddMissing(new PackageDependency("hl7.terminology.r4", "6.5.0"));
-            candidateFirst.AddMissing(new PackageDependency("hl7.terminology.r4", "latest"));
-
-            var latestFirst = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-            latestFirst.AddMissing(new PackageDependency("hl7.terminology.r4", "latest"));
-            latestFirst.AddMissing(new PackageDependency("hl7.terminology.r4", "6.5.0"));
-
-            candidateFirst.Missing.Should().ContainSingle().Which.Range.Should().Be("latest");
-            latestFirst.Missing.Should().ContainSingle().Which.Range.Should().Be("latest");
-        }
-
-        [TestMethod]
-        public void HighestWinsKeepsExistingRangeWhenNeitherSideIsAnExactVersion()
-        {
-            // Range can be a genuine range expression (e.g. "3.x", "3.1 - 3.3"), which cannot be parsed as a
-            // single version and has no general total order against another range. Rather than picking
-            // arbitrarily (both falling back to 0.0.0 and comparing equal), the existing entry is kept.
-            var closure = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-            closure.AddMissing(new PackageDependency("hl7.terminology.r4", "3.1 - 3.3"));
-            closure.AddMissing(new PackageDependency("hl7.terminology.r4", "3.x"));
-
-            closure.Missing.Should().ContainSingle().Which.Range.Should().Be("3.1 - 3.3", "the existing entry is kept when neither range is an exact version");
-        }
-
-        [TestMethod]
-        public void HighestWinsKeepsExistingRangeWhenOnlyOneSideIsAnExactVersion()
-        {
-            // Even when the new candidate happens to be an exact version and the existing entry is a genuine
-            // range (or vice versa), there is no sound way to compare them - stay with the existing entry.
-            var exactCandidate = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-            exactCandidate.AddMissing(new PackageDependency("hl7.terminology.r4", "3.x"));
-            exactCandidate.AddMissing(new PackageDependency("hl7.terminology.r4", "6.1.0"));
-
-            var exactExisting = new PackageClosure(ConflictResolutionStrategy.HighestWins);
-            exactExisting.AddMissing(new PackageDependency("hl7.terminology.r4", "6.1.0"));
-            exactExisting.AddMissing(new PackageDependency("hl7.terminology.r4", "3.x"));
-
-            exactCandidate.Missing.Should().ContainSingle().Which.Range.Should().Be("3.x");
-            exactExisting.Missing.Should().ContainSingle().Which.Range.Should().Be("6.1.0");
-        }
-
-        [TestMethod]
-        public void AcceptMultipleKeepsEveryMissingRangeAndRoundTrips()
-        {
-            // Under AcceptMultiple the same package name is kept at every range in Missing, and the list-form
-            // lock serializes all of them (the old name-keyed map threw on the duplicate key - see #183).
+            // transitive). The same name is now kept at every range, and the list-form lock serializes all of
+            // them - the old name-keyed map threw on the duplicate key.
             var folder = createTempFolder();
-            var closure = new PackageClosure(ConflictResolutionStrategy.AcceptMultiple);
+            var closure = new PackageClosure();
             closure.AddMissing(new PackageDependency("hl7.terminology.r4", "6.5.0"));
             closure.AddMissing(new PackageDependency("hl7.terminology.r4", "6.1.0"));
             closure.AddMissing(new PackageDependency("hl7.terminology.r4", "5.0.0"));
@@ -300,25 +182,13 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
-        public void UnimplementedStrategyThrowsOnAddInsteadOfSilentlyDefaulting()
+        public void AddingExactDuplicateMissingDependencyIsRejected()
         {
-            // A future ConflictResolutionStrategy value that Add()/AddMissing() haven't been updated to
-            // handle must fail loudly, not silently behave like HighestWins (see the exhaustive switch).
-            var closure = new PackageClosure((ConflictResolutionStrategy)999);
+            var closure = new PackageClosure();
+            closure.AddMissing(new PackageDependency("hl7.terminology.r4", "6.5.0"));
+            closure.AddMissing(new PackageDependency("HL7.Terminology.R4", "6.5.0"));
 
-            var add = () => closure.Add(new PackageReference("example", "1.0.0"));
-
-            add.Should().Throw<NotImplementedException>().WithMessage("*999*");
-        }
-
-        [TestMethod]
-        public void UnimplementedStrategyThrowsOnAddMissingInsteadOfSilentlyDefaulting()
-        {
-            var closure = new PackageClosure((ConflictResolutionStrategy)999);
-
-            var addMissing = () => closure.AddMissing(new PackageDependency("example", "1.0.0"));
-
-            addMissing.Should().Throw<NotImplementedException>().WithMessage("*999*");
+            closure.Missing.Should().ContainSingle("names differing only by case are the same package");
         }
 
         [TestMethod]
@@ -346,5 +216,4 @@ namespace Firely.Fhir.Packages.Tests
             return folder;
         }
     }
-#pragma warning restore CS0618
 }
