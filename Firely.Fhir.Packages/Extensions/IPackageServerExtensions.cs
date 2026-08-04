@@ -37,7 +37,7 @@ namespace Firely.Fhir.Packages
         {
             var versions = await server.GetVersions(dependency.Name);
             var version = (dependency.Range == null) ? null : versions?.Resolve(dependency.Range, stable)?.ToString(); //null => NotFound
-            return version is null ? PackageReference.None : new PackageReference(dependency.Name, version);
+            return version is null ? PackageReference.None : new PackageReference(null, dependency.Name, version, dependency.Alias);
         }
 
         /// <summary>

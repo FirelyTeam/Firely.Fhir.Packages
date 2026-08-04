@@ -24,7 +24,7 @@ namespace Firely.Fhir.Packages.Tests
             var FixtureDirectory = TestHelper.InitializeTemporary("integration-test", HL7_CORE_PACKAGE_R4).Result;
             var projectContext = TestHelper.Open(FixtureDirectory, _ => { }).Result;
 
-            var corePat = projectContext.GetIndex().ResolveCanonical(CORE_PAT_URL);
+            var corePat = projectContext.GetIndex().ResolveBestCandidateByCanonical(CORE_PAT_URL);
             corePat.Should().NotBeNull();
 
             corePat!.Canonical.Should().Be(CORE_PAT_URL);
@@ -36,11 +36,11 @@ namespace Firely.Fhir.Packages.Tests
             corePat!.Type.Should().Be("Patient");
             corePat!.Version.Should().Be("4.0.1");
 
-            var coreValueSet = projectContext.GetIndex().ResolveCanonical(CORE_VS_URL);
+            var coreValueSet = projectContext.GetIndex().ResolveBestCandidateByCanonical(CORE_VS_URL);
             coreValueSet.Should().NotBeNull();
             coreValueSet!.ValueSetCodeSystem = "http://hl7.org/fhir/administrative-gender";
 
-            var coreCodeSystem = projectContext.GetIndex().ResolveCanonical(CORE_CS_URL);
+            var coreCodeSystem = projectContext.GetIndex().ResolveBestCandidateByCanonical(CORE_CS_URL);
             coreCodeSystem.Should().NotBeNull();
             coreCodeSystem!.ConceptMapUris!.SourceUri.Should().Be("http://hl7.org/fhir/ValueSet/address-use");
             coreCodeSystem!.ConceptMapUris!.TargetUri.Should().Be("http://terminology.hl7.org/ValueSet/v3-AddressUse");

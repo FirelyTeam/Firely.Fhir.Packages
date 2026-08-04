@@ -295,16 +295,26 @@ namespace Firely.Fhir.Packages
         public DateTime Updated;
 
         /// <summary>
+        /// Version of the lock file format. Absent means the legacy (version 1) format, which stores
+        /// dependencies as a name-keyed object. Version 2 may store them as a list to carry multiple
+        /// versions of the same package.
+        /// </summary>
+        [JsonProperty(PropertyName = "lockFileVersion", NullValueHandling = NullValueHandling.Ignore)]
+        public int? LockFileVersion;
+
+        /// <summary>
         /// Package Dependencies
         /// </summary>
         [JsonProperty(PropertyName = "dependencies")]
-        public Dictionary<string, string?>? PackageReferences;
+        [JsonConverter(typeof(LockFileDependencyListConverter))]
+        public List<LockFileDependency>? PackageReferences;
 
         /// <summary>
         /// Dependencies that are missing
         /// </summary>
         [JsonProperty(PropertyName = "missing")]
-        public Dictionary<string, string?>? MissingDependencies;
+        [JsonConverter(typeof(LockFileDependencyListConverter))]
+        public List<LockFileDependency>? MissingDependencies;
     }
 
 
@@ -590,8 +600,8 @@ namespace Firely.Fhir.Packages
         public static IEnumerable<PackageReference> GetPackageReferences(this LockFileJson dto)
         {
             return dto.PackageReferences == null
-                ? Enumerable.Empty<PackageReference>()
-                : dto.PackageReferences.Select(i => (PackageReference)i);
+                ? []
+                : dto.PackageReferences.ToPackageReferences();
         }
 
         /// <summary>

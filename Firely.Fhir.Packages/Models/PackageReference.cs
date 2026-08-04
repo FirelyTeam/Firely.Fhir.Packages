@@ -24,6 +24,13 @@ namespace Firely.Fhir.Packages
         public string? Version;
 
         /// <summary>
+        /// Optional local alias, from an npm-style <c>alias@npm:name</c> dependency. When set, this reference
+        /// is an explicit request for this specific version regardless of conflict-resolution strategy.
+        /// <see cref="Name"/> always holds the real package name.
+        /// </summary>
+        public string? Alias;
+
+        /// <summary>
         /// Provide the name and optionally the version of the package. 
         /// </summary>
         /// <param name="name">The package name may include the (exact) version if separated with an at @ sign.</param>
@@ -37,11 +44,13 @@ namespace Firely.Fhir.Packages
         /// <param name="scope">An optional package scope</param>
         /// <param name="name">The package name may include the (exact) version if separated with an at @ sign.</param>
         /// <param name="version">Optionally the exact version of the package</param>
-        public PackageReference(string? scope, string name, string? version)
+        /// <param name="alias">Optional npm-style local alias (see <see cref="Alias"/>)</param>
+        public PackageReference(string? scope, string name, string? version, string? alias = null)
         {
             this.Scope = scope;
             this.Name = name;
             this.Version = version;
+            this.Alias = alias;
         }
 
         public string Moniker => $"{Name}@{Version}";

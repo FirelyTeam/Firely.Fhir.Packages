@@ -9,76 +9,51 @@
 
 #nullable enable
 
-using SemanticVersioning;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Firely.Fhir.Packages
 {
     public static class PackageReferenceExtensions
     {
-        internal static Dictionary<string, string?> ToDictionary(this IEnumerable<PackageReference> references)
-        {
-            var dict = new Dictionary<string, string?>();
-            foreach (var reference in references.Where(r => r.Name is not null))
-            {
-                if (dict.ContainsKey(reference.Name!))
-                {
-                    // If the key already exists, keep the highest version
-                    var existingVersion = dict[reference.Name!];
-                    var newVersion = reference.Version;
-                    
-                    var versionExisting = Version.TryParse(existingVersion, out var resultExisting) ? resultExisting : new Version("0.0.0");
-                    var versionNew = Version.TryParse(newVersion, out var resultNew) ? resultNew : new Version("0.0.0");
-                    
-                    if (versionNew > versionExisting)
-                    {
-                        dict[reference.Name!] = newVersion;
-                    }
-                }
-                else
-                {
-                    dict.Add(reference.Name!, reference.Version);
-                }
-            }
-            return dict;
-        }
-
-        internal static Dictionary<string, string?> ToDictionary(this IEnumerable<PackageDependency> references)
-        {
-            var dict = new Dictionary<string, string?>();
-            foreach (var reference in references)
-            {
-                // If the key already exists, keep the first occurrence.
-                // PackageDependency.Range is a version range (e.g., "3.x", "3.1 - 3.3"), 
-                // not a specific version, so there's no meaningful way to determine which
-                // is "higher". Keeping the first occurrence maintains consistency with
-                // the order they appear in the package manifest.
-                if (!dict.ContainsKey(reference.Name))
-                {
-                    dict.Add(reference.Name, reference.Range);
-                }
-            }
-            return dict;
-        }
-
-        internal static List<PackageReference> ToPackageReferences(this Dictionary<string, string?> dict)
+        internal static List<PackageReference> ToPackageReferences(this IEnumerable<LockFileDependency> dependencies)
         {
             var list = new List<PackageReference>();
-
-            foreach (var item in dict)
+            foreach (var dependency in dependencies)
             {
-                list.Add(item); // implicit converion
+                if (dependency.Name is null) continue;
+                list.Add(new PackageReference { Name = dependency.Name, Version = dependency.Version, Alias = dependency.Alias });
             }
             return list;
         }
 
-        internal static List<PackageDependency> ToPackageDependencies(this Dictionary<string, string?> dict)
+        internal static List<PackageDependency> ToPackageDependencies(this IEnumerable<LockFileDependency> dependencies)
         {
             var list = new List<PackageDependency>();
-            foreach (var item in dict)
+            foreach (var dependency in dependencies)
             {
-                list.Add(item); // implicit converion
+                if (dependency.Name is null) continue;
+                list.Add(new PackageDependency(dependency.Name, dependency.Version) { Alias = dependency.Alias });
+            }
+            return list;
+        }
+
+        internal static List<LockFileDependency> ToLockFileDependencies(this IEnumerable<PackageReference> references)
+        {
+            var list = new List<LockFileDependency>();
+            foreach (var reference in references)
+            {
+                if (reference.Name is null) continue;
+                list.Add(new LockFileDependency(reference.Name, reference.Version, reference.Alias));
+            }
+            return list;
+        }
+
+        internal static List<LockFileDependency> ToLockFileDependencies(this IEnumerable<PackageDependency> dependencies)
+        {
+            var list = new List<LockFileDependency>();
+            foreach (var dependency in dependencies)
+            {
+                list.Add(new LockFileDependency(dependency.Name, dependency.Range, dependency.Alias));
             }
             return list;
         }
