@@ -35,6 +35,22 @@ var resolver = new FhirPackageSource(ModelInfo.ModelInspector,
     tokenProvider: _ => Task.FromResult(myJwtToken));
 ```
 
+### Why a token provider instead of a token string?
+Taking a function instead of a plain string has a few advantages:
+
+* **Tokens expire.** A JWT access token is only valid for a limited time. A token passed as a string would be frozen at
+  the moment the client was created: in a long-running application (for example a service that resolves artifacts through a
+  `FhirPackageSource` for hours or days), every request would start failing once that token expires. Because the provider is
+  invoked for every request, it can hand out a refreshed token at any time, without recreating the client or package source.
+* **Tokens can be fetched lazily.** The token is not needed until the first request is actually made. A provider lets you
+  postpone (or entirely skip) acquiring a token until it is really used — relevant for a `FhirPackageSource`, which contacts
+  the package server lazily too.
+* **It composes with your auth infrastructure.** The provider can delegate to whatever manages credentials in your
+  application (a token cache, an OAuth client, a secret store) instead of forcing you to pre-resolve a string.
+
+If you do have a fixed, short-lived token at hand — a one-off script or CLI invocation — simply wrap it:
+`tokenProvider: _ => Task.FromResult(myJwtToken)`.
+
 Obtaining and refreshing the token itself (for Simplifier: the `/token` and `/token/refresh` endpoints) is the caller's
 responsibility; this library only attaches the token to its requests.
 
