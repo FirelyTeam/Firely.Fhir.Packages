@@ -28,11 +28,30 @@ namespace Firely.Fhir.Packages
         /// <param name="source">The package source the client using</param>
         /// <param name="npm">Whether the source is a NPM package source or not</param>
         /// <param name="insecure">Whether to use an insecure connection</param>
+        /// <returns>A newly created package client</returns>
+        public static PackageClient Create(string source, bool npm = false, bool insecure = false)
+        {
+            return create(source, npm, insecure, tokenProvider: null);
+        }
+
+        /// <summary>
+        /// Creates a package client that authenticates against the package source with a Bearer token
+        /// </summary>
+        /// <param name="source">The package source the client using</param>
         /// <param name="tokenProvider">A function that supplies the Bearer token used to authenticate against the
         /// package source, for example a private package feed. The function is invoked for every request, so it can
         /// supply a refreshed token when a previous one has expired.</param>
+        /// <param name="npm">Whether the source is a NPM package source or not</param>
+        /// <param name="insecure">Whether to use an insecure connection</param>
         /// <returns>A newly created package client</returns>
-        public static PackageClient Create(string source, bool npm = false, bool insecure = false, Func<CancellationToken, Task<string>>? tokenProvider = null)
+        public static PackageClient Create(string source, Func<CancellationToken, Task<string>> tokenProvider, bool npm = false, bool insecure = false)
+        {
+            if (tokenProvider is null) throw new ArgumentNullException(nameof(tokenProvider));
+
+            return create(source, npm, insecure, tokenProvider);
+        }
+
+        private static PackageClient create(string source, bool npm, bool insecure, Func<CancellationToken, Task<string>>? tokenProvider)
         {
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
 

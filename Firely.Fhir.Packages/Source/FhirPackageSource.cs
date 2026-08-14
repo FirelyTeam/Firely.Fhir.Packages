@@ -134,7 +134,9 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
 
     private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames, Func<CancellationToken, Task<string>>? tokenProvider = null)
     {
-        var client = PackageClient.Create(packageServer, tokenProvider: tokenProvider);
+        var client = tokenProvider is null
+            ? PackageClient.Create(packageServer)
+            : PackageClient.Create(packageServer, tokenProvider);
         var scopePath = getScopePath();
         _ = await initialize(scopePath, "Firely SDK Temp Package", "0.1.0", "Firely SDK", "Temporary package used for resolving artifacts from its dependencies", packageNames);
         return await createContext(scopePath, client);
