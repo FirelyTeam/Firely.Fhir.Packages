@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>Reads FHIR artifacts (Profiles, ValueSets, ...) from one or multiple FHIR packages. This functionaly is FHIR version agnostic.</summary>
@@ -40,6 +41,20 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     public FhirPackageSource(ModelInspector provider, string packageServer, string[] packageNames)
     {
         _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(packageServer, packageNames)));
+        _provider = provider;
+    }
+
+    /// <summary>Create a new <see cref="FhirPackageSource"/> instance to read FHIR artifacts from one or multiple FHIR packages of a specific FHIR version,
+    /// retrieved from a package server that requires authentication, such as a private Simplifier.net package feed
+    /// (e.g. <c>https://packages.simplifier.net/feeds/{feedname}</c>).</summary>
+    /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
+    /// <param name="packageServer">The package server from which to retrieve the FHIR packages</param>
+    /// <param name="packageNames">The FHIR packages which are used to resolve artifacts from</param>
+    /// <param name="tokenProvider">A function that supplies the Bearer token used to authenticate against the package server.
+    /// The function is invoked for every request, so it can supply a refreshed token when a previous one has expired.</param>
+    public FhirPackageSource(ModelInspector provider, string packageServer, string[] packageNames, Func<CancellationToken, Task<string>> tokenProvider)
+    {
+        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(packageServer, packageNames, tokenProvider)));
         _provider = provider;
     }
 
@@ -117,9 +132,9 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
             $"hl7.fhir.uv.tools.{fhirVersionLabel}@{toolsVersion}"];
     }
 
-    private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames)
+    private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames, Func<CancellationToken, Task<string>>? tokenProvider = null)
     {
-        var client = PackageClient.Create(packageServer);
+        var client = PackageClient.Create(packageServer, tokenProvider: tokenProvider);
         var scopePath = getScopePath();
         _ = await initialize(scopePath, "Firely SDK Temp Package", "0.1.0", "Firely SDK", "Temporary package used for resolving artifacts from its dependencies", packageNames);
         return await createContext(scopePath, client);

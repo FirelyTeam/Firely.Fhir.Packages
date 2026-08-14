@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -27,14 +28,19 @@ namespace Firely.Fhir.Packages
         /// <param name="source">The package source the client using</param>
         /// <param name="npm">Whether the source is a NPM package source or not</param>
         /// <param name="insecure">Whether to use an insecure connection</param>
+        /// <param name="tokenProvider">A function that supplies the Bearer token used to authenticate against the
+        /// package source, for example a private package feed. The function is invoked for every request, so it can
+        /// supply a refreshed token when a previous one has expired.</param>
         /// <returns>A newly created package client</returns>
-        public static PackageClient Create(string source, bool npm = false, bool insecure = false)
+        public static PackageClient Create(string source, bool npm = false, bool insecure = false, Func<CancellationToken, Task<string>>? tokenProvider = null)
         {
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
-            var httpClient = insecure ? Testing.GetInsecureClient() : new HttpClient();
 
-            return new PackageClient(urlprovider, httpClient);
+            HttpMessageHandler handler = insecure ? Testing.GetInsecureHandler() : new HttpClientHandler();
+            if (tokenProvider is not null)
+                handler = new BearerTokenHandler(tokenProvider, handler);
 
+            return new PackageClient(urlprovider, new HttpClient(handler, disposeHandler: true));
         }
 
         /// <summary>

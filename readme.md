@@ -15,6 +15,29 @@ This library provides:
 * Installation of FHIR packages on your machine
 * Helper classes to create the correct manifest and index files for FHIR packages
 
+## Authenticating against a private package feed
+Package servers that require authentication, such as private [Simplifier.net][simplifier] package feeds, are supported by
+passing a token provider. The provider is a function that returns a Bearer token (for Simplifier, a JWT access token) and is
+invoked for every request, so long-running applications can return a refreshed token once the previous one has expired.
+
+A private Simplifier feed is addressed as `https://packages.simplifier.net/feeds/{feedname}`, and packages within it live at
+`/{package}/{version}`.
+
+```csharp
+// A package client for a private feed:
+var client = PackageClient.Create("https://packages.simplifier.net/feeds/myfeed",
+    tokenProvider: _ => Task.FromResult(myJwtToken));
+
+// Or resolve artifacts directly from packages on a private feed:
+var resolver = new FhirPackageSource(ModelInfo.ModelInspector,
+    "https://packages.simplifier.net/feeds/myfeed",
+    ["mypackage@1.0.0"],
+    tokenProvider: _ => Task.FromResult(myJwtToken));
+```
+
+Obtaining and refreshing the token itself (for Simplifier: the `/token` and `/token/refresh` endpoints) is the caller's
+responsibility; this library only attaches the token to its requests.
+
 ## Nuget
 You can use the library by downloading the [nuget package][nuget]
 
