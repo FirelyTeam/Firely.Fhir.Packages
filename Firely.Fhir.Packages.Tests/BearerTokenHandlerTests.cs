@@ -25,7 +25,7 @@ namespace Firely.Fhir.Packages.Tests
         public async Task AddsBearerTokenToRequest()
         {
             var inner = new CapturingHandler();
-            using var client = new HttpClient(new BearerTokenHandler(_ => Task.FromResult("my-token"), inner));
+            using var client = new HttpClient(new BearerTokenHandler(() => Task.FromResult("my-token"), inner));
 
             await client.GetAsync("https://packages.example.org/feeds/private/mypackage/1.0.0");
 
@@ -40,7 +40,7 @@ namespace Firely.Fhir.Packages.Tests
         {
             var counter = 0;
             var inner = new CapturingHandler();
-            using var client = new HttpClient(new BearerTokenHandler(_ => Task.FromResult($"token-{++counter}"), inner));
+            using var client = new HttpClient(new BearerTokenHandler(() => Task.FromResult($"token-{++counter}"), inner));
 
             await client.GetAsync("https://packages.example.org/first");
             inner.LastRequest!.Headers.Authorization!.Parameter.Should().Be("token-1");
@@ -53,7 +53,7 @@ namespace Firely.Fhir.Packages.Tests
         public async Task SkipsAuthorizationHeaderWhenTokenIsEmpty()
         {
             var inner = new CapturingHandler();
-            using var client = new HttpClient(new BearerTokenHandler(_ => Task.FromResult(string.Empty), inner));
+            using var client = new HttpClient(new BearerTokenHandler(() => Task.FromResult(string.Empty), inner));
 
             await client.GetAsync("https://packages.example.org/anything");
 
@@ -64,7 +64,7 @@ namespace Firely.Fhir.Packages.Tests
         public void PackageClientCreateAcceptsTokenProvider()
         {
             using var client = (System.IDisposable)PackageClient.Create("https://packages.example.org/feeds/private",
-                tokenProvider: _ => Task.FromResult("my-token"));
+                tokenProvider: () => Task.FromResult("my-token"));
 
             client.Should().NotBeNull();
         }

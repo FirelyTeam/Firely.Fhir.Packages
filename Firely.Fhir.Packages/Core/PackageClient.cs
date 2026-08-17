@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -44,14 +43,14 @@ namespace Firely.Fhir.Packages
         /// <param name="npm">Whether the source is a NPM package source or not</param>
         /// <param name="insecure">Whether to use an insecure connection</param>
         /// <returns>A newly created package client</returns>
-        public static PackageClient Create(string source, Func<CancellationToken, Task<string>> tokenProvider, bool npm = false, bool insecure = false)
+        public static PackageClient Create(string source, Func<Task<string>> tokenProvider, bool npm = false, bool insecure = false)
         {
             if (tokenProvider is null) throw new ArgumentNullException(nameof(tokenProvider));
 
             return create(source, npm, insecure, tokenProvider);
         }
 
-        private static PackageClient create(string source, bool npm, bool insecure, Func<CancellationToken, Task<string>>? tokenProvider)
+        private static PackageClient create(string source, bool npm, bool insecure, Func<Task<string>>? tokenProvider)
         {
             var urlprovider = npm ? (IPackageUrlProvider)new NodePackageUrlProvider(source) : new FhirPackageUrlProvider(source);
 

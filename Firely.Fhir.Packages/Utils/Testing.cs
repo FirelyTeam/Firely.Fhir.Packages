@@ -23,11 +23,6 @@ namespace Firely.Fhir.Packages
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
             };
         }
-
-        internal static HttpClient GetInsecureClient()
-        {
-            return new HttpClient(GetInsecureHandler(), true);
-        }
     }
 }
 

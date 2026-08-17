@@ -24,9 +24,9 @@ namespace Firely.Fhir.Packages
     /// </summary>
     internal class BearerTokenHandler : DelegatingHandler
     {
-        private readonly Func<CancellationToken, Task<string>> _tokenProvider;
+        private readonly Func<Task<string>> _tokenProvider;
 
-        public BearerTokenHandler(Func<CancellationToken, Task<string>> tokenProvider, HttpMessageHandler innerHandler)
+        public BearerTokenHandler(Func<Task<string>> tokenProvider, HttpMessageHandler innerHandler)
             : base(innerHandler)
         {
             _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
@@ -34,7 +34,7 @@ namespace Firely.Fhir.Packages
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var token = await _tokenProvider(cancellationToken).ConfigureAwait(false);
+            var token = await _tokenProvider().ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(token))
             {

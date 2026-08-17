@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>Reads FHIR artifacts (Profiles, ValueSets, ...) from one or multiple FHIR packages. This functionaly is FHIR version agnostic.</summary>
@@ -52,7 +51,7 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     /// <param name="packageNames">The FHIR packages which are used to resolve artifacts from</param>
     /// <param name="tokenProvider">A function that supplies the Bearer token used to authenticate against the package server.
     /// The function is invoked for every request, so it can supply a refreshed token when a previous one has expired.</param>
-    public FhirPackageSource(ModelInspector provider, string packageServer, string[] packageNames, Func<CancellationToken, Task<string>> tokenProvider)
+    public FhirPackageSource(ModelInspector provider, string packageServer, string[] packageNames, Func<Task<string>> tokenProvider)
     {
         _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(packageServer, packageNames, tokenProvider)));
         _provider = provider;
@@ -132,7 +131,7 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
             $"hl7.fhir.uv.tools.{fhirVersionLabel}@{toolsVersion}"];
     }
 
-    private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames, Func<CancellationToken, Task<string>>? tokenProvider = null)
+    private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames, Func<Task<string>>? tokenProvider = null)
     {
         var client = tokenProvider is null
             ? PackageClient.Create(packageServer)
