@@ -40,6 +40,11 @@ A few things to be aware of:
 * **Token expiry**: a token set as a default request header is frozen at the moment you set it. That is fine for short-lived
   processes, but in a long-running application a JWT will expire. In that case, attach your own `DelegatingHandler` to the
   `HttpClient` that supplies (and refreshes) the token per request.
+* **Caching**: downloaded packages are stored in the machine-wide FHIR package cache (`~/.fhir/packages`), keyed by package
+  name and version only — the package server is not part of the key. This means a package that is already present in the
+  cache (for example, downloaded earlier from the public registry) is used as-is without contacting your private feed, and
+  conversely, packages downloaded from a private feed become available from the cache to other tools and users on the same
+  machine, without authentication. Keep this in mind when working with private packages on shared machines.
 * Obtaining and refreshing the token itself (for Simplifier: the `/token` and `/token/refresh` endpoints) is the caller's
   responsibility; this library only sends the credentials you configured with its requests.
 
