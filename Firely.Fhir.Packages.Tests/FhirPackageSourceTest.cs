@@ -3,6 +3,7 @@ using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Specification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using SemVer = SemanticVersioning.Version;
 
@@ -43,6 +44,18 @@ public class CommonFhirPackageSourceTests
     {
         //check StructureDefinition from US Core
         var pat = await _clientResolver.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient").ConfigureAwait(false);
+        pat.Should().NotBeNull();
+        pat.Should().Contain("\"url\":\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient\"");
+    }
+
+    [TestMethod, TestCategory("IntegrationTest")]
+    public async Task TestResolveByCanonicalUriUsingInjectedPackageClient()
+    {
+        //a caller-supplied PackageClient, as used to access package servers that require authentication
+        var client = new PackageClient(new FhirPackageUrlProvider(PACKAGESERVER), new HttpClient());
+        var resolver = new FhirPackageSource(new ModelInspector(FhirRelease.STU3), client, [US_CORE_PACKAGE]);
+
+        var pat = await resolver.ResolveByCanonicalUriAsyncAsString("http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient").ConfigureAwait(false);
         pat.Should().NotBeNull();
         pat.Should().Contain("\"url\":\"http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient\"");
     }

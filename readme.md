@@ -16,43 +16,32 @@ This library provides:
 * Helper classes to create the correct manifest and index files for FHIR packages
 
 ## Authenticating against a private package feed
-Package servers that require authentication, such as private [Simplifier.net][simplifier] package feeds, are supported by
-passing a token provider. The provider is a function that returns a Bearer token (for Simplifier, a JWT access token) and is
-invoked for every request, so long-running applications can return a refreshed token once the previous one has expired.
+Package servers that require authentication, such as private [Simplifier.net][simplifier] package feeds, can be accessed by
+constructing a `PackageClient` with your own `HttpClient` and passing it to `FhirPackageSource`. Because you control the
+`HttpClient`, any authentication scheme is possible: a Bearer token (for Simplifier, a JWT access token), basic
+authentication, an API key header, or a custom `DelegatingHandler`.
 
 A private Simplifier feed is addressed as `https://packages.simplifier.net/feeds/{feedname}`, and packages within it live at
 `/{package}/{version}`.
 
 ```csharp
-// A package client for a private feed:
-var client = PackageClient.Create("https://packages.simplifier.net/feeds/myfeed",
-    tokenProvider: _ => Task.FromResult(myJwtToken));
+var httpClient = new HttpClient();
+httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", myJwtToken);
 
-// Or resolve artifacts directly from packages on a private feed:
-var resolver = new FhirPackageSource(ModelInfo.ModelInspector,
-    "https://packages.simplifier.net/feeds/myfeed",
-    ["mypackage@1.0.0"],
-    tokenProvider: _ => Task.FromResult(myJwtToken));
+var client = new PackageClient(new FhirPackageUrlProvider("https://packages.simplifier.net/feeds/myfeed"), httpClient);
+
+var resolver = new FhirPackageSource(ModelInfo.ModelInspector, client, ["mypackage@1.0.0"]);
 ```
 
-### Why a token provider instead of a token string?
-Taking a function instead of a plain string has a few advantages:
+A few things to be aware of:
 
-* **Tokens expire.** A JWT access token is only valid for a limited time. A token passed as a string would be frozen at
-  the moment the client was created: in a long-running application (for example a service that resolves artifacts through a
-  `FhirPackageSource` for hours or days), every request would start failing once that token expires. Because the provider is
-  invoked for every request, it can hand out a refreshed token at any time, without recreating the client or package source.
-* **Tokens can be fetched lazily.** The token is not needed until the first request is actually made. A provider lets you
-  postpone (or entirely skip) acquiring a token until it is really used — relevant for a `FhirPackageSource`, which contacts
-  the package server lazily too.
-* **It composes with your auth infrastructure.** The provider can delegate to whatever manages credentials in your
-  application (a token cache, an OAuth client, a secret store) instead of forcing you to pre-resolve a string.
-
-If you do have a fixed, short-lived token at hand — a one-off script or CLI invocation — simply wrap it:
-`tokenProvider: _ => Task.FromResult(myJwtToken)`.
-
-Obtaining and refreshing the token itself (for Simplifier: the `/token` and `/token/refresh` endpoints) is the caller's
-responsibility; this library only attaches the token to its requests.
+* **Lifetime**: `FhirPackageSource` downloads its packages lazily, on first use. Do not dispose the `PackageClient` (or the
+  `HttpClient` it wraps) before the source has resolved its packages.
+* **Token expiry**: a token set as a default request header is frozen at the moment you set it. That is fine for short-lived
+  processes, but in a long-running application a JWT will expire. In that case, attach your own `DelegatingHandler` to the
+  `HttpClient` that supplies (and refreshes) the token per request.
+* Obtaining and refreshing the token itself (for Simplifier: the `/token` and `/token/refresh` endpoints) is the caller's
+  responsibility; this library only sends the credentials you configured with its requests.
 
 ## Nuget
 You can use the library by downloading the [nuget package][nuget]

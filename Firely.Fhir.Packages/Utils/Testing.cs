@@ -15,18 +15,24 @@ namespace Firely.Fhir.Packages
 {
     internal static class Testing
     {
-        internal static HttpClientHandler GetInsecureHandler()
+        internal static HttpClient GetInsecureClient()
         {
             // for testing without proper certificate
-            return new HttpClientHandler
+#if !NET452
+            var httpClientHandler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
             };
-        }
+            var client = new HttpClient(httpClientHandler, true);
+#else
+            // [WMR 20181102] HttpClientHandler and HttpClient are IDisposable ...
 
-        internal static HttpClient GetInsecureClient()
-        {
-            return new HttpClient(GetInsecureHandler(), true);
+            // ServerCertificateCustomValidationCallback needs NET471
+            var hander = new WebRequestHandler();
+            hander.ServerCertificateValidationCallback = (message, cert, chain, errors) => true;
+            var client = new HttpClient(hander, true);
+#endif
+            return client;
         }
     }
 }
