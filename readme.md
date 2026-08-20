@@ -15,6 +15,39 @@ This library provides:
 * Installation of FHIR packages on your machine
 * Helper classes to create the correct manifest and index files for FHIR packages
 
+## Authenticating against a private package feed
+Package servers that require authentication, such as private [Simplifier.net][simplifier] package feeds, can be accessed by
+constructing a `PackageClient` with your own `HttpClient` and passing it to `FhirPackageSource`. Because you control the
+`HttpClient`, any authentication scheme is possible: a Bearer token (for Simplifier, a JWT access token), basic
+authentication, an API key header, or a custom `DelegatingHandler`.
+
+A private Simplifier feed is addressed as `https://packages.simplifier.net/feeds/{feedname}`, and packages within it live at
+`/{package}/{version}`.
+
+```csharp
+var httpClient = new HttpClient();
+httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", myJwtToken);
+
+var client = new PackageClient(new FhirPackageUrlProvider("https://packages.simplifier.net/feeds/myfeed"), httpClient);
+
+var resolver = new FhirPackageSource(ModelInfo.ModelInspector, client, ["mypackage@1.0.0"]);
+```
+
+A few things to be aware of:
+
+* **Lifetime**: `FhirPackageSource` downloads its packages lazily, on first use. Do not dispose the `PackageClient` (or the
+  `HttpClient` it wraps) before the source has resolved its packages.
+* **Token expiry**: a token set as a default request header is frozen at the moment you set it. That is fine for short-lived
+  processes, but in a long-running application a JWT will expire. In that case, attach your own `DelegatingHandler` to the
+  `HttpClient` that supplies (and refreshes) the token per request.
+* **Caching**: downloaded packages are stored in the machine-wide FHIR package cache (`~/.fhir/packages`), keyed by package
+  name and version only — the package server is not part of the key. This means a package that is already present in the
+  cache (for example, downloaded earlier from the public registry) is used as-is without contacting your private feed, and
+  conversely, packages downloaded from a private feed become available from the cache to other tools and users on the same
+  machine, without authentication. Keep this in mind when working with private packages on shared machines.
+* Obtaining and refreshing the token itself (for Simplifier: the `/token` and `/token/refresh` endpoints) is the caller's
+  responsibility; this library only sends the credentials you configured with its requests.
+
 ## Nuget
 You can use the library by downloading the [nuget package][nuget]
 

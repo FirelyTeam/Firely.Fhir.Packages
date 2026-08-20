@@ -43,6 +43,23 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         _provider = provider;
     }
 
+    /// <summary>Create a new <see cref="FhirPackageSource"/> instance to read FHIR artifacts from one or multiple FHIR packages of a specific FHIR version,
+    /// retrieved with a caller-supplied <see cref="PackageClient"/>. Use this to access package servers that require authentication,
+    /// such as a private Simplifier.net package feed (e.g. <c>https://packages.simplifier.net/feeds/{feedname}</c>), by constructing
+    /// the client with an <see cref="System.Net.Http.HttpClient"/> that carries the required credentials.</summary>
+    /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
+    /// <param name="client">The package client used to contact the package server. The caller remains responsible for its lifetime:
+    /// packages are downloaded lazily on first use, so the client (and the <see cref="System.Net.Http.HttpClient"/> it wraps) must not
+    /// be disposed before this source has resolved its packages.</param>
+    /// <param name="packageNames">The FHIR packages which are used to resolve artifacts from</param>
+    public FhirPackageSource(ModelInspector provider, PackageClient client, string[] packageNames)
+    {
+        if (client is null) throw new ArgumentNullException(nameof(client));
+
+        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(client, packageNames)));
+        _provider = provider;
+    }
+
     // ReSharper disable MemberCanBePrivate.Global
     // List the "core" packages for each FHIR version, these are the packages that contain the base FHIR resources and definitions, and are typically used as dependencies for other packages. Terminology expansions, tools, and extensions packages are included as well.
     // The extensions and tools packages use "latest" by default; use the CreateCorePackageSource overload with explicit version parameters to pin specific versions.
@@ -119,7 +136,11 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
 
     private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames)
     {
-        var client = PackageClient.Create(packageServer);
+        return await createPackageContextFromExternalSource(PackageClient.Create(packageServer), packageNames);
+    }
+
+    private static async Task<PackageContext> createPackageContextFromExternalSource(PackageClient client, string[] packageNames)
+    {
         var scopePath = getScopePath();
         _ = await initialize(scopePath, "Firely SDK Temp Package", "0.1.0", "Firely SDK", "Temporary package used for resolving artifacts from its dependencies", packageNames);
         return await createContext(scopePath, client);
