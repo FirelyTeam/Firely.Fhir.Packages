@@ -11,7 +11,18 @@ namespace Firely.Fhir.Packages
     /// </summary>
     public struct PackageDependency
     {
-        public string Name;
+        private string _name;
+
+        /// <summary>
+        /// The package name (always normalized to lowercase by the constructor).
+        /// </summary>
+        public string Name
+        {
+            readonly get => _name;
+            [Obsolete("Setting Name directly bypasses lowercase normalization and can produce an invalid, inconsistent package dependency. Construct a new PackageDependency using the constructor instead, which normalizes the name.")]
+            set => _name = value;
+        }
+
         public string Range;  // 3.x, 3.1 - 3.3, 1.1 | 1.2
 
         /// <summary>
@@ -31,7 +42,8 @@ namespace Firely.Fhir.Packages
             // happens to use - typed on a command line, or published in someone else's
             // manifest - cannot leak into manifests, lock files or cache folder names, and
             // cannot make the same package compare unequal to itself.
-            this.Name = name?.ToLowerInvariant()!;
+            // Assigned directly to the backing field, bypassing the (obsolete) Name setter.
+            _name = name?.ToLowerInvariant()!;
             this.Range = range ?? "latest";
         }
 

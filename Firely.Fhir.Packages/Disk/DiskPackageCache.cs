@@ -127,11 +127,8 @@ namespace Firely.Fhir.Packages
         {
             var idx = foldername.IndexOf('#');
 
-            return new PackageReference
-            {
-                Name = foldername.Substring(0, idx),
-                Version = foldername.Substring(idx + 1)
-            };
+            // Constructed, not object-initialised: the constructor is what lowercases Name.
+            return new PackageReference(foldername.Substring(0, idx), foldername.Substring(idx + 1));
         }
 
         /// <summary>

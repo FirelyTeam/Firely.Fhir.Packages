@@ -72,7 +72,7 @@ namespace Firely.Fhir.Packages.Tests
             // keep alongside it.
             var closure = new PackageClosure();
 
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" })
+            closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" })
                 .Should().BeTrue();
             closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0"))
                 .Should().BeFalse("this is the same resolved content as the existing aliased entry");
@@ -96,7 +96,7 @@ namespace Firely.Fhir.Packages.Tests
         public void AliasedReferenceRejectsExactDuplicate()
         {
             var closure = new PackageClosure();
-            var aliased = new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" };
+            var aliased = new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" };
 
             closure.Add(aliased).Should().BeTrue();
             closure.Add(aliased).Should().BeFalse();
@@ -111,9 +111,9 @@ namespace Firely.Fhir.Packages.Tests
             // only the first one reached should be kept, to avoid duplicating restore work and index entries.
             var closure = new PackageClosure();
 
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscoreA" })
+            closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscoreA" })
                 .Should().BeTrue();
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscoreB" })
+            closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscoreB" })
                 .Should().BeFalse("a second alias for the same resolved package is a duplicate, not a new entry");
 
             closure.References.Should().ContainSingle()
@@ -156,10 +156,10 @@ namespace Firely.Fhir.Packages.Tests
             // it returns the highest version among all matching entries, whichever order they arrived in.
             var addedPlainFirst = new PackageClosure();
             addedPlainFirst.Add(new PackageReference("hl7.fhir.us.core", "7.0.0"));
-            addedPlainFirst.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
+            addedPlainFirst.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" });
 
             var addedAliasedFirst = new PackageClosure();
-            addedAliasedFirst.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
+            addedAliasedFirst.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" });
             addedAliasedFirst.Add(new PackageReference("hl7.fhir.us.core", "7.0.0"));
 
             addedPlainFirst.Find("hl7.fhir.us.core", out var refA).Should().BeTrue();
@@ -176,7 +176,7 @@ namespace Firely.Fhir.Packages.Tests
             // higher version, and it must win over the plain (non-aliased) one.
             var closure = new PackageClosure();
             closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0"));
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "7.0.0", Alias = "uscore700" });
+            closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0") { Alias = "uscore700" });
 
             closure.Find("hl7.fhir.us.core", out var reference).Should().BeTrue();
 
@@ -187,8 +187,8 @@ namespace Firely.Fhir.Packages.Tests
         public void FindReturnsHighestAmongMultipleAliasedVersions()
         {
             var closure = new PackageClosure();
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "7.0.0", Alias = "uscore700" });
+            closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" });
+            closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0") { Alias = "uscore700" });
 
             closure.Find("hl7.fhir.us.core", out var reference).Should().BeTrue();
 
@@ -200,7 +200,7 @@ namespace Firely.Fhir.Packages.Tests
         {
             var closure = new PackageClosure();
             closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0"));
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
+            closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" });
             closure.Add(new PackageReference("hl7.fhir.uv.extensions", "1.0.0"));
 
             closure.FindAll("hl7.fhir.us.core")
@@ -214,7 +214,7 @@ namespace Firely.Fhir.Packages.Tests
             var folder = createTempFolder();
             var closure = new PackageClosure();
             closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0"));
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" });
+            closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" });
 
             LockFile.WriteToFolder(closure, folder);
 
@@ -315,7 +315,7 @@ namespace Firely.Fhir.Packages.Tests
 
             closure.Add(new PackageReference("hl7.fhir.us.core", "5.0.0")).Should().BeTrue();
             closure.Add(new PackageReference("hl7.fhir.us.core", "7.0.0")).Should().BeTrue();
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "uscore610" }).Should().BeTrue();
+            closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "uscore610" }).Should().BeTrue();
 
             closure.References
                 .Where(r => r.Name == "hl7.fhir.us.core")
@@ -330,8 +330,8 @@ namespace Firely.Fhir.Packages.Tests
         {
             var closure = new PackageClosure();
 
-            closure.Add(new PackageReference { Name = "hl7.fhir.us.core", Version = "6.1.0", Alias = "myalias" }).Should().BeTrue();
-            closure.Add(new PackageReference { Name = "hl7.fhir.uv.extensions", Version = "1.0.0", Alias = "myalias" }).Should().BeTrue();
+            closure.Add(new PackageReference("hl7.fhir.us.core", "6.1.0") { Alias = "myalias" }).Should().BeTrue();
+            closure.Add(new PackageReference("hl7.fhir.uv.extensions", "1.0.0") { Alias = "myalias" }).Should().BeTrue();
 
             closure.References.Should().HaveCount(2, "identity is (name, version); the alias string is not required to be globally unique");
         }

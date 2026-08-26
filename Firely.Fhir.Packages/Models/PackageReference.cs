@@ -9,6 +9,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages
@@ -20,7 +21,19 @@ namespace Firely.Fhir.Packages
     public struct PackageReference
     {
         public string? Scope;
-        public string? Name; // null means empty reference
+
+        private string? _name;
+
+        /// <summary>
+        /// The package name (always normalized to lowercase by the constructor). Null means an empty reference.
+        /// </summary>
+        public string? Name
+        {
+            readonly get => _name;
+            [Obsolete("Setting Name directly bypasses lowercase normalization and can produce an invalid, inconsistent package reference. Construct a new PackageReference using the constructor instead, which normalizes the name.")]
+            set => _name = value;
+        }
+
         public string? Version;
 
         /// <summary>
@@ -51,7 +64,8 @@ namespace Firely.Fhir.Packages
             // into registry URLs by GetNpmName and NodePackageUrlProvider.
             this.Scope = scope?.ToLowerInvariant();
             // Lowercased for the same reason as PackageDependency.Name - see that constructor.
-            this.Name = name?.ToLowerInvariant();
+            // Assigned directly to the backing field, bypassing the (obsolete) Name setter.
+            _name = name?.ToLowerInvariant();
             this.Version = version;
             this.Alias = alias;
         }
@@ -72,7 +86,7 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// Empty package reference
         /// </summary>
-        public static PackageReference None => new() { Name = null, Version = null };
+        public static PackageReference None => new();
 
         /// <summary>
         /// Returns true if the package isn't found
