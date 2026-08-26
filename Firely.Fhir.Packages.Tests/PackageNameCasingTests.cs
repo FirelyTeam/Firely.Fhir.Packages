@@ -49,6 +49,29 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
+        public void AddDependencyStringOverloadLowercasesTheKey()
+        {
+            // Public overload that writes the dictionary key directly, bypassing PackageDependency.
+            var manifest = new PackageManifest("ft56.e2e", "0.1.0");
+            manifest.AddDependency("KBV.Basis", "1.3.0");
+
+            manifest.Dependencies.Should().ContainKey("kbv.basis");
+            manifest.HasDependency("KBV.Basis").Should().BeTrue("lookups match case-insensitively");
+            manifest.RemoveDependency("KBV.Basis").Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void ScopeIsLowercasedToo()
+        {
+            // An npm scope is part of the package id, and ends up in the registry URL.
+            var scoped = PackageReference.Parse("@MyScope/MyPkg@1.0.0");
+
+            scoped.Scope.Should().Be("myscope");
+            scoped.Name.Should().Be("mypkg");
+            scoped.GetNpmName().Should().Be("@myscope%2Fmypkg");
+        }
+
+        [TestMethod]
         public void CachedContentFolderIsLowercase()
         {
             new DiskPackageCache("cache")

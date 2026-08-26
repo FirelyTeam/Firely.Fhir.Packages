@@ -47,7 +47,9 @@ namespace Firely.Fhir.Packages
         /// <param name="alias">Optional npm-style local alias (see <see cref="Alias"/>)</param>
         public PackageReference(string? scope, string name, string? version, string? alias = null)
         {
-            this.Scope = scope;
+            // Scope as well as Name: an npm scope is part of the package id, and it is emitted
+            // into registry URLs by GetNpmName and NodePackageUrlProvider.
+            this.Scope = scope?.ToLowerInvariant();
             // Lowercased for the same reason as PackageDependency.Name - see that constructor.
             this.Name = name?.ToLowerInvariant();
             this.Version = version;
