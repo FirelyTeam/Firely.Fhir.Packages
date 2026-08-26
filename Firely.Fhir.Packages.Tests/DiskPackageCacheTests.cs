@@ -46,5 +46,27 @@ namespace Firely.Fhir.Packages.Tests
 
         }
 
+        [TestMethod]
+        public void MixedCaseCacheFolderNameIsParsedToLowercaseReference()
+        {
+            // A cache folder created by an older version of the library (or manually) may
+            // still have mixed-case casing in its name. Parsing it back into a PackageReference
+            // must normalise the name to lowercase, just like constructing one directly.
+
+            string root = "testCacheMixedCase";
+            string mixedCasePackage = "MixedCasePackage#2.0.0";
+
+            Directory.CreateDirectory(root);
+            Directory.CreateDirectory($"{root}/{mixedCasePackage}");
+
+            //Test
+            var packageCache = new DiskPackageCache(root);
+            var packages = packageCache.GetPackageReferences().Result;
+            packages.Should().OnlyContain(x => x.Name == "mixedcasepackage" && x.Version == "2.0.0");
+
+            //Cleanup
+            Directory.Delete(root, true);
+        }
+
     }
 }
