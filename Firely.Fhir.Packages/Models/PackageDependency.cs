@@ -27,7 +27,11 @@ namespace Firely.Fhir.Packages
         /// <param name="range">the version range for a specific package, when no version range is specified, the dependency will be on "latest"</param>
         public PackageDependency(string name, string? range = null)
         {
-            this.Name = name;
+            // FHIR/NPM package ids are lowercase. Normalise here so that the casing a caller
+            // happens to use - typed on a command line, or published in someone else's
+            // manifest - cannot leak into manifests, lock files or cache folder names, and
+            // cannot make the same package compare unequal to itself.
+            this.Name = name?.ToLowerInvariant()!;
             this.Range = range ?? "latest";
         }
 

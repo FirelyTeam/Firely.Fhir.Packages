@@ -612,6 +612,10 @@ namespace Firely.Fhir.Packages
         /// <param name="name">Version of the dependency</param>
         public static void AddDependency(this PackageManifest manifest, string name, string? version)
         {
+            // Normalised here too: this overload is public and writes the dictionary key directly,
+            // so it bypasses PackageDependency's constructor. HasDependency and RemoveDependency
+            // already match keys case-insensitively, so lowercasing on the way in is symmetric.
+            name = name?.ToLowerInvariant()!;
             if (version is null) version = "latest";
             if (manifest.Dependencies is null) manifest.Dependencies = new Dictionary<string, string?>();
             if (!manifest.Dependencies.ContainsKey(name))
