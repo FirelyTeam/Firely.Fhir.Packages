@@ -48,7 +48,8 @@ namespace Firely.Fhir.Packages
         public PackageReference(string? scope, string name, string? version, string? alias = null)
         {
             this.Scope = scope;
-            this.Name = name;
+            // Lowercased for the same reason as PackageDependency.Name - see that constructor.
+            this.Name = name?.ToLowerInvariant();
             this.Version = version;
             this.Alias = alias;
         }

@@ -367,7 +367,7 @@ namespace Firely.Fhir.Packages.Tests
             PackageDependency dep = new KeyValuePair<string, string?>("uscore610@NPM:hl7.fhir.us.core", "6.1.0");
 
             dep.Alias.Should().BeNull();
-            dep.Name.Should().Be("uscore610@NPM:hl7.fhir.us.core", "an unrecognized marker leaves the whole key as a literal (if unusual) package name");
+            dep.Name.Should().Be("uscore610@npm:hl7.fhir.us.core", "an unrecognized marker leaves the whole key as a literal (if unusual) package name, lowercased like any other package name");
         }
 
         private static string createTempFolder()

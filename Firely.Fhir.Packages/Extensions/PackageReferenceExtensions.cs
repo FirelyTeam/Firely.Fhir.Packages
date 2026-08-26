@@ -21,7 +21,8 @@ namespace Firely.Fhir.Packages
             foreach (var dependency in dependencies)
             {
                 if (dependency.Name is null) continue;
-                list.Add(new PackageReference { Name = dependency.Name, Version = dependency.Version, Alias = dependency.Alias });
+                // Constructed, not object-initialised: the constructor is what lowercases Name.
+                list.Add(new PackageReference(dependency.Name, dependency.Version) { Alias = dependency.Alias });
             }
             return list;
         }

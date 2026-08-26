@@ -121,7 +121,8 @@ namespace Firely.Fhir.Packages.Tests
 
                         var dependency = prex.PackageDependencies.Single();
 
-                        dependency.Name.Should().Be($"{packageName}{i + 1}");
+                        // Lowercased: package names are normalised on the way in, whatever casing the manifest used.
+                        dependency.Name.Should().Be($"{packageName.ToLowerInvariant()}{i + 1}");
 
                         prex.Message.Should().Be($"Invalid version string: \"{i + 1}.{packageRange}\"");
                     }
