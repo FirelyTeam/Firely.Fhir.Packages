@@ -81,6 +81,35 @@ namespace Firely.Fhir.Packages
         }
 
         /// <summary>
+        /// Compares this dependency to another. The package name is compared case-insensitively, using
+        /// ordinal rules for the reason documented on <see cref="PackageClosure"/>'s name comparison.
+        /// <see cref="Range"/> is compared case-sensitively (semver pre-release identifiers are), and so
+        /// is <see cref="Alias"/> - an alias is a label chosen locally by the manifest author, not a
+        /// registry-wide package id.
+        /// </summary>
+        /// <param name="obj">Object to compare to</param>
+        /// <returns>Result of the comparison</returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj is not PackageDependency dependency) return false;
+
+            return string.Equals(this.Name, dependency.Name, StringComparison.OrdinalIgnoreCase)
+                && this.Range == dependency.Range
+                && this.Alias == dependency.Alias;
+        }
+
+        /// <summary>
+        /// Returns the hashcode of a dependency based on its name, range and alias. The name is hashed
+        /// case-insensitively, to agree with <see cref="Equals(object?)"/>.
+        /// </summary>
+        /// <returns>the hashcode of a dependency based on its name, range and alias</returns>
+        public override int GetHashCode()
+        {
+            var nameHash = Name is null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
+            return (nameHash, Range, Alias).GetHashCode();
+        }
+
+        /// <summary>
         /// Converts a <see cref="PackageDependency"/> to a <see cref="string"/> including the package name and the version
         /// </summary>
         /// <returns>A <see cref="string"/> including the package name and the version</returns>

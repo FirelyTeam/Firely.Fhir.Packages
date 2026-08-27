@@ -68,5 +68,29 @@ namespace Firely.Fhir.Packages.Tests
             Directory.Delete(root, true);
         }
 
+        [TestMethod]
+        public void TestGetVersionsIgnoresFolderCasing()
+        {
+            // The caller's name carries whatever casing they had - read out of a manifest, or typed on
+            // a command line. GetVersions compared it ordinally against the stored names, so a
+            // mixed-case request missed a package that is on disk.
+            string root = "testCacheCasing";
+            Directory.CreateDirectory($"{root}/KBV.Basis#1.3.0");
+
+            try
+            {
+                var packageCache = new DiskPackageCache(root);
+
+                packageCache.GetVersions("kbv.basis").Result
+                    .Should().NotBeNull("the package is on disk, only the casing differs");
+                packageCache.GetVersions("KBV.Basis").Result
+                    .Should().NotBeNull();
+            }
+            finally
+            {
+                Directory.Delete(root, true);
+            }
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
 namespace Firely.Fhir.Packages.Tests
 {
@@ -69,6 +70,60 @@ namespace Firely.Fhir.Packages.Tests
             scoped.Scope.Should().Be("myscope");
             scoped.Name.Should().Be("mypkg");
             scoped.GetNpmName().Should().Be("@myscope%2Fmypkg");
+        }
+
+        [TestMethod]
+        public void ReferenceEqualityIgnoresCaseOnScopeAndName()
+        {
+            // Identity must not depend on where the name came from. A name read out of a third-party
+            // manifest or a cache folder never passes through the normalising constructor.
+            var mixed = new PackageReference(MIXED, "2.1.4");
+            var lower = new PackageReference(LOWER, "2.1.4");
+
+            mixed.Equals(lower).Should().BeTrue();
+            (mixed == lower).Should().BeTrue();
+            (mixed != lower).Should().BeFalse();
+            mixed.GetHashCode().Should().Be(lower.GetHashCode(), "GetHashCode must agree with Equals");
+
+            PackageReference.Parse("@MyScope/pkg@1.0.0")
+                .Should().Be(PackageReference.Parse("@myscope/PKG@1.0.0"));
+        }
+
+        [TestMethod]
+        public void ReferenceEqualityStillDistinguishesScopeAndVersion()
+        {
+            // Scope is part of the package id, and was previously excluded from equality entirely.
+            PackageReference.Parse("@scopea/pkg@1.0.0")
+                .Should().NotBe(PackageReference.Parse("@scopeb/pkg@1.0.0"));
+
+            // Versions are compared case-sensitively: semver pre-release identifiers are.
+            new PackageReference("pkg", "1.0.0-RC1")
+                .Should().NotBe(new PackageReference("pkg", "1.0.0-rc1"));
+        }
+
+        [TestMethod]
+        public void HashSetDeduplicatesCaseVariantReferences()
+        {
+            var set = new HashSet<PackageReference>
+            {
+                new PackageReference(MIXED, "2.1.4"),
+                new PackageReference(LOWER, "2.1.4"),
+            };
+
+            set.Should().HaveCount(1);
+        }
+
+        [TestMethod]
+        public void DependencyEqualityIgnoresCaseOnName()
+        {
+            // PackageDependency had no Equals at all, so it fell back to ordinal struct equality.
+            new PackageDependency(MIXED, "2.x").Equals(new PackageDependency(LOWER, "2.x"))
+                .Should().BeTrue();
+            new PackageDependency(MIXED, "2.x").GetHashCode()
+                .Should().Be(new PackageDependency(LOWER, "2.x").GetHashCode());
+
+            new PackageDependency(LOWER, "2.x").Equals(new PackageDependency(LOWER, "3.x"))
+                .Should().BeFalse("the range is still part of identity");
         }
 
         [TestMethod]

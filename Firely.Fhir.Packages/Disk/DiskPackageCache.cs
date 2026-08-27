@@ -164,7 +164,7 @@ namespace Firely.Fhir.Packages
         public async Task<Versions?> GetVersions(string name)
         {
             var references = await GetPackageReferences();
-            var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
+            var vlist = references.WithName(name).Select(r => r.Version);
 
             if (vlist == null || !vlist.Any())
                 return null;

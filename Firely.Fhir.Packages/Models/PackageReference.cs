@@ -117,18 +117,35 @@ namespace Firely.Fhir.Packages
         }
 
         /// <summary>
-        /// Compare two package references by name and version
+        /// Compare two package references by scope, name and version. Scope and name are compared
+        /// case-insensitively.
         /// </summary>
         /// <param name="A">First package reference</param>
         /// <param name="B">Second package reference</param>
         /// <returns>Result of the comparison</returns>
         public static bool operator ==(PackageReference A, PackageReference B)
         {
-            return (A.Name == B.Name && A.Version == B.Version);
+            return samePart(A.Scope, B.Scope)
+                && samePart(A.Name, B.Name)
+                && A.Version == B.Version;
         }
 
         /// <summary>
-        /// Compare two package references by name and version
+        /// Compares one part of a package id. Package names and scopes are case-insensitive, and are
+        /// compared using ordinal rules for the reason documented on <see cref="PackageClosure"/>'s name
+        /// comparison: culture-aware casing would consider "fhir" and "FHIR" different names under
+        /// Turkish/Azeri dotless-i rules. Versions are deliberately not compared this way - semver
+        /// pre-release identifiers are case-sensitive.
+        /// </summary>
+        private static bool samePart(string? left, string? right)
+            => string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+
+        private static int partHash(string? part)
+            => part is null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(part);
+
+        /// <summary>
+        /// Compare two package references by scope, name and version. Scope and name are compared
+        /// case-insensitively.
         /// </summary>
         /// <param name="A">First package reference</param>
         /// <param name="B">Second package reference</param>
@@ -162,17 +179,17 @@ namespace Firely.Fhir.Packages
             }
 
             var reference = (PackageReference)obj;
-            return this.Name == reference.Name &&
-                   this.Version == reference.Version;
+            return this == reference;
         }
 
         /// <summary>
-        /// Returns the hashcode of a package based on the name and version
+        /// Returns the hashcode of a package based on the scope, name and version. Scope and name are
+        /// hashed case-insensitively, to agree with <see cref="Equals(object?)"/>.
         /// </summary>
-        /// <returns>the hashcode of a package based on the name and version</returns>
+        /// <returns>the hashcode of a package based on the scope, name and version</returns>
         public override int GetHashCode()
         {
-            return (Name, Version).GetHashCode();
+            return (partHash(Scope), partHash(Name), Version).GetHashCode();
         }
 
         /// <summary>
