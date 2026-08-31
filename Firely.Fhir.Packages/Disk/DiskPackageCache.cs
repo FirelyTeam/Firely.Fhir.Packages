@@ -127,11 +127,8 @@ namespace Firely.Fhir.Packages
         {
             var idx = foldername.IndexOf('#');
 
-            return new PackageReference
-            {
-                Name = foldername.Substring(0, idx),
-                Version = foldername.Substring(idx + 1)
-            };
+            // Constructed, not object-initialised: the constructor is what lowercases Name.
+            return new PackageReference(foldername.Substring(0, idx), foldername.Substring(idx + 1));
         }
 
         /// <summary>
@@ -167,7 +164,7 @@ namespace Firely.Fhir.Packages
         public async Task<Versions?> GetVersions(string name)
         {
             var references = await GetPackageReferences();
-            var vlist = references.Where(r => r.Name == name).Select(r => r.Version);
+            var vlist = references.WithName(name).Select(r => r.Version);
 
             if (vlist == null || !vlist.Any())
                 return null;
