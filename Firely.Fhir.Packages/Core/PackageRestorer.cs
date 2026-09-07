@@ -95,6 +95,8 @@ namespace Firely.Fhir.Packages
         {
             try
             {
+                validateRange(dependency);
+
                 var reference = await _context.CacheInstall(dependency).ConfigureAwait(false);
 
                 if (reference.Found)
@@ -114,6 +116,16 @@ namespace Firely.Fhir.Packages
             {
                 errors.Add(new PackageRestoreException(dependencyChain.Reverse(), e));
             }
+        }
+
+        // Version resolution silently skips patterns that are not valid SemVer ranges, so an invalid
+        // range in a manifest is reported here as a restore error instead of ending up as a silently
+        // missing dependency.
+        private static void validateRange(PackageDependency dependency)
+        {
+            var range = dependency.Range;
+            if (range is not null && range != "latest" && range.Length > 0)
+                _ = new SemanticVersioning.Range(range); // throws ArgumentException on an invalid range
         }
 
         private async Task restoreReference(PackageReference reference, List<Exception> errors, Stack<PackageDependency> dependencyChain)

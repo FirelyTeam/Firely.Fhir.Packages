@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 
 namespace Firely.Fhir.Packages.Tests
 {
@@ -75,6 +76,49 @@ namespace Firely.Fhir.Packages.Tests
             {
                 result.Version.Should().Be(versionReturned);
             }
+        }
+
+        [DataRow("current", null)]     // non-compliant pattern: null, not ArgumentException (#76)
+        [DataRow("2024-01-01", null)]  // non-compliant pattern: null, not ArgumentException (#76)
+        [DataRow("1.0", "1.0.2")]      // partial version resolves as a range
+        [DataRow("latest", "1.0.2")]
+        [DataRow("1.0.0", "1.0.0")]
+        [DataTestMethod]
+        public void ResolveNonCompliantPatternReturnsNullInsteadOfThrowing(string pattern, string? expected)
+        {
+            var versions = new Versions(new[] { "1.0.0", "1.0.2", "1.0.0-beta-1" });
+
+            var result = versions.Resolve(pattern, stable: false);
+
+            result?.ToString().Should().Be(expected);
+        }
+
+        [TestMethod]
+        public void ResolveExactVersionWithBuildMetadata()
+        {
+            // #114: a pin including build metadata resolves to that exact version
+            var versions = new Versions(new[] { "1.3.0", "1.6.0", "1.6.0+001" });
+
+            versions.Resolve("1.6.0+001", stable: false)!.ToString().Should().Be("1.6.0+001");
+        }
+
+        [TestMethod]
+        public void UnparsableVersionsAreReportedAsInvalid()
+        {
+            var versions = new Versions(new[] { "1.0.0", "1.0", "2024-01-01" });
+
+            versions.Items.Should().HaveCount(1);
+            versions.Invalid.Should().BeEquivalentTo("1.0", "2024-01-01");
+        }
+
+        [TestMethod]
+        public void StableIncludesVersionsWithBuildMetadata()
+        {
+            // Build metadata says nothing about a version being a pre-release
+            var versions = new Versions(new[] { "1.0.0+001", "1.1.0-beta" });
+
+            versions.Stable().Select(v => v.ToString()).Should().BeEquivalentTo("1.0.0+001");
+            versions.Latest(stable: true)!.ToString().Should().Be("1.0.0+001");
         }
     }
 }

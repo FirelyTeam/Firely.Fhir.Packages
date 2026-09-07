@@ -63,8 +63,9 @@ namespace Firely.Fhir.Packages
             {
                 return versions.Latest();
             }
-            var range = new Range(pattern);
-            return versions.Resolve(range);
+            return Range.TryParse(pattern, out Range? range) && range is not null
+                ? versions.Resolve(range)
+                : null;
         }
 
         /// <summary>
