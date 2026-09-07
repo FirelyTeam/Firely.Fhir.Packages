@@ -54,6 +54,10 @@ namespace Firely.Fhir.Packages
             return versions is null || !versions.Any() ? new Versions() : new Versions(versions!);
         }
 
+        /// <summary>
+        /// Resolve the best matching version from a pattern. A pattern that cannot be interpreted
+        /// as a SemVer range resolves to <c>null</c> instead of throwing.
+        /// </summary>
         internal static Version? Resolve(this Versions versions, string? pattern)
         {
             if (pattern == null)

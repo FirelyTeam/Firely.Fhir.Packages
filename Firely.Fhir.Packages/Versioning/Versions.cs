@@ -23,6 +23,7 @@ namespace Firely.Fhir.Packages
         private readonly List<Version> _list = new();
         private readonly List<Version> _unlisted = new();
         private readonly List<string> _invalid = new();
+        private readonly List<string> _invalidUnlisted = new();
 
         /// <summary>
         /// Return the versions from the list
@@ -31,10 +32,16 @@ namespace Firely.Fhir.Packages
         public IReadOnlyCollection<Version> Items => _list;
 
         /// <summary>
-        /// Version strings that could not be parsed as SemVer versions and were therefore
+        /// Listed version strings that could not be parsed as SemVer versions and were therefore
         /// excluded from <see cref="Items"/>.
         /// </summary>
         public IReadOnlyCollection<string> Invalid => _invalid;
+
+        /// <summary>
+        /// Unlisted version strings that could not be parsed as SemVer versions and were therefore
+        /// excluded from the unlisted versions.
+        /// </summary>
+        public IReadOnlyCollection<string> InvalidUnlisted => _invalidUnlisted;
 
         /// <summary>
         /// Create an empty list if versions
@@ -49,10 +56,10 @@ namespace Firely.Fhir.Packages
         public Versions(IEnumerable<string> versions, IEnumerable<string>? unlisted = null)
         {
             if (versions is not null)
-                appendSorted(this._list, versions);
+                appendSorted(this._list, versions, _invalid);
 
             if (unlisted is not null)
-                appendSorted(this._unlisted, unlisted);
+                appendSorted(this._unlisted, unlisted, _invalidUnlisted);
         }
 
         /// <summary>
@@ -61,7 +68,7 @@ namespace Firely.Fhir.Packages
         /// <param name="versions">List of versions to be added</param>
         public void Append(IEnumerable<string> versions)
         {
-            appendSorted(_list, versions);
+            appendSorted(_list, versions, _invalid);
         }
 
         /// <summary>
@@ -110,7 +117,7 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private void appendSorted(List<Version> list, IEnumerable<string> values)
+        private static void appendSorted(List<Version> list, IEnumerable<string> values, List<string> invalid)
         {
             foreach (var value in values)
             {
@@ -120,7 +127,7 @@ namespace Firely.Fhir.Packages
                 }
                 else
                 {
-                    _invalid.Add(value);
+                    invalid.Add(value);
                 }
             }
             list.Sort();
@@ -132,7 +139,8 @@ namespace Firely.Fhir.Packages
         /// </summary>
         /// <param name="pattern">Version pattern (an exact version, a SemVer range or "latest") used during resolving.
         /// A pattern that cannot be interpreted resolves to <c>null</c> instead of throwing.</param>
-        /// <param name="stable">Indication of allowing only non-preview versions</param>
+        /// <param name="stable">Indication of allowing only non-preview versions.
+        /// Only applies when resolving "latest" or an empty pattern; an explicit pattern is never gated by it.</param>
         /// <returns>Semver Version object of the best matching version, or <c>null</c> when nothing matches</returns>
         [System.CLSCompliant(false)]
         public Version? Resolve(string pattern, bool stable = true)
@@ -141,10 +149,11 @@ namespace Firely.Fhir.Packages
                 return this.Latest(stable);
 
             // An exact version pin including build metadata should resolve to that exact version,
-            // since range resolution ignores build metadata (SemVer §10).
+            // whether listed or unlisted, since range resolution ignores build metadata (SemVer §10).
             if (Version.TryParse(pattern, out Version? pinned) && pinned?.Build is not null)
             {
-                var exact = _list.Find(v => v == pinned && v.Build == pinned.Build);
+                var exact = _list.Find(v => v == pinned && v.Build == pinned.Build)
+                    ?? _unlisted.Find(v => v == pinned && v.Build == pinned.Build);
                 if (exact is not null) return exact;
             }
 

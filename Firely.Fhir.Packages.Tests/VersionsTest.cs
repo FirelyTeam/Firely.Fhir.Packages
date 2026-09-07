@@ -103,12 +103,24 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
+        public void ResolveExactUnlistedVersionWithBuildMetadata()
+        {
+            // A build-metadata pin to an unlisted version resolves to that exact version instead of
+            // falling through to range resolution, which ignores build metadata and returns the
+            // precedence-equal listed version.
+            var versions = new Versions(new[] { "1.6.0" }, unlisted: new[] { "1.6.0+001" });
+
+            versions.Resolve("1.6.0+001", stable: false)!.ToString().Should().Be("1.6.0+001");
+        }
+
+        [TestMethod]
         public void UnparsableVersionsAreReportedAsInvalid()
         {
-            var versions = new Versions(new[] { "1.0.0", "1.0", "2024-01-01" });
+            var versions = new Versions(new[] { "1.0.0", "1.0", "2024-01-01" }, unlisted: new[] { "also-bad" });
 
             versions.Items.Should().HaveCount(1);
             versions.Invalid.Should().BeEquivalentTo("1.0", "2024-01-01");
+            versions.InvalidUnlisted.Should().BeEquivalentTo("also-bad");
         }
 
         [TestMethod]
