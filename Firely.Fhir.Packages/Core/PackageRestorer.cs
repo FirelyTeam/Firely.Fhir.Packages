@@ -95,6 +95,8 @@ namespace Firely.Fhir.Packages
         {
             try
             {
+                validateVersionPattern(dependency);
+
                 var reference = await _context.CacheInstall(dependency).ConfigureAwait(false);
 
                 if (reference.Found)
@@ -113,6 +115,20 @@ namespace Firely.Fhir.Packages
             catch (Exception e)
             {
                 errors.Add(new PackageRestoreException(dependencyChain.Reverse(), e));
+            }
+        }
+
+        // Versions.Resolve is total: it returns null for version patterns that cannot be interpreted.
+        // Restore stays strict: an invalid version pattern in a manifest is reported here as an
+        // explicit ArgumentException (wrapped in a PackageRestoreException by the caller) instead of
+        // ending up as a silently missing dependency.
+        private static void validateVersionPattern(PackageDependency dependency)
+        {
+            var pattern = dependency.Range;
+            if (pattern is not null && pattern != "latest" && pattern.Length > 0
+                && !SemanticVersioning.Range.TryParse(pattern, out _))
+            {
+                throw new ArgumentException($"Invalid version string: \"{pattern}\"");
             }
         }
 

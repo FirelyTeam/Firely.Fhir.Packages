@@ -22,12 +22,26 @@ namespace Firely.Fhir.Packages
     {
         private readonly List<Version> _list = new();
         private readonly List<Version> _unlisted = new();
+        private readonly List<string> _invalid = new();
+        private readonly List<string> _invalidUnlisted = new();
 
         /// <summary>
         /// Return the versions from the list
         /// </summary>
         [System.CLSCompliant(false)]
         public IReadOnlyCollection<Version> Items => _list;
+
+        /// <summary>
+        /// Listed version strings that could not be parsed as SemVer versions and were therefore
+        /// excluded from <see cref="Items"/>.
+        /// </summary>
+        public IReadOnlyCollection<string> Invalid => _invalid;
+
+        /// <summary>
+        /// Unlisted version strings that could not be parsed as SemVer versions and were therefore
+        /// excluded from the unlisted versions.
+        /// </summary>
+        public IReadOnlyCollection<string> InvalidUnlisted => _invalidUnlisted;
 
         /// <summary>
         /// Create an empty list if versions
@@ -42,10 +56,10 @@ namespace Firely.Fhir.Packages
         public Versions(IEnumerable<string> versions, IEnumerable<string>? unlisted = null)
         {
             if (versions is not null)
-                appendSorted(this._list, versions);
+                appendSorted(this._list, versions, _invalid);
 
             if (unlisted is not null)
-                appendSorted(this._unlisted, unlisted);
+                appendSorted(this._unlisted, unlisted, _invalidUnlisted);
         }
 
         /// <summary>
@@ -54,15 +68,7 @@ namespace Firely.Fhir.Packages
         /// <param name="versions">List of versions to be added</param>
         public void Append(IEnumerable<string> versions)
         {
-            foreach (var s in versions)
-            {
-                if (Version.TryParse(s, out Version? version))
-                {
-                    if (version != null)
-                        _list.Add(version);
-                }
-            }
-            _list.Sort();
+            appendSorted(_list, versions, _invalid);
         }
 
         /// <summary>
@@ -82,7 +88,9 @@ namespace Firely.Fhir.Packages
         [System.CLSCompliant(false)]
         public IEnumerable<Version> Stable()
         {
-            return _list.Where(v => v.PreRelease is null && v.Build is null);
+            // Build metadata (SemVer §10) says nothing about whether a release is a pre-release,
+            // so versions carrying only build metadata are considered stable.
+            return _list.Where(v => v.PreRelease is null);
         }
 
         /// <summary>
@@ -109,14 +117,17 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        private static void appendSorted(List<Version> list, IEnumerable<string> values)
+        private static void appendSorted(List<Version> list, IEnumerable<string> values, List<string> invalid)
         {
             foreach (var value in values)
             {
-                if (Version.TryParse(value, out Version? version))
+                if (Version.TryParse(value, out Version? version) && version is not null)
                 {
-                    if (version is not null)
-                        list.Add(version);
+                    list.Add(version);
+                }
+                else
+                {
+                    invalid.Add(value);
                 }
             }
             list.Sort();
@@ -124,20 +135,24 @@ namespace Firely.Fhir.Packages
 
 
         /// <summary>
-        /// Resolve the best mathing version from a range
+        /// Resolve the best matching version from a pattern
         /// </summary>
-        /// <param name="range">Range of versions to be used during the resolving</param>
-        /// <param name="stable">Indication of allowing only non-preview versions</param>
-        /// <returns>Semver Version object if the best matching version</returns>
-        /// <exception cref="System.ArgumentException">Throw argument exception when an invalid pattern is supplied</exception>
+        /// <param name="pattern">Version pattern (an exact version, a SemVer range or "latest") used during resolving.
+        /// A pattern that cannot be interpreted resolves to <c>null</c> instead of throwing.</param>
+        /// <param name="stable">Indication of allowing only non-preview versions.
+        /// Only applies when resolving "latest" or an empty pattern; an explicit pattern is never gated by it.</param>
+        /// <returns>Semver Version object of the best matching version, or <c>null</c> when nothing matches</returns>
         [System.CLSCompliant(false)]
         public Version? Resolve(string pattern, bool stable = true)
         {
             if (pattern == "latest" || string.IsNullOrEmpty(pattern))
                 return this.Latest(stable);
 
-            var range = new Range(pattern);
-            Version? version = Resolve(range);
+            // Note: build metadata is ignored when resolving (SemVer §10), so a pin such as
+            // "1.6.0+001" may resolve to the precedence-equal "1.6.0".
+            Version? version = Range.TryParse(pattern, out Range? range) && range is not null
+                ? Resolve(range)
+                : null;
 
             if (version is not null) return version;
 
