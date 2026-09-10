@@ -148,15 +148,8 @@ namespace Firely.Fhir.Packages
             if (pattern == "latest" || string.IsNullOrEmpty(pattern))
                 return this.Latest(stable);
 
-            // An exact version pin including build metadata should resolve to that exact version,
-            // whether listed or unlisted, since range resolution ignores build metadata (SemVer §10).
-            if (Version.TryParse(pattern, out Version? pinned) && pinned?.Build is not null)
-            {
-                var exact = _list.Find(v => v == pinned && v.Build == pinned.Build)
-                    ?? _unlisted.Find(v => v == pinned && v.Build == pinned.Build);
-                if (exact is not null) return exact;
-            }
-
+            // Note: build metadata is ignored when resolving (SemVer §10), so a pin such as
+            // "1.6.0+001" may resolve to the precedence-equal "1.6.0".
             Version? version = Range.TryParse(pattern, out Range? range) && range is not null
                 ? Resolve(range)
                 : null;

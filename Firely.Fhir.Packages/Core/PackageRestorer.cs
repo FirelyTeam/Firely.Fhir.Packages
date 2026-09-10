@@ -95,7 +95,7 @@ namespace Firely.Fhir.Packages
         {
             try
             {
-                validateRange(dependency);
+                validateVersionPattern(dependency);
 
                 var reference = await _context.CacheInstall(dependency).ConfigureAwait(false);
 
@@ -118,17 +118,17 @@ namespace Firely.Fhir.Packages
             }
         }
 
-        // Versions.Resolve is total: it returns null for patterns that are not valid SemVer ranges.
-        // Restore stays strict: an invalid range in a manifest is reported here as an explicit
-        // ArgumentException (wrapped in a PackageRestoreException by the caller) instead of ending
-        // up as a silently missing dependency.
-        private static void validateRange(PackageDependency dependency)
+        // Versions.Resolve is total: it returns null for version patterns that cannot be interpreted.
+        // Restore stays strict: an invalid version pattern in a manifest is reported here as an
+        // explicit ArgumentException (wrapped in a PackageRestoreException by the caller) instead of
+        // ending up as a silently missing dependency.
+        private static void validateVersionPattern(PackageDependency dependency)
         {
-            var range = dependency.Range;
-            if (range is not null && range != "latest" && range.Length > 0
-                && !SemanticVersioning.Range.TryParse(range, out _))
+            var pattern = dependency.Range;
+            if (pattern is not null && pattern != "latest" && pattern.Length > 0
+                && !SemanticVersioning.Range.TryParse(pattern, out _))
             {
-                throw new ArgumentException($"Invalid version string: \"{range}\"");
+                throw new ArgumentException($"Invalid version string: \"{pattern}\"");
             }
         }
 

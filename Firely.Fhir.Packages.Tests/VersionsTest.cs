@@ -88,29 +88,19 @@ namespace Firely.Fhir.Packages.Tests
         {
             var versions = new Versions(new[] { "1.0.0", "1.0.2", "1.0.0-beta-1" });
 
-            var result = versions.Resolve(pattern, stable: false);
+            var result = versions.Resolve(pattern, stable: false)?.ToString();
 
-            result?.ToString().Should().Be(expected);
+            result.Should().Be(expected);
         }
 
         [TestMethod]
-        public void ResolveExactVersionWithBuildMetadata()
+        public void ResolveIgnoresBuildMetadata()
         {
-            // #114: a pin including build metadata resolves to that exact version
-            var versions = new Versions(new[] { "1.3.0", "1.6.0", "1.6.0+001" });
+            // SemVer §10: build metadata is ignored when determining precedence, so a pin carrying
+            // build metadata resolves to the precedence-equal version (#114 is not a bug).
+            var versions = new Versions(new[] { "1.3.0", "1.6.0" });
 
-            versions.Resolve("1.6.0+001", stable: false)!.ToString().Should().Be("1.6.0+001");
-        }
-
-        [TestMethod]
-        public void ResolveExactUnlistedVersionWithBuildMetadata()
-        {
-            // A build-metadata pin to an unlisted version resolves to that exact version instead of
-            // falling through to range resolution, which ignores build metadata and returns the
-            // precedence-equal listed version.
-            var versions = new Versions(new[] { "1.6.0" }, unlisted: new[] { "1.6.0+001" });
-
-            versions.Resolve("1.6.0+001", stable: false)!.ToString().Should().Be("1.6.0+001");
+            versions.Resolve("1.6.0+001", stable: false)!.ToString().Should().Be("1.6.0");
         }
 
         [TestMethod]
