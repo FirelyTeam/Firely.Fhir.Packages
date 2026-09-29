@@ -37,7 +37,16 @@ stages:
   - template: build.yml@templates  # Template reference
     parameters:
       dotNetCoreVersion: $(DOTNET_CORE_SDK)
+      # The tests also target net8.0; the .NET 10 SDK only brings the .NET 10 runtime.
+      preBuildSteps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET runtime 8.x'
+        inputs:
+          packageType: runtime
+          version: 8.x
       propsFile: 'Firely.Fhir.Packages.props'
+      buildSolutionFile: 'Firely.Fhir.Packages.slnx'
+      packageSolutionFile: 'Firely.Fhir.Packages.slnx'
       ${{ if not(startswith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:  # 'normal' build 
         useVersionSuffix: true
       ${{ else }}:  # release mode
