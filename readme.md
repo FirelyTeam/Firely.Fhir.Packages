@@ -15,6 +15,25 @@ This library provides:
 * Installation of FHIR packages on your machine
 * Helper classes to create the correct manifest and index files for FHIR packages
 
+## Package cache location
+Downloaded packages are stored in a machine-wide FHIR package cache. By default this is `.fhir/packages` in the user's home
+folder (`%UserProfile%` on Windows, `$HOME` elsewhere). Processes that run without a user profile, such as services or IIS
+application pools, fall back to `.fhir/packages` in the common application data folder
+(`Environment.SpecialFolder.CommonApplicationData`, e.g. `C:\ProgramData`) instead of failing. You can also choose the location
+yourself. The first one that applies wins:
+
+1. **Explicit folder**: pass a `cacheFolder` to `FhirPackageSource` (its constructors and `CreateCorePackageSource`), or a root to `DiskPackageCache`.
+2. **Process-wide override**: set the static `Platform.PackageRoot` property, or the `FHIR_PACKAGE_CACHE` environment variable
+   (the property wins over the variable). This also applies to code that you cannot pass a folder to, such as the validator.
+3. **User profile**: `~/.fhir/packages`.
+4. **Common application data**: used when there is no user profile.
+
+The folder you specify is used as the package root itself, packages are stored directly in it as `{name}#{version}`.
+
+```csharp
+var source = new FhirPackageSource(ModelInfo.ModelInspector, "https://packages.simplifier.net", ["hl7.fhir.us.core@4.1.0"], cacheFolder: @"D:\fhir-cache");
+```
+
 ## Authenticating against a private package feed
 Package servers that require authentication, such as private [Simplifier.net][simplifier] package feeds, can be accessed by
 constructing a `PackageClient` with your own `HttpClient` and passing it to `FhirPackageSource`. Because you control the
@@ -40,7 +59,7 @@ A few things to be aware of:
 * **Token expiry**: a token set as a default request header is frozen at the moment you set it. That is fine for short-lived
   processes, but in a long-running application a JWT will expire. In that case, attach your own `DelegatingHandler` to the
   `HttpClient` that supplies (and refreshes) the token per request.
-* **Caching**: downloaded packages are stored in the machine-wide FHIR package cache (`~/.fhir/packages`), keyed by package
+* **Caching**: downloaded packages are stored in the machine-wide FHIR package cache (`~/.fhir/packages` by default, see [Package cache location](#package-cache-location)), keyed by package
   name and version only — the package server is not part of the key. This means a package that is already present in the
   cache (for example, downloaded earlier from the public registry) is used as-is without contacting your private feed, and
   conversely, packages downloaded from a private feed become available from the cache to other tools and users on the same

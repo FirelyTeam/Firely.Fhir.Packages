@@ -27,9 +27,19 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     /// <returns>A new <see cref="FhirPackageSource"/> instance.</returns>
     /// <param name="provider">A <see cref="ModelInspector"/> used to parse the filecontents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
     /// <param name="filePaths">A path to the FHIR package files.</param>
-    public FhirPackageSource(ModelInspector provider, params string[] filePaths)
+    public FhirPackageSource(ModelInspector provider, params string[] filePaths) : this(provider, filePaths, (string?)null)
     {
-        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromFilesAsync(filePaths)));
+    }
+
+    /// <summary>Create a new <see cref="FhirPackageSource"/> instance to read FHIR artifacts from one or multiple FHIR packages of a specific FHIR version
+    /// found in the paths passed to this function, using a specific package cache folder.</summary>
+    /// <param name="provider">A <see cref="ModelInspector"/> used to parse the filecontents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
+    /// <param name="filePaths">A path to the FHIR package files.</param>
+    /// <param name="cacheFolder">The folder in which the FHIR packages are cached. When <c>null</c>, the default package cache location is used: the <see cref="Platform.PackageRoot"/> or
+    /// <c>FHIR_PACKAGE_CACHE</c> environment variable if set, otherwise <c>.fhir/packages</c> in the user profile, or in the common application data folder when there is no user profile.</param>
+    public FhirPackageSource(ModelInspector provider, string[] filePaths, string? cacheFolder)
+    {
+        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromFilesAsync(cacheFolder, filePaths)));
         _provider = provider;
     }
 
@@ -37,9 +47,19 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
     /// <param name="packageServer">The package server from which to retrieve the FHIR packages</param>
     /// <param name="packageNames">The FHIR packages which are used to resolve artifacts from</param>
-    public FhirPackageSource(ModelInspector provider, string packageServer, string[] packageNames)
+    public FhirPackageSource(ModelInspector provider, string packageServer, string[] packageNames) : this(provider, packageServer, packageNames, null)
     {
-        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(packageServer, packageNames)));
+    }
+
+    /// <summary>Create a new <see cref="FhirPackageSource"/> instance to read FHIR artifacts from one or multiple FHIR packages of a specific FHIR version.</summary>
+    /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
+    /// <param name="packageServer">The package server from which to retrieve the FHIR packages</param>
+    /// <param name="packageNames">The FHIR packages which are used to resolve artifacts from</param>
+    /// <param name="cacheFolder">The folder in which the FHIR packages are cached. When <c>null</c>, the default package cache location is used: the <see cref="Platform.PackageRoot"/> or
+    /// <c>FHIR_PACKAGE_CACHE</c> environment variable if set, otherwise <c>.fhir/packages</c> in the user profile, or in the common application data folder when there is no user profile.</param>
+    public FhirPackageSource(ModelInspector provider, string packageServer, string[] packageNames, string? cacheFolder)
+    {
+        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(packageServer, packageNames, cacheFolder)));
         _provider = provider;
     }
 
@@ -52,11 +72,22 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     /// packages are downloaded lazily on first use, so the client (and the <see cref="System.Net.Http.HttpClient"/> it wraps) must not
     /// be disposed before this source has resolved its packages.</param>
     /// <param name="packageNames">The FHIR packages which are used to resolve artifacts from</param>
-    public FhirPackageSource(ModelInspector provider, PackageClient client, string[] packageNames)
+    public FhirPackageSource(ModelInspector provider, PackageClient client, string[] packageNames) : this(provider, client, packageNames, null)
+    {
+    }
+
+    /// <summary>Create a new <see cref="FhirPackageSource"/> instance to read FHIR artifacts from one or multiple FHIR packages of a specific FHIR version,
+    /// retrieved with a caller-supplied <see cref="PackageClient"/>, using a specific package cache folder.</summary>
+    /// <param name="provider">A <see cref="ModelInspector"/> used to parse the file contents to FHIR resources, this is typically a <see cref="ModelInspector"/> containing the definitions of a specific FHIR version. </param>
+    /// <param name="client">The package client used to contact the package server. The caller remains responsible for its lifetime, see the overload without <paramref name="cacheFolder"/>.</param>
+    /// <param name="packageNames">The FHIR packages which are used to resolve artifacts from</param>
+    /// <param name="cacheFolder">The folder in which the FHIR packages are cached. When <c>null</c>, the default package cache location is used: the <see cref="Platform.PackageRoot"/> or
+    /// <c>FHIR_PACKAGE_CACHE</c> environment variable if set, otherwise <c>.fhir/packages</c> in the user profile, or in the common application data folder when there is no user profile.</param>
+    public FhirPackageSource(ModelInspector provider, PackageClient client, string[] packageNames, string? cacheFolder)
     {
         if (client is null) throw new ArgumentNullException(nameof(client));
 
-        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(client, packageNames)));
+        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(client, packageNames, cacheFolder)));
         _provider = provider;
     }
 
@@ -85,12 +116,14 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     /// <param name="packageServer">The package server from which to retrieve the FHIR packages, if not specified, the Simplifier.net package server will be used.</param>
     /// <param name="extensionsVersion">The version of the FHIR extensions package (hl7.fhir.uv.extensions) to use. When <c>null</c>, the latest available version is used.</param>
     /// <param name="toolsVersion">The version of the FHIR tools package (hl7.fhir.uv.tools) to use. When <c>null</c>, the latest available version is used.</param>
+    /// <param name="cacheFolder">The folder in which the FHIR packages are cached. When <c>null</c>, the default package cache location is used: the <see cref="Platform.PackageRoot"/> or
+    /// <c>FHIR_PACKAGE_CACHE</c> environment variable if set, otherwise <c>.fhir/packages</c> in the user profile, or in the common application data folder when there is no user profile.</param>
     /// <exception cref="NotSupportedException">
     /// Thrown when the specified FHIR version is not supported. DSTU1 and R6 have no packages available.
     /// DSTU2 and R4B do not have extensions or tools packages and therefore do not support <paramref name="extensionsVersion"/> or <paramref name="toolsVersion"/>.
     /// </exception>
     public static FhirPackageSource CreateCorePackageSource(ModelInspector provider, FhirRelease? version = null, string? packageServer = null,
-        string? extensionsVersion = null, string? toolsVersion = null)
+        string? extensionsVersion = null, string? toolsVersion = null, string? cacheFolder = null)
     {
         version ??= provider.FhirRelease;
         packageServer ??= DEFAULT_PACKAGE_SERVER;
@@ -101,11 +134,11 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
             return version switch
             {
                 FhirRelease.DSTU1 => throw new NotSupportedException($"There are no packages available for FHIR version DSTU1."),
-                FhirRelease.DSTU2 => new FhirPackageSource(provider, packageServer, DSTU2_CORE_PACKAGES),
-                FhirRelease.STU3 => new FhirPackageSource(provider, packageServer, STU3_CORE_PACKAGES),
-                FhirRelease.R4 => new FhirPackageSource(provider, packageServer, R4_CORE_PACKAGES),
-                FhirRelease.R4B => new FhirPackageSource(provider, packageServer, R4B_CORE_PACKAGES),
-                FhirRelease.R5 => new FhirPackageSource(provider, packageServer, R5_CORE_PACKAGES),
+                FhirRelease.DSTU2 => new FhirPackageSource(provider, packageServer, DSTU2_CORE_PACKAGES, cacheFolder),
+                FhirRelease.STU3 => new FhirPackageSource(provider, packageServer, STU3_CORE_PACKAGES, cacheFolder),
+                FhirRelease.R4 => new FhirPackageSource(provider, packageServer, R4_CORE_PACKAGES, cacheFolder),
+                FhirRelease.R4B => new FhirPackageSource(provider, packageServer, R4B_CORE_PACKAGES, cacheFolder),
+                FhirRelease.R5 => new FhirPackageSource(provider, packageServer, R5_CORE_PACKAGES, cacheFolder),
                 FhirRelease.R6 => throw new NotSupportedException($"There are no packages available for FHIR version R6 yet."),
                 _ => throw new NotSupportedException($"{nameof(CreateCorePackageSource)} has no support yet for version '{version}', please report this to the developers.")
             };
@@ -124,7 +157,7 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
             _ => throw new NotSupportedException($"{nameof(CreateCorePackageSource)} has no support yet for version '{version}', please report this to the developers.")
         };
 
-        return new FhirPackageSource(provider, packageServer, packages);
+        return new FhirPackageSource(provider, packageServer, packages, cacheFolder);
     }
 
     private static string[] buildCorePackagesWithVersions(string[] basePackages, string fhirVersionLabel, string extensionsVersion, string toolsVersion)
@@ -134,16 +167,16 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
             $"hl7.fhir.uv.tools.{fhirVersionLabel}@{toolsVersion}"];
     }
 
-    private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames)
+    private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames, string? cacheFolder)
     {
-        return await createPackageContextFromExternalSource(PackageClient.Create(packageServer), packageNames);
+        return await createPackageContextFromExternalSource(PackageClient.Create(packageServer), packageNames, cacheFolder);
     }
 
-    private static async Task<PackageContext> createPackageContextFromExternalSource(PackageClient client, string[] packageNames)
+    private static async Task<PackageContext> createPackageContextFromExternalSource(PackageClient client, string[] packageNames, string? cacheFolder)
     {
         var scopePath = getScopePath();
         _ = await initialize(scopePath, "Firely SDK Temp Package", "0.1.0", "Firely SDK", "Temporary package used for resolving artifacts from its dependencies", packageNames);
-        return await createContext(scopePath, client);
+        return await createContext(scopePath, client, cacheFolder);
 
     }
 
@@ -176,7 +209,7 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         }
     }
 
-    private static async Task<PackageContext> createPackageContextFromFilesAsync(params string[] paths)
+    private static async Task<PackageContext> createPackageContextFromFilesAsync(string? cacheFolder, string[] paths)
     {
         foreach (var path in paths)
         {
@@ -185,7 +218,7 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         }
 
         var scopePath = getScopePath();
-        return await createContext(scopePath, client: null, paths);
+        return await createContext(scopePath, client: null, cacheFolder, paths);
     }
 
     private static string getScopePath()
@@ -198,9 +231,9 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         return scopePath;
     }
 
-    private static async Task<PackageContext> createContext(string scopePath, PackageClient? client, string[]? filePaths = null, bool localCache = false)
+    private static async Task<PackageContext> createContext(string scopePath, PackageClient? client, string? cacheFolder, string[]? filePaths = null)
     {
-        string? cacheFolder = localCache ? scopePath : null;
+        // A null cacheFolder makes the DiskPackageCache use the platform default, see Platform.GetFhirPackageRoot().
         var cache = new DiskPackageCache(cacheFolder);
         var project = new FolderProject(scopePath);
         var scope = new PackageContext(cache, project, client);
