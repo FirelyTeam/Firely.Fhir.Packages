@@ -9,6 +9,7 @@
 
 #nullable enable
 
+using System;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages
@@ -59,6 +60,21 @@ namespace Firely.Fhir.Packages
         public static async Task<PackageClosure> Restore(this PackageContext context)
         {
             var restorer = new PackageRestorer(context);
+            return await restorer.Restore();
+        }
+
+        /// <summary>
+        /// Restores a package
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="dependencyMapper">A function that is called for every dependency found in a package manifest, before it
+        /// is resolved, and that can redirect it to another package or version. When <c>null</c>,
+        /// <see cref="PackageRestorer.DefaultDependencyMapper"/> is used. Pass <c>dependency =&gt; dependency</c> to
+        /// disable any redirection.</param>
+        /// <returns>Package lock file</returns>
+        public static async Task<PackageClosure> Restore(this PackageContext context, Func<PackageDependency, PackageDependency>? dependencyMapper)
+        {
+            var restorer = new PackageRestorer(context, dependencyMapper);
             return await restorer.Restore();
         }
     }
