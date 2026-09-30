@@ -22,6 +22,9 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     private Lazy<PackageContext> _context;
     private ModelInspector _provider;
 
+    // The folder in which packages are cached; null means the platform default, see Platform.GetFhirPackageRoot().
+    private readonly string? _cacheFolder;
+
     /// <summary>Create a new <see cref="FhirPackageSource"/> instance to read FHIR artifacts from one or multiple FHIR packages of a specific FHIR version
     /// found in the paths passed to this function.</summary>
     /// <returns>A new <see cref="FhirPackageSource"/> instance.</returns>
@@ -39,7 +42,8 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     /// <c>FHIR_PACKAGE_CACHE</c> environment variable if set, otherwise <c>.fhir/packages</c> in the user profile, or in the common application data folder when there is no user profile.</param>
     public FhirPackageSource(ModelInspector provider, string[] filePaths, string? cacheFolder)
     {
-        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromFilesAsync(cacheFolder, filePaths)));
+        _cacheFolder = cacheFolder;
+        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromFilesAsync(filePaths)));
         _provider = provider;
     }
 
@@ -59,7 +63,8 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     /// <c>FHIR_PACKAGE_CACHE</c> environment variable if set, otherwise <c>.fhir/packages</c> in the user profile, or in the common application data folder when there is no user profile.</param>
     public FhirPackageSource(ModelInspector provider, string packageServer, string[] packageNames, string? cacheFolder)
     {
-        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(packageServer, packageNames, cacheFolder)));
+        _cacheFolder = cacheFolder;
+        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(packageServer, packageNames)));
         _provider = provider;
     }
 
@@ -87,7 +92,8 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
     {
         if (client is null) throw new ArgumentNullException(nameof(client));
 
-        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(client, packageNames, cacheFolder)));
+        _cacheFolder = cacheFolder;
+        _context = new Lazy<PackageContext>(() => TaskHelper.Await(() => createPackageContextFromExternalSource(client, packageNames)));
         _provider = provider;
     }
 
@@ -167,16 +173,16 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
             $"hl7.fhir.uv.tools.{fhirVersionLabel}@{toolsVersion}"];
     }
 
-    private static async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames, string? cacheFolder)
+    private async Task<PackageContext> createPackageContextFromExternalSource(string packageServer, string[] packageNames)
     {
-        return await createPackageContextFromExternalSource(PackageClient.Create(packageServer), packageNames, cacheFolder);
+        return await createPackageContextFromExternalSource(PackageClient.Create(packageServer), packageNames);
     }
 
-    private static async Task<PackageContext> createPackageContextFromExternalSource(PackageClient client, string[] packageNames, string? cacheFolder)
+    private async Task<PackageContext> createPackageContextFromExternalSource(PackageClient client, string[] packageNames)
     {
         var scopePath = getScopePath();
         _ = await initialize(scopePath, "Firely SDK Temp Package", "0.1.0", "Firely SDK", "Temporary package used for resolving artifacts from its dependencies", packageNames);
-        return await createContext(scopePath, client, cacheFolder);
+        return await createContext(scopePath, client);
 
     }
 
@@ -209,7 +215,7 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         }
     }
 
-    private static async Task<PackageContext> createPackageContextFromFilesAsync(string? cacheFolder, string[] paths)
+    private async Task<PackageContext> createPackageContextFromFilesAsync(string[] paths)
     {
         foreach (var path in paths)
         {
@@ -218,7 +224,7 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         }
 
         var scopePath = getScopePath();
-        return await createContext(scopePath, client: null, cacheFolder, paths);
+        return await createContext(scopePath, client: null, paths);
     }
 
     private static string getScopePath()
@@ -231,10 +237,10 @@ public class FhirPackageSource : IAsyncResourceResolver, IArtifactSource
         return scopePath;
     }
 
-    private static async Task<PackageContext> createContext(string scopePath, PackageClient? client, string? cacheFolder, string[]? filePaths = null)
+    private async Task<PackageContext> createContext(string scopePath, PackageClient? client, string[]? filePaths = null)
     {
-        // A null cacheFolder makes the DiskPackageCache use the platform default, see Platform.GetFhirPackageRoot().
-        var cache = new DiskPackageCache(cacheFolder);
+        // A null _cacheFolder makes the DiskPackageCache use the platform default, see Platform.GetFhirPackageRoot().
+        var cache = new DiskPackageCache(_cacheFolder);
         var project = new FolderProject(scopePath);
         var scope = new PackageContext(cache, project, client);
 
