@@ -25,12 +25,28 @@ namespace Firely.Fhir.Packages.Tests
         [TestMethod]
         public async Task RestoreRedirectsR4CoreByDefault()
         {
-            var context = await createEmptyContext("hl7.fhir.r4.core@4.0.0", "hl7.fhir.r4.core@4.0.1", "some.other.package@1.0.0");
+            var context = await createEmptyContext("hl7.fhir.r4.core@4.0.0", "some.other.package@1.0.0");
 
             var closure = await context.Restore();
 
             closure.Missing.Select(d => d.ToString()).Should().BeEquivalentTo(
                 "hl7.fhir.r4.core (4.0.1)", "some.other.package (1.0.0)");
+        }
+
+        [TestMethod]
+        public async Task RestoreKeepsAliasWhenRedirectingByDefault()
+        {
+            // Manifest dependencies are keyed by their (aliased) name, so write the aliased entry directly.
+            var context = await createEmptyContext();
+            var manifest = (await context.Project.ReadManifest())!;
+            manifest.Dependencies = new() { ["core400@npm:hl7.fhir.r4.core"] = "4.0.0" };
+            await context.Project.WriteManifest(manifest);
+
+            var closure = await context.Restore();
+
+            var missing = closure.Missing.Should().ContainSingle().Subject;
+            missing.ToString().Should().Be("hl7.fhir.r4.core (4.0.1)");
+            missing.Alias.Should().Be("core400");
         }
 
         [TestMethod]
@@ -72,6 +88,15 @@ namespace Firely.Fhir.Packages.Tests
             PackageRestorer.DefaultDependencyMapper(new PackageDependency("hl7.fhir.r4.core", "4.0.0")).Range.Should().Be("4.0.1");
             PackageRestorer.DefaultDependencyMapper(new PackageDependency("hl7.fhir.r4.core", "4.0.1")).Range.Should().Be("4.0.1");
             PackageRestorer.DefaultDependencyMapper(new PackageDependency("hl7.fhir.r4b.core", "4.0.0")).Range.Should().Be("4.0.0");
+        }
+
+        [TestMethod]
+        public void DefaultMapperPreservesAlias()
+        {
+            var mapped = PackageRestorer.DefaultDependencyMapper(new PackageDependency("hl7.fhir.r4.core", "4.0.0") { Alias = "core400" });
+
+            mapped.Range.Should().Be("4.0.1");
+            mapped.Alias.Should().Be("core400");
         }
     }
 }

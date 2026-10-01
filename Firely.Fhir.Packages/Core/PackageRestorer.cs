@@ -49,12 +49,12 @@ namespace Firely.Fhir.Packages
         /// <summary>
         /// The mapping that is applied to dependencies by default: even when we don't use version ranges, HL7 expects
         /// us to upgrade core 4.0.0 dependencies (<c>hl7.fhir.r4.core@4.0.0</c>) to 4.0.1 due to a publication error.
-        /// All other dependencies are returned unchanged.
+        /// The alias (if any) is preserved; only the version changes. All other dependencies are returned unchanged.
         /// </summary>
         public static PackageDependency DefaultDependencyMapper(PackageDependency dependency)
         {
             return dependency is { Name: "hl7.fhir.r4.core", Range: "4.0.0" }
-                ? new PackageDependency(dependency.Name, "4.0.1")
+                ? new PackageDependency(dependency.Name, "4.0.1") { Alias = dependency.Alias }
                 : dependency;
         }
 
