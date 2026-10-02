@@ -19,16 +19,43 @@ namespace Firely.Fhir.Packages
     public class PackageRestorer
     {
         private readonly PackageContext _context;
+        private readonly Func<PackageDependency, PackageDependency> _dependencyMapper;
         private PackageClosure _closure;
+
+        /// <summary>
+        /// Restores package dependencies, using <see cref="DefaultDependencyMapper"/> to map the dependencies
+        /// found in package manifests before they are resolved.
+        /// </summary>
+        /// <param name="context">Package context of the package to be restored</param>
+        public PackageRestorer(PackageContext context) : this(context, null)
+        {
+        }
 
         /// <summary>
         /// Restores package dependencies
         /// </summary>
         /// <param name="context">Package context of the package to be restored</param>
-        public PackageRestorer(PackageContext context)
+        /// <param name="dependencyMapper">A function that is called for every dependency found in a package manifest, before it
+        /// is resolved. It can return the same dependency, or a different one to redirect the restore to another package or version.
+        /// When <c>null</c>, <see cref="DefaultDependencyMapper"/> is used. Pass <c>dependency =&gt; dependency</c> to
+        /// disable any redirection.</param>
+        public PackageRestorer(PackageContext context, Func<PackageDependency, PackageDependency>? dependencyMapper)
         {
             this._context = context;
+            this._dependencyMapper = dependencyMapper ?? DefaultDependencyMapper;
             _closure = new PackageClosure();
+        }
+
+        /// <summary>
+        /// The mapping that is applied to dependencies by default: even when we don't use version ranges, HL7 expects
+        /// us to upgrade core 4.0.0 dependencies (<c>hl7.fhir.r4.core@4.0.0</c>) to 4.0.1 due to a publication error.
+        /// The alias (if any) is preserved; only the version changes. All other dependencies are returned unchanged.
+        /// </summary>
+        public static PackageDependency DefaultDependencyMapper(PackageDependency dependency)
+        {
+            return dependency is { Name: "hl7.fhir.r4.core", Range: "4.0.0" }
+                ? new PackageDependency(dependency.Name, "4.0.1") { Alias = dependency.Alias }
+                : dependency;
         }
 
         /// <summary>
@@ -69,25 +96,11 @@ namespace Firely.Fhir.Packages
 
         private async Task restoreManifest(PackageManifest manifest, List<Exception> errors, Stack<PackageDependency> dependencyChain)
         {
-            foreach (PackageDependency dependency in upgradeDependencies(manifest.GetDependencies()))
+            foreach (PackageDependency dependency in manifest.GetDependencies().Select(_dependencyMapper))
             {
                 dependencyChain.Push(dependency);
                 await restoreDependency(dependency, errors, dependencyChain).ConfigureAwait(false);
                 dependencyChain.Pop();
-            }
-        }
-
-        // Even when we don't use version ranges, HL7 expects us to upgrade core 4.0.0 dependencies to
-        // 4.0.1 due to a publication error. This is a temporary fix until the next release, so we'll have
-        // to manually fix this here.
-        private static IEnumerable<PackageDependency> upgradeDependencies(IEnumerable<PackageDependency> original)
-        {
-            foreach (var dep in original)
-            {
-                if (dep is { Name: "hl7.fhir.r4.core", Range: "4.0.0" })
-                    yield return new PackageDependency(dep.Name, "4.0.1");
-                else
-                    yield return dep;
             }
         }
 
