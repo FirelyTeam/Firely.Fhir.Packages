@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="build/azure-pipelines.yml" />
+    <File Path="build/variables.yml" />
+    <File Path="Firely.Fhir.Packages.props" />
+    <File Path="Firely.Fhir.Packages.Tests.props" />
+  </Folder>
+  <Project Path="Firely.Fhir.Packages.Tests/Firely.Fhir.Packages.Tests.csproj" />
+  <Project Path="Firely.Fhir.Packages/Firely.Fhir.Packages.csproj" />
+</Solution>

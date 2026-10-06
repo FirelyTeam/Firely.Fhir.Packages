@@ -44,3 +44,4 @@
 *.xunit text
 
 *.sln text eol=crlf merge=union 
+*.slnx text
