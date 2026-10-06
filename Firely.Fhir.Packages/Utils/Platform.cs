@@ -41,32 +41,64 @@ namespace Firely.Fhir.Packages
 #endif
         }
 
-        private static string getGenericDataLocation()
+        /// <summary>
+        /// Name of the environment variable that overrides the location of the FHIR package cache.
+        /// Its value is used as the package root itself (packages are stored directly in it).
+        /// </summary>
+        public const string PackageCacheEnvironmentVariable = "FHIR_PACKAGE_CACHE";
+
+        /// <summary>
+        /// Optional process-wide override of the FHIR package cache location. When set, it takes precedence over the
+        /// <see cref="PackageCacheEnvironmentVariable"/> environment variable and the default location.
+        /// Its value is used as the package root itself (packages are stored directly in it).
+        /// Note that this is global state, for a per-instance location pass a cache folder to the <see cref="FhirPackageSource"/>
+        /// or <see cref="DiskPackageCache"/> instead.
+        /// </summary>
+        public static string? PackageRoot { get; set; }
+
+        private static string? getUserProfileLocation(Func<string, string?> getEnvironmentVariable, Func<Environment.SpecialFolder, string> getFolderPath)
         {
             string? path = getPlatform() switch
             {
-                OperatingSystem.Windows =>
-                    Environment.GetEnvironmentVariable("UserProfile"),
-
-                OperatingSystem.Linux =>
-                     Environment.GetEnvironmentVariable("HOME"),
-
-                OperatingSystem.OSX =>
-                   Environment.GetEnvironmentVariable("HOME"),
-
-                _ => throw new Exception("Unknown OS")
+                OperatingSystem.Windows => getEnvironmentVariable("UserProfile"),
+                OperatingSystem.Linux => getEnvironmentVariable("HOME"),
+                OperatingSystem.OSX => getEnvironmentVariable("HOME"),
+                _ => getFolderPath(Environment.SpecialFolder.UserProfile)
             };
 
-            return path == null ? throw new Exception("Cannot determine rootpath of operating system") : path;
+            return string.IsNullOrWhiteSpace(path) ? null : path;
         }
 
         /// <summary>
-        /// Return the FHIR packages folder location
+        /// Return the FHIR packages folder location. The location is determined as follows, the first one available wins:
+        /// <list type="number">
+        /// <item><see cref="PackageRoot"/></item>
+        /// <item>the <c>FHIR_PACKAGE_CACHE</c> environment variable</item>
+        /// <item><c>.fhir/packages</c> in the user profile (<c>%UserProfile%</c> on Windows, <c>$HOME</c> elsewhere)</item>
+        /// <item><c>.fhir/packages</c> in the machine-wide application data folder (<see cref="Environment.SpecialFolder.CommonApplicationData"/>),
+        /// for processes that have no user profile, such as services or IIS application pools.</item>
+        /// </list>
         /// </summary>
         /// <returns>The path of the package root</returns>
-        public static string GetFhirPackageRoot()
+        public static string GetFhirPackageRoot() =>
+            ResolveFhirPackageRoot(PackageRoot, Environment.GetEnvironmentVariable, Environment.GetFolderPath);
+
+        internal static string ResolveFhirPackageRoot(string? packageRootOverride, Func<string, string?> getEnvironmentVariable, Func<Environment.SpecialFolder, string> getFolderPath)
         {
-            string root = getGenericDataLocation();
+            if (!string.IsNullOrWhiteSpace(packageRootOverride))
+                return packageRootOverride!;
+
+            var fromEnvironment = getEnvironmentVariable(PackageCacheEnvironmentVariable);
+            if (!string.IsNullOrWhiteSpace(fromEnvironment))
+                return fromEnvironment!;
+
+            var root = getUserProfileLocation(getEnvironmentVariable, getFolderPath);
+            if (root is null)
+            {
+                root = getFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                if (string.IsNullOrWhiteSpace(root))
+                    throw new Exception($"Cannot determine the location of the FHIR package cache. Specify it with the {PackageCacheEnvironmentVariable} environment variable or by passing a cache folder.");
+            }
 
             return Path.Combine(root, ".fhir", "packages");
         }
