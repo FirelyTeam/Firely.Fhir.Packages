@@ -102,7 +102,7 @@ public class FileIndex : List<PackageFileReference>
     /// <summary>
     /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
     /// When multiple items share the highest version, the first is returned.
-    /// Versions are ordered by SemVer when all are SemVer, by date when all are dates, else alphabetically; a missing version ranks lowest.
+    /// Versions are ordered numerically when all are numeric dotted, else by SemVer when all are SemVer, by date when all are dates, else alphabetically; a missing version ranks lowest.
     /// </summary>
     public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion) =>
         SelectBestCandidate(candidates, getVersion, _ => false);
@@ -110,7 +110,7 @@ public class FileIndex : List<PackageFileReference>
     /// <summary>
     /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
     /// When multiple items share the highest version, <paramref name="preferred"/> is used as a tie-breaker.
-    /// Versions are ordered by SemVer when all are SemVer, by date when all are dates, else alphabetically; a missing version ranks lowest.
+    /// Versions are ordered numerically when all are numeric dotted, else by SemVer when all are SemVer, by date when all are dates, else alphabetically; a missing version ranks lowest.
     /// </summary>
     public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion, Func<T, bool> preferred)
     {
@@ -128,11 +128,12 @@ public class FileIndex : List<PackageFileReference>
 
     private static readonly Regex DateVersion = new(@"^\d{4}(-?\d{2}(-?\d{2})?)?$", RegexOptions.Compiled);
 
-    // Mirrors Simplifier's CanonicalReferenceHandling.FindBestVersion: SemVer, else date, else alphabetical; missing lowest.
+    // Numeric when all are numeric dotted, else as Simplifier's FindBestVersion: SemVer, date, alphabetical; missing lowest.
     private static Comparison<string?> versionComparison(List<string> versions)
     {
         Comparison<string> byValue =
-            versions.All(v => SemanticVersioning.Version.TryParse(v, out _)) ? (a, b) => new SemanticVersioning.Version(a).CompareTo(new SemanticVersioning.Version(b))
+            versions.All(v => Version.TryParse(v, out _)) ? (a, b) => Version.Parse(a).CompareTo(Version.Parse(b))
+            : versions.All(v => SemanticVersioning.Version.TryParse(v, out _)) ? (a, b) => new SemanticVersioning.Version(a).CompareTo(new SemanticVersioning.Version(b))
             : versions.All(DateVersion.IsMatch) ? (a, b) => string.CompareOrdinal(digitsOf(a), digitsOf(b))
             : StringComparer.OrdinalIgnoreCase.Compare;
 
