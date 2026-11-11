@@ -128,7 +128,7 @@ public class FileIndex : List<PackageFileReference>
 
     private static readonly Regex DateVersion = new(@"^\d{4}(-?\d{2}(-?\d{2})?)?$", RegexOptions.Compiled);
 
-    // Numeric when all are numeric dotted, else as Simplifier's FindBestVersion: SemVer, date, alphabetical; missing lowest.
+    // Numeric when all are numeric dotted, else SemVer, else date, else alphabetical (ignoring case); missing lowest.
     private static Comparison<string?> versionComparison(List<string> versions)
     {
         Comparison<string> byValue =
