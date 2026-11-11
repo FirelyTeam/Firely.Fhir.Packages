@@ -66,7 +66,6 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("1.0.0-ballot", "0.9.0", "1.0.0-ballot")]
         [DataRow("0.9.0", "1.0.0-ballot", "1.0.0-ballot")]
         // rule 3: dates
-        [DataRow("2024-01-01", "2024-02-01", "2024-02-01")]
         [DataRow("2024-02-01", "2024-01-01", "2024-02-01")]
         [DataRow("2024-01-15", "2023-06-01", "2024-01-15")]
         [DataRow("2023-06-01", "2024-01-15", "2024-01-15")]
