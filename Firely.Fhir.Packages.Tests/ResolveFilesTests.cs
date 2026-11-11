@@ -72,6 +72,14 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("2023-06", "2024-01", "2024-01")]
         [DataRow("2024", "2023", "2024")]
         [DataRow("20240201", "20240101", "20240201")]
+        // mixed dashed/undashed: date order disagrees with alphabetical order
+        [DataRow("2024-02", "202401", "2024-02")]
+        [DataRow("202401", "2024-02", "2024-02")]
+        [DataRow("2024-02-01", "20240115", "2024-02-01")]
+        [DataRow("20240115", "2024-02-01", "2024-02-01")]
+        // equal dates written differently: first wins
+        [DataRow("2024-01-01", "20240101", "2024-01-01")]
+        [DataRow("20240101", "2024-01-01", "20240101")]
         // rule 4: alphabetical, ignoring case
         [DataRow("draft", "Final", "Final")]
         [DataRow("Final", "draft", "Final")]
@@ -116,6 +124,18 @@ namespace Firely.Fhir.Packages.Tests
                 var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
                 FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("1.0.0");
             }
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateUsesPreferredFilterWhenDatesAreEqualButWrittenDifferently()
+        {
+            var candidates = new[]
+            {
+                new { Version = "2024-01-01", HasSnapshot = false },
+                new { Version = "20240101", HasSnapshot = true }
+            };
+
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.HasSnapshot).Version.Should().Be("20240101");
         }
 
         [TestMethod]
