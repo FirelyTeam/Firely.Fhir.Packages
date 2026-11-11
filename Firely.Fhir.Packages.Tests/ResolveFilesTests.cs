@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages.Tests
@@ -51,8 +52,36 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("1.0.1", "1.0.2", "1.0.2")]
         [DataRow("2.0.1", "1.0.1", "2.0.1")]
         [DataRow("1.1.0", "10.0.2", "10.0.2")]
-        [DataRow("2024-01-01", "2.0.0", "2.0.0")] // non-parseable versions lose to any parseable version
-        [DataRow("2024-01-01", "2024-02-01", "2024-01-01")] // both non-parseable: first is returned
+        [DataRow("2024-01-01", "2.0.0", "2024-01-01")] // mixed set: alphabetical, last wins
+        [DataRow("2024-01-01", "2024-02-01", "2024-02-01")] // all dates: later wins
+        // rule 1: numeric dotted
+        [DataRow("1.9", "1.10", "1.10")]
+        [DataRow("1.10", "1.9", "1.10")]
+        [DataRow("10.0.2", "1.1.0", "10.0.2")]
+        [DataRow("4.0.1", "5.0.0", "5.0.0")]
+        [DataRow("4.0.1.2", "4.0.1", "4.0.1.2")]
+        // rule 2: SemVer
+        [DataRow("1.0.0", "1.0.0-ballot", "1.0.0")]
+        [DataRow("1.0.0-ballot", "1.0.0", "1.0.0")]
+        [DataRow("1.0.0-ballot", "0.9.0", "1.0.0-ballot")]
+        [DataRow("0.9.0", "1.0.0-ballot", "1.0.0-ballot")]
+        // rule 3: dates
+        [DataRow("2024-01-01", "2024-02-01", "2024-02-01")]
+        [DataRow("2024-02-01", "2024-01-01", "2024-02-01")]
+        [DataRow("2024-01-15", "2023-06-01", "2024-01-15")]
+        [DataRow("2023-06-01", "2024-01-15", "2024-01-15")]
+        [DataRow("2023-06", "2024-01", "2024-01")]
+        [DataRow("2024", "2023", "2024")]
+        [DataRow("20240201", "20240101", "20240201")]
+        // rule 4: alphabetical, ignoring case
+        [DataRow("draft", "Final", "Final")]
+        [DataRow("Final", "draft", "Final")]
+        [DataRow("alpha", "Beta", "Beta")]
+        // missing version ranks lowest
+        [DataRow(null, "0.0.1", "0.0.1")]
+        [DataRow("0.0.1", null, "0.0.1")]
+        [DataRow("", "0.0.1", "0.0.1")]
+        [DataRow("0.0.1", "", "0.0.1")]
         [DataTestMethod]
         public void SelectBestCandidatePicksHighestVersion(string version1, string version2, string expectedResult)
         {
@@ -77,6 +106,31 @@ namespace Firely.Fhir.Packages.Tests
 
             var best = FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.HasSnapshot);
             best.HasSnapshot.Should().BeTrue(because: "the preferred item should win the tie-break");
+        }
+
+        [TestMethod]
+        public void SelectBestCandidatePicksHighestOfThreeSemVerInAnyOrder()
+        {
+            var versions = new[] { "0.9.0", "1.0.0-ballot", "1.0.0" };
+            foreach (var order in new[] { new[] { 0, 1, 2 }, new[] { 2, 1, 0 }, new[] { 1, 0, 2 } })
+            {
+                var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
+                FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("1.0.0");
+            }
+        }
+
+        [TestMethod]
+        public void ResolveBestCandidateByCanonicalPrefersSnapshotOnEqualVersion()
+        {
+            var url = "http://fire.ly/StructureDefinition/tie";
+            var index = new FileIndex();
+            index.AddRange(new List<PackageFileReference>
+            {
+                new PackageFileReference("nosnap.json") { Canonical = url, Version = "1.0.0", HasSnapshot = false },
+                new PackageFileReference("snap.json") { Canonical = url, Version = "1.0.0", HasSnapshot = true }
+            });
+
+            index.ResolveBestCandidateByCanonical(url)!.FileName.Should().Be("snap.json");
         }
 
         [TestMethod]
