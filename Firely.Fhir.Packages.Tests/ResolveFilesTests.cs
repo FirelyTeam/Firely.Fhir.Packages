@@ -80,6 +80,15 @@ namespace Firely.Fhir.Packages.Tests
         // equal dates written differently: first wins
         [DataRow("2024-01-01", "20240101", "2024-01-01")]
         [DataRow("20240101", "2024-01-01", "20240101")]
+        [DataRow("2023-12", "202401", "202401")]
+        [DataRow("202401", "2023-12", "202401")]
+        // not all dates (invalid month, mixed separator, invalid day): alphabetical
+        [DataRow("2024-99", "202401", "202401")]
+        [DataRow("202401", "2024-99", "202401")]
+        [DataRow("2024-0101", "2024-01-02", "2024-0101")]
+        [DataRow("2024-01-02", "2024-0101", "2024-0101")]
+        [DataRow("2024-01-32", "20240102", "20240102")]
+        [DataRow("20240102", "2024-01-32", "20240102")]
         // rule 4: alphabetical, ignoring case
         [DataRow("draft", "Final", "Final")]
         [DataRow("Final", "draft", "Final")]
