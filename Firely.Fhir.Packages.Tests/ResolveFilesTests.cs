@@ -89,6 +89,8 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("2024-01-02", "2024-0101", "2024-0101")]
         [DataRow("2024-01-32", "20240102", "20240102")]
         [DataRow("20240102", "2024-01-32", "20240102")]
+        [DataRow("2024-02\n", "202401", "202401")] // trailing newline: not a date
+        [DataRow("202401", "2024-02\n", "202401")]
         // rule 4: alphabetical, ignoring case
         [DataRow("draft", "Final", "Final")]
         [DataRow("Final", "draft", "Final")]
@@ -139,28 +141,12 @@ namespace Firely.Fhir.Packages.Tests
         public void SelectBestCandidateOrdersWholeSetAlphabeticallyWhenOneVersionIsNotNumeric()
         {
             var versions = new[] { "1.9", "1.10", "0draft" };
-            foreach (var order in Permutations(3))
+            foreach (var order in new[] { new[] { 0, 1, 2 }, new[] { 0, 2, 1 }, new[] { 1, 0, 2 }, new[] { 1, 2, 0 }, new[] { 2, 0, 1 }, new[] { 2, 1, 0 } })
             {
                 var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
                 FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("1.9");
             }
         }
-
-        [TestMethod]
-        public void SelectBestCandidateTreatsTrailingNewlineAsNotADate()
-        {
-            var versions = new[] { "2024-02\n", "202401" };
-            foreach (var order in Permutations(2))
-            {
-                var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
-                FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("202401");
-            }
-        }
-
-        private static IEnumerable<int[]> Permutations(int n) =>
-            Enumerable.Range(0, n).Aggregate(
-                new[] { new int[0] }.AsEnumerable(),
-                (acc, _) => acc.SelectMany(p => Enumerable.Range(0, n).Where(i => !p.Contains(i)), (p, i) => p.Append(i).ToArray()));
 
         [TestMethod]
         public void SelectBestCandidateUsesPreferredFilterWhenDatesAreEqualButWrittenDifferently()
