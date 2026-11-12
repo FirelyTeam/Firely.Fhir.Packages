@@ -136,6 +136,33 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
+        public void SelectBestCandidateOrdersWholeSetAlphabeticallyWhenOneVersionIsNotNumeric()
+        {
+            var versions = new[] { "1.9", "1.10", "0draft" };
+            foreach (var order in Permutations(3))
+            {
+                var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
+                FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("1.9");
+            }
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateTreatsTrailingNewlineAsNotADate()
+        {
+            var versions = new[] { "2024-02\n", "202401" };
+            foreach (var order in Permutations(2))
+            {
+                var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
+                FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("202401");
+            }
+        }
+
+        private static IEnumerable<int[]> Permutations(int n) =>
+            Enumerable.Range(0, n).Aggregate(
+                new[] { new int[0] }.AsEnumerable(),
+                (acc, _) => acc.SelectMany(p => Enumerable.Range(0, n).Where(i => !p.Contains(i)), (p, i) => p.Append(i).ToArray()));
+
+        [TestMethod]
         public void SelectBestCandidateUsesPreferredFilterWhenDatesAreEqualButWrittenDifferently()
         {
             var candidates = new[]
