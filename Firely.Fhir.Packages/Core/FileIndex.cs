@@ -126,7 +126,7 @@ public class FileIndex : List<PackageFileReference>
         return preferredItems.Count > 0 ? preferredItems[0] : highestVersioned[0];
     }
 
-    private static readonly Regex DateVersion = new(@"^\d{4}(-?\d{2}(-?\d{2})?)?$", RegexOptions.Compiled);
+    private static readonly Regex DateVersion = new(@"^\d{4}((-?)(0[1-9]|1[0-2])(\2(0[1-9]|[12]\d|3[01]))?)?$", RegexOptions.Compiled);
 
     // Numeric when all are numeric dotted, else SemVer, else date, else alphabetical (ignoring case); missing lowest.
     private static Comparison<string?> versionComparison(List<string> versions)
