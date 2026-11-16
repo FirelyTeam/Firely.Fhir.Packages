@@ -64,14 +64,9 @@ public class FileIndex : List<PackageFileReference>
 
     internal PackageFileReference? ResolveBestCandidateById(string resourceType, string id, PackageClosure closure)
     {
-        var candidates = this.Where(r => r.ResourceType == resourceType && r.Id == id).ToList();
+        var candidates = this.Where(r => r.ResourceType == resourceType && r.Id == id && isProjectOrHighest(r.Package, closure)).ToList();
 
-        return candidates.Count switch
-        {
-            > 1 => resolveFromMultipleIdCandidates(candidates, closure),
-            1 => candidates.Single(),
-            _ => null
-        };
+        return candidates.FirstOrDefault(f => f.Package.NotFound) ?? candidates.FirstOrDefault();
     }
 
     /// <summary>
@@ -138,11 +133,9 @@ public class FileIndex : List<PackageFileReference>
         return preferredItems.Count > 0 ? preferredItems[0] : highestVersioned[0];
     }
 
-    // project files carry a not-Found package reference and always win
-    private static PackageFileReference resolveFromMultipleIdCandidates(List<PackageFileReference> candidates, PackageClosure closure) =>
-        candidates.FirstOrDefault(f => f.Package.NotFound)
-        ?? candidates.FirstOrDefault(f => closure.Find(f.Package.Name, out var highest) && highest == f.Package)
-        ?? candidates[0];
+    // project files carry a not-Found package reference; packages see only their highest version in the closure
+    private static bool isProjectOrHighest(PackageReference package, PackageClosure closure) =>
+        package.NotFound || (closure.Find(package.Name, out var highest) && highest == package);
 
     private static PackageFileReference resolveFromMultipleCandidates(List<PackageFileReference> candidates) =>
         SelectBestCandidate(candidates, f => f.Version, f => f.HasSnapshot == true || f.HasExpansion == true);
