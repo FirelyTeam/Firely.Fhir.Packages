@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages.Tests
@@ -225,6 +227,81 @@ namespace Firely.Fhir.Packages.Tests
         {
             var idx = index(entry("a.json", "Basic", "shared", "stranger", "1.0.0"));
             idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"))).Should().BeNull();
+        }
+    }
+
+    [TestClass]
+    public class GetFileContentByIdTest
+    {
+        private string _root = null!;
+
+        [TestInitialize]
+        public void Setup() => _root = Path.Combine(Path.GetTempPath(), $"packages-lib-tests-byid-{Guid.NewGuid()}");
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            try { Directory.Delete(_root, true); } catch (DirectoryNotFoundException) { }
+        }
+
+        private static string basic(string marker) => $"{{\"resourceType\":\"Basic\",\"id\":\"shared\",\"text\":\"{marker}\"}}";
+
+        private void writePackage(string name, string version, string marker)
+        {
+            var dir = Path.Combine(_root, "cache", $"{name}#{version}", "package");
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(Path.Combine(dir, "package.json"), $"{{\"name\":\"{name}\",\"version\":\"{version}\"}}");
+            File.WriteAllText(Path.Combine(dir, "Basic-shared.json"), basic(marker));
+        }
+
+        private async Task<PackageContext> context(bool lockFile, string? projectMarker, params (string name, string version)[] pkgs)
+        {
+            var projectDir = Path.Combine(_root, "project");
+            Directory.CreateDirectory(projectDir);
+            if (projectMarker is not null) File.WriteAllText(Path.Combine(projectDir, "Basic-shared.json"), basic(projectMarker));
+            var project = new FolderProject(projectDir);
+            if (lockFile)
+            {
+                var closure = new PackageClosure();
+                foreach (var (n, v) in pkgs) closure.Add(new PackageReference(n, v));
+                await project.WriteClosure(closure);
+            }
+            return new PackageContext(new DiskPackageCache(Path.Combine(_root, "cache")), project, null);
+        }
+
+        [TestMethod]
+        public async Task Returns_content_of_highest_version_when_two_versions_hold_the_id()
+        {
+            writePackage("pkg", "1.0.0", "low");
+            writePackage("pkg", "2.0.0", "high");
+            var ctx = await context(true, null, ("pkg", "1.0.0"), ("pkg", "2.0.0"));
+            (await ctx.GetFileContentById("Basic", "shared")).Should().Contain("high");
+        }
+
+        [TestMethod]
+        public async Task Returns_project_file_content_over_package_versions()
+        {
+            writePackage("pkg", "1.0.0", "low");
+            writePackage("pkg", "2.0.0", "high");
+            var ctx = await context(true, "project", ("pkg", "1.0.0"), ("pkg", "2.0.0"));
+            (await ctx.GetFileContentById("Basic", "shared")).Should().Contain("project");
+        }
+
+        [TestMethod]
+        public async Task Returns_content_with_one_version_per_package()
+        {
+            writePackage("pkga", "1.0.0", "a");
+            writePackage("pkgb", "1.0.0", "b");
+            var ctx = await context(true, null, ("pkga", "1.0.0"), ("pkgb", "1.0.0"));
+            (await ctx.GetFileContentById("Basic", "shared")).Should().Contain("\"a\"");
+        }
+
+        [TestMethod]
+        public async Task Throws_missing_lock_file_error_when_project_has_no_lock_file()
+        {
+            var ctx = await context(false, null);
+            var act = () => ctx.GetFileContentById("Basic", "shared");
+            (await act.Should().ThrowAsync<Exception>()).Which.ToString().Should().Contain("The folder does not contain a package lock file.");
         }
     }
 }
