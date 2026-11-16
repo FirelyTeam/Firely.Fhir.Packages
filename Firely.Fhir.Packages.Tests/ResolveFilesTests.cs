@@ -139,4 +139,92 @@ namespace Firely.Fhir.Packages.Tests
         }
 
     }
+
+    [TestClass]
+    public class ResolveBestCandidateByIdTest
+    {
+        private static PackageFileReference entry(string file, string type, string id, string? pkg = null, string? version = null)
+        {
+            var r = new PackageFileReference(file) { ResourceType = type, Id = id };
+            if (pkg is not null) r.Package = new PackageReference(pkg, version);
+            return r;
+        }
+
+        private static PackageClosure closure(params (string name, string version)[] pkgs)
+        {
+            var c = new PackageClosure();
+            foreach (var (name, version) in pkgs) c.Add(new PackageReference(name, version));
+            return c;
+        }
+
+        private static FileIndex index(params PackageFileReference[] entries)
+        {
+            var i = new FileIndex();
+            i.AddRange(entries);
+            return i;
+        }
+
+        [TestMethod]
+        public void Prefers_highest_version_when_lower_is_first_in_index()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "pkg", "1.0.0"), entry("b.json", "Basic", "shared", "pkg", "2.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"), ("pkg", "2.0.0")))!.FilePath.Should().Be("b.json");
+        }
+
+        [TestMethod]
+        public void Prefers_highest_version_when_higher_is_first_in_index()
+        {
+            var idx = index(entry("b.json", "Basic", "shared", "pkg", "2.0.0"), entry("a.json", "Basic", "shared", "pkg", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"), ("pkg", "2.0.0")))!.FilePath.Should().Be("b.json");
+        }
+
+        [TestMethod]
+        public void Project_file_wins_over_package_entries_even_when_last_in_index()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "pkg", "1.0.0"), entry("b.json", "Basic", "shared", "pkg", "2.0.0"), entry("proj.json", "Basic", "shared"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"), ("pkg", "2.0.0")))!.FilePath.Should().Be("proj.json");
+        }
+
+        [TestMethod]
+        public void Returns_first_in_index_order_across_different_packages()
+        {
+            var idx = index(entry("x.json", "Basic", "shared", "pkgx", "1.0.0"), entry("y.json", "Basic", "shared", "pkgy", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkgx", "1.0.0"), ("pkgy", "1.0.0")))!.FilePath.Should().Be("x.json");
+        }
+
+        [TestMethod]
+        public void Returns_null_when_match_exists_only_in_lower_version()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "pkg", "1.0.0"), entry("b.json", "Basic", "other", "pkg", "2.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"), ("pkg", "2.0.0"))).Should().BeNull();
+        }
+
+        [TestMethod]
+        public void Returns_match_in_single_version_scope()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "pkg", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0")))!.FilePath.Should().Be("a.json");
+        }
+
+        [TestMethod]
+        public void Returns_null_when_no_entry_has_that_id()
+        {
+            var idx = index(entry("a.json", "Basic", "other", "pkg", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"))).Should().BeNull();
+        }
+
+        [TestMethod]
+        public void Returns_null_when_id_matches_but_resource_type_differs()
+        {
+            var idx = index(entry("a.json", "Patient", "shared", "pkg", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"))).Should().BeNull();
+        }
+
+        [TestMethod]
+        public void Returns_null_when_entry_package_is_not_in_closure()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "stranger", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"))).Should().BeNull();
+        }
+    }
 }
