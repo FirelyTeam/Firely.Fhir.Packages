@@ -91,6 +91,8 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("20240102", "2024-01-32", "20240102")]
         [DataRow("2024-02\n", "202401", "202401")] // trailing newline: not a date
         [DataRow("202401", "2024-02\n", "202401")]
+        [DataRow("2024-01-2\u0661", "20240122", "20240122")] // non-ASCII digit: not a date
+        [DataRow("20240122", "2024-01-2\u0661", "20240122")]
         // rule 4: alphabetical, ignoring case
         [DataRow("draft", "Final", "Final")]
         [DataRow("Final", "draft", "Final")]
