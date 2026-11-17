@@ -62,6 +62,13 @@ public class FileIndex : List<PackageFileReference>
         };
     }
 
+    internal PackageFileReference? ResolveBestCandidateById(string resourceType, string id, PackageClosure closure)
+    {
+        var candidates = this.Where(r => r.ResourceType == resourceType && r.Id == id && isProjectOrHighest(r.Package, closure)).ToList();
+
+        return candidates.FirstOrDefault(f => f.Package.NotFound) ?? candidates.FirstOrDefault();
+    }
+
     /// <summary>
     /// Returns every file found with a specific canonical URI and optional version, in index order.
     /// Supports partial version matching according to FHIR canonical matching specification.
@@ -125,6 +132,10 @@ public class FileIndex : List<PackageFileReference>
         var preferredItems = highestVersioned.Where(preferred).ToList();
         return preferredItems.Count > 0 ? preferredItems[0] : highestVersioned[0];
     }
+
+    // project files carry a not-Found package reference; packages see only their highest version in the closure
+    private static bool isProjectOrHighest(PackageReference package, PackageClosure closure) =>
+        package.NotFound || (closure.Find(package.Name, out var highest) && highest == package);
 
     private static PackageFileReference resolveFromMultipleCandidates(List<PackageFileReference> candidates) =>
         SelectBestCandidate(candidates, f => f.Version, f => f.HasSnapshot == true || f.HasExpansion == true);
