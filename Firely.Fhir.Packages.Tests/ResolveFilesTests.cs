@@ -54,13 +54,13 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("1.1.0", "10.0.2", "10.0.2")]
         [DataRow("2024-01-01", "2.0.0", "2024-01-01")] // mixed set: alphabetical, last wins
         [DataRow("2024-01-01", "2024-02-01", "2024-02-01")] // all dates: later wins
-        // rule 1: numeric dotted
+        // rule 2: numeric dotted
         [DataRow("1.9", "1.10", "1.10")]
         [DataRow("1.10", "1.9", "1.10")]
         [DataRow("10.0.2", "1.1.0", "10.0.2")]
         [DataRow("4.0.1", "5.0.0", "5.0.0")]
         [DataRow("4.0.1.2", "4.0.1", "4.0.1.2")]
-        // rule 2: SemVer
+        // rule 1: SemVer
         [DataRow("1.0.0", "1.0.0-ballot", "1.0.0")]
         [DataRow("1.0.0-ballot", "1.0.0", "1.0.0")]
         [DataRow("1.0.0-ballot", "0.9.0", "1.0.0-ballot")]

@@ -11,7 +11,6 @@ using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Firely.Fhir.Packages;
 
@@ -102,7 +101,7 @@ public class FileIndex : List<PackageFileReference>
     /// <summary>
     /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
     /// When multiple items share the highest version, the first is returned.
-    /// Versions are ordered numerically when all are numeric dotted, else by SemVer when all are SemVer, by date when all are dates, else alphabetically; a missing version ranks lowest.
+    /// Versions are ordered by SemVer when all are SemVer, else numerically when all are numeric dotted, by date when all are dates, else alphabetically; a missing version ranks lowest.
     /// </summary>
     public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion) =>
         SelectBestCandidate(candidates, getVersion, _ => false);
@@ -110,12 +109,12 @@ public class FileIndex : List<PackageFileReference>
     /// <summary>
     /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
     /// When multiple items share the highest version, <paramref name="preferred"/> is used as a tie-breaker.
-    /// Versions are ordered numerically when all are numeric dotted, else by SemVer when all are SemVer, by date when all are dates, else alphabetically; a missing version ranks lowest.
+    /// Versions are ordered by SemVer when all are SemVer, else numerically when all are numeric dotted, by date when all are dates, else alphabetically; a missing version ranks lowest.
     /// </summary>
     public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion, Func<T, bool> preferred)
     {
         var items = candidates.ToList();
-        var compare = versionComparison([.. items.Select(getVersion).Where(v => !string.IsNullOrEmpty(v)).Select(v => v!)]);
+        var compare = versionComparison(CanonicalReferenceHandling.ResolverFor([.. items.Select(getVersion).Where(v => !string.IsNullOrEmpty(v)).Select(v => v!)]));
         var best = items.Aggregate((max, item) => compare(getVersion(item), getVersion(max)) > 0 ? item : max);
         var highestVersioned = items.Where(item => compare(getVersion(item), getVersion(best)) == 0).ToList();
 
@@ -126,27 +125,15 @@ public class FileIndex : List<PackageFileReference>
         return preferredItems.Count > 0 ? preferredItems[0] : highestVersioned[0];
     }
 
-    private static readonly Regex DateVersion = new(@"^[0-9]{4}((-?)(0[1-9]|1[0-2])(\2(0[1-9]|[12][0-9]|3[01]))?)?\z", RegexOptions.Compiled);
-
-    // Numeric when all are numeric dotted, else SemVer, else date, else alphabetical (ignoring case); missing lowest.
-    private static Comparison<string?> versionComparison(List<string> versions)
-    {
-        Comparison<string> byValue =
-            versions.All(v => Version.TryParse(v, out _)) ? (a, b) => Version.Parse(a).CompareTo(Version.Parse(b))
-            : versions.All(v => SemanticVersioning.Version.TryParse(v, out _)) ? (a, b) => new SemanticVersioning.Version(a).CompareTo(new SemanticVersioning.Version(b))
-            : versions.All(DateVersion.IsMatch) ? (a, b) => string.CompareOrdinal(digitsOf(a), digitsOf(b))
-            : StringComparer.OrdinalIgnoreCase.Compare;
-
-        return (a, b) => (string.IsNullOrEmpty(a), string.IsNullOrEmpty(b)) switch
+    // A missing version ranks lowest; the rest are ordered by the resolver chosen for the set.
+    private static Comparison<string?> versionComparison(ICanonicalVersionResolver resolver) =>
+        (a, b) => (string.IsNullOrEmpty(a), string.IsNullOrEmpty(b)) switch
         {
             (true, true) => 0,
             (true, false) => -1,
             (false, true) => 1,
-            _ => byValue(a!, b!)
+            _ => resolver.Compare(a!, b!)
         };
-    }
-
-    private static string digitsOf(string version) => new([.. version.Where(char.IsDigit)]);
 
     private static PackageFileReference resolveFromMultipleCandidates(List<PackageFileReference> candidates) =>
         SelectBestCandidate(candidates, f => f.Version, f => f.HasSnapshot == true || f.HasExpansion == true);
