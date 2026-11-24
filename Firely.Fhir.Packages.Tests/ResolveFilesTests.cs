@@ -211,6 +211,49 @@ namespace Firely.Fhir.Packages.Tests
         }
 
         [TestMethod]
+        public void SelectBestCandidateThrowsOnEmptyCandidatesInEveryOverload()
+        {
+            var none = new (string? Version, string? Algorithm, bool Preferred)[0];
+            FluentActions.Invoking(() => FileIndex.SelectBestCandidate(none, c => c.Version)).Should().Throw<System.InvalidOperationException>();
+            FluentActions.Invoking(() => FileIndex.SelectBestCandidate(none, c => c.Version, c => c.Preferred)).Should().Throw<System.InvalidOperationException>();
+            FluentActions.Invoking(() => FileIndex.SelectBestCandidate(none, c => c.Version, c => c.Algorithm, c => c.Preferred)).Should().Throw<System.InvalidOperationException>();
+        }
+
+        [DataRow(0)]
+        [DataRow(1)]
+        [DataRow(2)]
+        [DataTestMethod]
+        public void SelectBestCandidateTiesWhenEveryVersionIsMissingAndPreferredWins(int preferredIndex)
+        {
+            var versions = new string?[] { null, "", null };
+            var candidates = versions.Select((v, i) => new { Version = v, Index = i }).ToArray();
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.Index == preferredIndex).Index.Should().Be(preferredIndex);
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateReturnsFirstWhenEveryVersionIsMissingAndNoneIsPreferred()
+        {
+            var candidates = new[] { new { Version = (string?)"", Index = 0 }, new { Version = (string?)null, Index = 1 } };
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, _ => false).Index.Should().Be(0);
+            FileIndex.SelectBestCandidate(candidates.Reverse().ToArray(), c => c.Version, _ => false).Index.Should().Be(1);
+        }
+
+        [DataRow("20240101", "2024-01-01", null)]
+        [DataRow("2024-01-01", "20240101", null)]
+        [DataRow("007", "7", "integer")]
+        [DataRow("7", "007", "integer")]
+        [DataRow("1.0.0", "1.0.0", null)]
+        [DataTestMethod]
+        public void SelectBestCandidateReturnsFirstOfTiedHighestWhenNoneIsPreferred(string v1, string v2, string? algorithm)
+        {
+            // the lower version listed first must not win
+            var low = algorithm == "integer" ? "6" : v1.StartsWith("2024") ? "20231231" : "0.9.0";
+            var candidates = new[] { new { Version = low, Index = 0 }, new { Version = v1, Index = 1 }, new { Version = v2, Index = 2 } };
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, _ => algorithm, _ => false).Index.Should().Be(1);
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, _ => false).Index.Should().Be(1);
+        }
+
+        [TestMethod]
         public void SelectBestCandidateUsesPreferredFilterWhenDatesAreEqualButWrittenDifferently()
         {
             var candidates = new[]

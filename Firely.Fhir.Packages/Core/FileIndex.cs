@@ -128,27 +128,57 @@ public class FileIndex : List<PackageFileReference>
     public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion, Func<T, string?> getVersionAlgorithm, Func<T, bool> preferred)
     {
         var items = candidates.ToList();
-        var versions = items.Select(getVersion).Where(v => !string.IsNullOrEmpty(v)).Select(v => v!).ToList();
-        var compare = versionComparison(CanonicalReferenceHandling.ResolverFor(versions, items.Select(getVersionAlgorithm)));
-        var best = items.Aggregate((max, item) => compare(getVersion(item), getVersion(max)) > 0 ? item : max);
-        var highestVersioned = items.Where(item => compare(getVersion(item), getVersion(best)) == 0).ToList();
+        var versioned = versionedItems(items, getVersion);
 
-        if (highestVersioned.Count == 1)
-            return highestVersioned[0];
+        // Without any version there is nothing to order, so every candidate ties.
+        if (versioned.Count == 0)
+            return preferredOrFirst(items, preferred);
 
-        var preferredItems = highestVersioned.Where(preferred).ToList();
-        return preferredItems.Count > 0 ? preferredItems[0] : highestVersioned[0];
-    }
+        var versions = versioned.Select(entry => entry.Version).ToList();
+        var declaredAlgorithms = items.Select(getVersionAlgorithm);
+        var resolver = CanonicalReferenceHandling.ResolverFor(versions, declaredAlgorithms);
 
-    // A missing version ranks lowest; the rest are ordered by the resolver chosen for the set.
-    private static Comparison<string?> versionComparison(ICanonicalVersionResolver resolver) =>
-        (a, b) => (string.IsNullOrEmpty(a), string.IsNullOrEmpty(b)) switch
+        var highestVersion = highestOf(versions, resolver);
+        var withHighestVersion = itemsWithVersion(versioned, highestVersion, resolver);
+
+        return preferredOrFirst(withHighestVersion, preferred);
+
+        static List<(T Item, string Version)> versionedItems(
+            List<T> items, Func<T, string?> getVersion)
         {
-            (true, true) => 0,
-            (true, false) => -1,
-            (false, true) => 1,
-            _ => resolver.Compare(a!, b!)
-        };
+            var versioned = new List<(T Item, string Version)>();
+            foreach (var item in items)
+            {
+                var version = getVersion(item);
+                if (!string.IsNullOrEmpty(version))
+                    versioned.Add((item, version));
+            }
+            return versioned;
+        }
+
+        static string highestOf(List<string> versions, ICanonicalVersionResolver resolver) =>
+            versions.Aggregate((max, next) => resolver.Compare(next, max) > 0 ? next : max);
+
+        static List<T> itemsWithVersion(
+            List<(T Item, string Version)> versioned,
+            string version,
+            ICanonicalVersionResolver resolver) =>
+            versioned
+                .Where(entry => resolver.Compare(entry.Version, version) == 0)
+                .Select(entry => entry.Item)
+                .ToList();
+
+        // Throws InvalidOperationException when there are no items.
+        static T preferredOrFirst(List<T> items, Func<T, bool> preferred)
+        {
+            foreach (var item in items)
+            {
+                if (preferred(item))
+                    return item;
+            }
+            return items.First();
+        }
+    }
 
     private static PackageFileReference resolveFromMultipleCandidates(List<PackageFileReference> candidates) =>
         SelectBestCandidate(candidates, f => f.Version, f => f.HasSnapshot == true || f.HasExpansion == true);
