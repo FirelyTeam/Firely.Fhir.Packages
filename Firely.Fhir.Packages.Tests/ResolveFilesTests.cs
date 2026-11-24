@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages.Tests
@@ -138,5 +140,168 @@ namespace Firely.Fhir.Packages.Tests
             namingSystem.Should().Contain("2.16.840.1.113883.6.96");
         }
 
+    }
+
+    [TestClass]
+    public class ResolveBestCandidateByIdTest
+    {
+        private static PackageFileReference entry(string file, string type, string id, string? pkg = null, string? version = null)
+        {
+            var r = new PackageFileReference(file) { ResourceType = type, Id = id };
+            if (pkg is not null) r.Package = new PackageReference(pkg, version);
+            return r;
+        }
+
+        private static PackageClosure closure(params (string name, string version)[] pkgs)
+        {
+            var c = new PackageClosure();
+            foreach (var (name, version) in pkgs) c.Add(new PackageReference(name, version));
+            return c;
+        }
+
+        private static FileIndex index(params PackageFileReference[] entries)
+        {
+            var i = new FileIndex();
+            i.AddRange(entries);
+            return i;
+        }
+
+        [TestMethod]
+        public void Prefers_highest_version_when_lower_is_first_in_index()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "pkg", "1.0.0"), entry("b.json", "Basic", "shared", "pkg", "2.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"), ("pkg", "2.0.0")))!.FilePath.Should().Be("b.json");
+        }
+
+        [TestMethod]
+        public void Prefers_highest_version_when_higher_is_first_in_index()
+        {
+            var idx = index(entry("b.json", "Basic", "shared", "pkg", "2.0.0"), entry("a.json", "Basic", "shared", "pkg", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"), ("pkg", "2.0.0")))!.FilePath.Should().Be("b.json");
+        }
+
+        [TestMethod]
+        public void Project_file_wins_over_package_entries_even_when_last_in_index()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "pkg", "1.0.0"), entry("b.json", "Basic", "shared", "pkg", "2.0.0"), entry("proj.json", "Basic", "shared"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"), ("pkg", "2.0.0")))!.FilePath.Should().Be("proj.json");
+        }
+
+        [TestMethod]
+        public void Returns_first_in_index_order_across_different_packages()
+        {
+            var idx = index(entry("x.json", "Basic", "shared", "pkgx", "1.0.0"), entry("y.json", "Basic", "shared", "pkgy", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkgx", "1.0.0"), ("pkgy", "1.0.0")))!.FilePath.Should().Be("x.json");
+        }
+
+        [TestMethod]
+        public void Returns_null_when_match_exists_only_in_lower_version()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "pkg", "1.0.0"), entry("b.json", "Basic", "other", "pkg", "2.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"), ("pkg", "2.0.0"))).Should().BeNull();
+        }
+
+        [TestMethod]
+        public void Returns_match_in_single_version_scope()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "pkg", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0")))!.FilePath.Should().Be("a.json");
+        }
+
+        [TestMethod]
+        public void Returns_null_when_no_entry_has_that_id()
+        {
+            var idx = index(entry("a.json", "Basic", "other", "pkg", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"))).Should().BeNull();
+        }
+
+        [TestMethod]
+        public void Returns_null_when_id_matches_but_resource_type_differs()
+        {
+            var idx = index(entry("a.json", "Patient", "shared", "pkg", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"))).Should().BeNull();
+        }
+
+        [TestMethod]
+        public void Returns_null_when_entry_package_is_not_in_closure()
+        {
+            var idx = index(entry("a.json", "Basic", "shared", "stranger", "1.0.0"));
+            idx.ResolveBestCandidateById("Basic", "shared", closure(("pkg", "1.0.0"))).Should().BeNull();
+        }
+    }
+
+    [TestClass]
+    public class GetFileContentByIdTest
+    {
+        private string _root = null!;
+
+        [TestInitialize]
+        public void Setup() => _root = Path.Combine(Path.GetTempPath(), $"packages-lib-tests-byid-{Guid.NewGuid()}");
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            try { Directory.Delete(_root, true); } catch (DirectoryNotFoundException) { }
+        }
+
+        private static string basic(string marker) => $"{{\"resourceType\":\"Basic\",\"id\":\"shared\",\"text\":\"{marker}\"}}";
+
+        private void writePackage(string name, string version, string marker)
+        {
+            var dir = Path.Combine(_root, "cache", $"{name}#{version}", "package");
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(Path.Combine(dir, "package.json"), $"{{\"name\":\"{name}\",\"version\":\"{version}\"}}");
+            File.WriteAllText(Path.Combine(dir, "Basic-shared.json"), basic(marker));
+        }
+
+        private async Task<PackageContext> context(bool lockFile, string? projectMarker, params (string name, string version)[] pkgs)
+        {
+            var projectDir = Path.Combine(_root, "project");
+            Directory.CreateDirectory(projectDir);
+            if (projectMarker is not null) File.WriteAllText(Path.Combine(projectDir, "Basic-shared.json"), basic(projectMarker));
+            var project = new FolderProject(projectDir);
+            if (lockFile)
+            {
+                var closure = new PackageClosure();
+                foreach (var (n, v) in pkgs) closure.Add(new PackageReference(n, v));
+                await project.WriteClosure(closure);
+            }
+            return new PackageContext(new DiskPackageCache(Path.Combine(_root, "cache")), project, null);
+        }
+
+        [TestMethod]
+        public async Task Returns_content_of_highest_version_when_two_versions_hold_the_id()
+        {
+            writePackage("pkg", "1.0.0", "low");
+            writePackage("pkg", "2.0.0", "high");
+            var ctx = await context(true, null, ("pkg", "1.0.0"), ("pkg", "2.0.0"));
+            (await ctx.GetFileContentById("Basic", "shared")).Should().Contain("high");
+        }
+
+        [TestMethod]
+        public async Task Returns_project_file_content_over_package_versions()
+        {
+            writePackage("pkg", "1.0.0", "low");
+            writePackage("pkg", "2.0.0", "high");
+            var ctx = await context(true, "project", ("pkg", "1.0.0"), ("pkg", "2.0.0"));
+            (await ctx.GetFileContentById("Basic", "shared")).Should().Contain("project");
+        }
+
+        [TestMethod]
+        public async Task Returns_content_with_one_version_per_package()
+        {
+            writePackage("pkga", "1.0.0", "a");
+            writePackage("pkgb", "1.0.0", "b");
+            var ctx = await context(true, null, ("pkga", "1.0.0"), ("pkgb", "1.0.0"));
+            (await ctx.GetFileContentById("Basic", "shared")).Should().Contain("\"a\"");
+        }
+
+        [TestMethod]
+        public async Task Throws_missing_lock_file_error_when_project_has_no_lock_file()
+        {
+            var ctx = await context(false, null);
+            var act = () => ctx.GetFileContentById("Basic", "shared");
+            (await act.Should().ThrowAsync<Exception>()).Which.ToString().Should().Contain("The folder does not contain a package lock file.");
+        }
     }
 }

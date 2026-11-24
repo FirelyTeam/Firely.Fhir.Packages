@@ -66,9 +66,11 @@ namespace Firely.Fhir.Packages
         }
 
 
+        internal PackageClosure? IndexedClosure { get; private set; }
+
         private async Task<FileIndex> buildIndex()
         {
-            var closure = await readClosure();
+            var closure = IndexedClosure = await readClosure();
 
             var index = new FileIndex();
             await index.Index(Project);

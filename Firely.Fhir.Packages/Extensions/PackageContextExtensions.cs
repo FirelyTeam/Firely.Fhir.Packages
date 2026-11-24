@@ -161,7 +161,8 @@ namespace Firely.Fhir.Packages
 
         private static PackageFileReference? getFileReference(this PackageContext scope, string resourceType, string id)
         {
-            return scope.GetIndex().Where(i => i.ResourceType == resourceType && i.Id == id).FirstOrDefault();
+            var index = scope.GetIndex();
+            return index.ResolveBestCandidateById(resourceType, id, scope.IndexedClosure!);
         }
 
         /// <summary>
