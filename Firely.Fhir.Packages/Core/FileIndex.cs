@@ -136,7 +136,7 @@ public class FileIndex : List<PackageFileReference>
     internal static T SelectBestCandidateCore<T>(List<T> items, Func<T, string?> getVersion,
         Func<IReadOnlyList<string>, ICanonicalVersionResolver> resolverFor, Func<T, bool> preferred)
     {
-        var versioned = versionedItems(items, getVersion);
+        var versioned = pairWithVersions(items, getVersion);
 
         // Without any version there is nothing to order, so every candidate ties.
         if (versioned.Count == 0)
@@ -146,11 +146,11 @@ public class FileIndex : List<PackageFileReference>
         var resolver = resolverFor(versions);
 
         var highestVersion = highestOf(versions, resolver);
-        var withHighestVersion = itemsWithVersion(versioned, highestVersion, resolver);
+        var withHighestVersion = itemsAtVersion(versioned, highestVersion, resolver);
 
         return preferredOrFirst(withHighestVersion, preferred);
 
-        static List<(T Item, string Version)> versionedItems(
+        static List<(T Item, string Version)> pairWithVersions(
             List<T> items, Func<T, string?> getVersion)
         {
             var versioned = new List<(T Item, string Version)>();
@@ -166,7 +166,7 @@ public class FileIndex : List<PackageFileReference>
         static string highestOf(List<string> versions, ICanonicalVersionResolver resolver) =>
             versions.Aggregate((max, next) => resolver.Compare(next, max) > 0 ? next : max);
 
-        static List<T> itemsWithVersion(
+        static List<T> itemsAtVersion(
             List<(T Item, string Version)> versioned,
             string version,
             ICanonicalVersionResolver resolver) =>
