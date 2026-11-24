@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Firely.Fhir.Packages.Tests
@@ -25,7 +26,7 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("2.0.1", "1.0.1", "2.0.1")]
         [DataRow("1.1.0", "10.0.2", "10.0.2")]
         [DataRow("2.0.1", "10.0.1", "10.0.1")]
-        [DataRow("2024-01-01", "2.0.0", "2.0.0")] //dates are not allowed as version, a legal version will always be resolved in favor of an illegal version.
+        [DataRow("2024-01-01", "2.0.0", "2024-01-01")] // mixed set: natural order, 2024 > 2
         [DataTestMethod]
         public void ResolveBestCandidateByVersionTest(string version1, string version2, string expectedResult)
         {
@@ -51,8 +52,56 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow("1.0.1", "1.0.2", "1.0.2")]
         [DataRow("2.0.1", "1.0.1", "2.0.1")]
         [DataRow("1.1.0", "10.0.2", "10.0.2")]
-        [DataRow("2024-01-01", "2.0.0", "2.0.0")] // non-parseable versions lose to any parseable version
-        [DataRow("2024-01-01", "2024-02-01", "2024-01-01")] // both non-parseable: first is returned
+        [DataRow("2024-01-01", "2.0.0", "2024-01-01")] // mixed set: natural order, 2024 > 2
+        [DataRow("2024-01-01", "2024-02-01", "2024-02-01")] // all dates: later wins
+        // natural order: digit runs compare as numbers
+        [DataRow("1.9", "1.10", "1.10")]
+        [DataRow("1.10", "1.9", "1.10")]
+        [DataRow("10.0.2", "1.1.0", "10.0.2")]
+        [DataRow("4.0.1", "5.0.0", "5.0.0")]
+        [DataRow("4.0.1.2", "4.0.1", "4.0.1.2")]
+        // SemVer
+        [DataRow("1.0.0", "1.0.0-ballot", "1.0.0")]
+        [DataRow("1.0.0-ballot", "1.0.0", "1.0.0")]
+        [DataRow("1.0.0-ballot", "0.9.0", "1.0.0-ballot")]
+        [DataRow("0.9.0", "1.0.0-ballot", "1.0.0-ballot")]
+        // dates
+        [DataRow("2024-02-01", "2024-01-01", "2024-02-01")]
+        [DataRow("2024-01-15", "2023-06-01", "2024-01-15")]
+        [DataRow("2023-06-01", "2024-01-15", "2024-01-15")]
+        [DataRow("2023-06", "2024-01", "2024-01")]
+        [DataRow("2024", "2023", "2024")]
+        [DataRow("20240201", "20240101", "20240201")]
+        // mixed dashed/undashed: date order disagrees with alphabetical order
+        [DataRow("2024-02", "202401", "2024-02")]
+        [DataRow("202401", "2024-02", "2024-02")]
+        [DataRow("2024-02-01", "20240115", "2024-02-01")]
+        [DataRow("20240115", "2024-02-01", "2024-02-01")]
+        // equal dates written differently: first wins
+        [DataRow("2024-01-01", "20240101", "2024-01-01")]
+        [DataRow("20240101", "2024-01-01", "20240101")]
+        [DataRow("2023-12", "202401", "202401")]
+        [DataRow("202401", "2023-12", "202401")]
+        // not all dates (invalid month, mixed separator, invalid day): natural order
+        [DataRow("2024-99", "202401", "202401")]
+        [DataRow("202401", "2024-99", "202401")]
+        [DataRow("2024-0101", "2024-01-02", "2024-0101")]
+        [DataRow("2024-01-02", "2024-0101", "2024-0101")]
+        [DataRow("2024-01-32", "20240102", "20240102")]
+        [DataRow("20240102", "2024-01-32", "20240102")]
+        [DataRow("2024-02\n", "202401", "202401")] // trailing newline: not a date
+        [DataRow("202401", "2024-02\n", "202401")]
+        [DataRow("2024-01-2\u0661", "20240122", "20240122")] // non-ASCII digit: not a date
+        [DataRow("20240122", "2024-01-2\u0661", "20240122")]
+        // natural order: text compared ignoring case
+        [DataRow("draft", "Final", "Final")]
+        [DataRow("Final", "draft", "Final")]
+        [DataRow("alpha", "Beta", "Beta")]
+        // missing version ranks lowest
+        [DataRow(null, "0.0.1", "0.0.1")]
+        [DataRow("0.0.1", null, "0.0.1")]
+        [DataRow("", "0.0.1", "0.0.1")]
+        [DataRow("0.0.1", "", "0.0.1")]
         [DataTestMethod]
         public void SelectBestCandidatePicksHighestVersion(string version1, string version2, string expectedResult)
         {
@@ -77,6 +126,157 @@ namespace Firely.Fhir.Packages.Tests
 
             var best = FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.HasSnapshot);
             best.HasSnapshot.Should().BeTrue(because: "the preferred item should win the tie-break");
+        }
+
+        [TestMethod]
+        public void SelectBestCandidatePicksHighestOfThreeSemVerInAnyOrder()
+        {
+            var versions = new[] { "0.9.0", "1.0.0-ballot", "1.0.0" };
+            foreach (var order in new[] { new[] { 0, 1, 2 }, new[] { 2, 1, 0 }, new[] { 1, 0, 2 } })
+            {
+                var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
+                FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("1.0.0");
+            }
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateOrdersWholeSetNaturallyWhenOneVersionIsNotNumeric()
+        {
+            var versions = new[] { "1.9", "1.10", "0draft" };
+            foreach (var order in new[] { new[] { 0, 1, 2 }, new[] { 0, 2, 1 }, new[] { 1, 0, 2 }, new[] { 1, 2, 0 }, new[] { 2, 0, 1 }, new[] { 2, 1, 0 } })
+            {
+                var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
+                FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("1.10");
+            }
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateRanksNaturallyWhenSemVerSetContainsNonVersion()
+        {
+            var versions = new[] { "9.0.0", "10.0.0", "0-x" };
+            foreach (var order in new[] { new[] { 0, 1, 2 }, new[] { 0, 2, 1 }, new[] { 1, 0, 2 }, new[] { 1, 2, 0 }, new[] { 2, 0, 1 }, new[] { 2, 1, 0 } })
+            {
+                var candidates = order.Select(i => new { Version = versions[i] }).ToArray();
+                FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("10.0.0");
+            }
+        }
+
+        [TestMethod]
+        public void SelectBestCandidatePicksOneDotTenOverOneDotNine()
+        {
+            var candidates = new[] { new { Version = "1.9" }, new { Version = "1.10" } };
+            FileIndex.SelectBestCandidate(candidates, c => c.Version).Version.Should().Be("1.10");
+        }
+
+        [DataRow("1.9", "alpha", "1.10", "alpha", "1.9")]
+        [DataRow("20241231", "integer", "202501", "integer", "20241231")]
+        [DataRow("20241231", null, "202501", null, "202501")] // undeclared: dates
+        [DataRow("1.0.0-ballot", "natural", "1.0.0", "natural", "1.0.0-ballot")]
+        [DataRow("1.9", "alpha", "1.10", null, "1.9")]
+        [DataRow("1.9", "alpha", "1.10", "natural", "1.10")] // conflict: inferred
+        [DataRow("1.9", "semver", "1.10", "semver", "1.10")] // misfit: inferred
+        [DataRow("1.0.0-ballot", "date", "1.0.0", "date", "1.0.0")] // misfit: inferred
+        [DataRow("1.9", "Semver", "1.10", "Semver", "1.10")] // unknown code: inferred
+        [DataTestMethod]
+        public void SelectBestCandidateHonoursDeclaredVersionAlgorithm(string v1, string? a1, string v2, string? a2, string expected)
+        {
+            var candidates = new[] { (Version: v1, Algorithm: a1), (Version: v2, Algorithm: a2) };
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.Algorithm, _ => false).Version.Should().Be(expected);
+        }
+
+        [DataRow(true)]
+        [DataRow(false)]
+        [DataTestMethod]
+        public void SelectBestCandidatePrefersPreferredAmongIntegerEqualVersions(bool preferredFirst)
+        {
+            var candidates = new[]
+            {
+                new { Version = "007", Preferred = preferredFirst },
+                new { Version = "7", Preferred = !preferredFirst }
+            };
+            var best = FileIndex.SelectBestCandidate(candidates, c => c.Version, _ => "integer", c => c.Preferred);
+            best.Preferred.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateCountsDeclarationOfCandidateWithoutVersion()
+        {
+            var candidates = new[]
+            {
+                (Version: (string?)null, Algorithm: (string?)"alpha"),
+                (Version: "1.9", Algorithm: null),
+                (Version: "1.10", Algorithm: null)
+            };
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.Algorithm, _ => false).Version.Should().Be("1.9");
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateThrowsOnEmptyCandidatesInEveryOverload()
+        {
+            var none = new (string? Version, string? Algorithm, bool Preferred)[0];
+            FluentActions.Invoking(() => FileIndex.SelectBestCandidate(none, c => c.Version)).Should().Throw<System.InvalidOperationException>();
+            FluentActions.Invoking(() => FileIndex.SelectBestCandidate(none, c => c.Version, c => c.Preferred)).Should().Throw<System.InvalidOperationException>();
+            FluentActions.Invoking(() => FileIndex.SelectBestCandidate(none, c => c.Version, c => c.Algorithm, c => c.Preferred)).Should().Throw<System.InvalidOperationException>();
+        }
+
+        [DataRow(0)]
+        [DataRow(1)]
+        [DataRow(2)]
+        [DataTestMethod]
+        public void SelectBestCandidateTiesWhenEveryVersionIsMissingAndPreferredWins(int preferredIndex)
+        {
+            var versions = new string?[] { null, "", null };
+            var candidates = versions.Select((v, i) => new { Version = v, Index = i }).ToArray();
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.Index == preferredIndex).Index.Should().Be(preferredIndex);
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateReturnsFirstWhenEveryVersionIsMissingAndNoneIsPreferred()
+        {
+            var candidates = new[] { new { Version = (string?)"", Index = 0 }, new { Version = (string?)null, Index = 1 } };
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, _ => false).Index.Should().Be(0);
+            FileIndex.SelectBestCandidate(candidates.Reverse().ToArray(), c => c.Version, _ => false).Index.Should().Be(1);
+        }
+
+        [DataRow("20240101", "2024-01-01", null)]
+        [DataRow("2024-01-01", "20240101", null)]
+        [DataRow("007", "7", "integer")]
+        [DataRow("7", "007", "integer")]
+        [DataRow("1.0.0", "1.0.0", null)]
+        [DataTestMethod]
+        public void SelectBestCandidateReturnsFirstOfTiedHighestWhenNoneIsPreferred(string v1, string v2, string? algorithm)
+        {
+            // the lower version listed first must not win
+            var low = algorithm == "integer" ? "6" : v1.StartsWith("2024") ? "20231231" : "0.9.0";
+            var candidates = new[] { new { Version = low, Index = 0 }, new { Version = v1, Index = 1 }, new { Version = v2, Index = 2 } };
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, _ => algorithm, _ => false).Index.Should().Be(1);
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, _ => false).Index.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void SelectBestCandidateUsesPreferredFilterWhenDatesAreEqualButWrittenDifferently()
+        {
+            var candidates = new[]
+            {
+                new { Version = "2024-01-01", HasSnapshot = false },
+                new { Version = "20240101", HasSnapshot = true }
+            };
+
+            FileIndex.SelectBestCandidate(candidates, c => c.Version, c => c.HasSnapshot).Version.Should().Be("20240101");
+        }
+
+        [TestMethod]
+        public void ResolveBestCandidateByCanonicalPrefersSnapshotOnEqualVersion()
+        {
+            var url = "http://fire.ly/StructureDefinition/tie";
+            var index = new FileIndex();
+            index.AddRange(new List<PackageFileReference>
+            {
+                new PackageFileReference("nosnap.json") { Canonical = url, Version = "1.0.0", HasSnapshot = false },
+                new PackageFileReference("snap.json") { Canonical = url, Version = "1.0.0", HasSnapshot = true }
+            });
+
+            index.ResolveBestCandidateByCanonical(url)!.FileName.Should().Be("snap.json");
         }
 
         [TestMethod]

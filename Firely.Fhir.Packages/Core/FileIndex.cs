@@ -101,7 +101,7 @@ public class FileIndex : List<PackageFileReference>
     /// <summary>
     /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
     /// When multiple items share the highest version, the first is returned.
-    /// Non-parseable version strings (e.g. date-based) are treated as <c>0.0.0</c>.
+    /// Versions are ordered by SemVer when all versions are SemVer, else by date when all are dates, else by natural order; a missing version ranks lowest.
     /// </summary>
     public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion) =>
         SelectBestCandidate(candidates, getVersion, _ => false);
@@ -109,21 +109,82 @@ public class FileIndex : List<PackageFileReference>
     /// <summary>
     /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
     /// When multiple items share the highest version, <paramref name="preferred"/> is used as a tie-breaker.
-    /// Non-parseable version strings (e.g. date-based) are treated as <c>0.0.0</c>.
+    /// Versions are ordered by SemVer when all versions are SemVer, else by date when all are dates, else by natural order; a missing version ranks lowest.
     /// </summary>
-    public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion, Func<T, bool> preferred)
+    public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion, Func<T, bool> preferred) =>
+        SelectBestCandidate(candidates, getVersion, _ => null, preferred);
+
+    /// <summary>
+    /// Selects the best candidate from a list of items by choosing the one with the highest resource version.
+    /// When multiple items share the highest version, <paramref name="preferred"/> is used as a tie-breaker.
+    /// Versions are ordered by the declared version algorithm when it applies, else by SemVer when all versions are SemVer,
+    /// else by date when all are dates, else by natural order; a missing version ranks lowest.
+    /// </summary>
+    /// <param name="candidates">The items to choose from.</param>
+    /// <param name="getVersion">Returns the item's resource version, or null when it has none.</param>
+    /// <param name="getVersionAlgorithm">Returns the item's declared FHIR version-algorithm code ("semver", "integer", "alpha", "date" or "natural"), or null.
+    /// The declared algorithm is used only when all declared values agree and every version fits it; otherwise the order is inferred.</param>
+    /// <param name="preferred">Tie-breaker among items sharing the highest version.</param>
+    public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion, Func<T, string?> getVersionAlgorithm, Func<T, bool> preferred)
     {
-        var highestVersioned = candidates
-            .GroupBy(item => Version.TryParse(getVersion(item), out var v) ? v : new Version(0, 0, 0))
-            .OrderByDescending(g => g.Key)
-            .First()
-            .ToList();
+        var items = candidates.ToList();
+        return SelectBestCandidateCore(items, getVersion,
+            versions => CanonicalReferenceHandling.ResolverFor(versions, items.Select(getVersionAlgorithm)), preferred);
+    }
 
-        if (highestVersioned.Count == 1)
-            return highestVersioned[0];
+    // Shared selection core; resolverFor maps the present versions to the resolver that orders them.
+    internal static T SelectBestCandidateCore<T>(List<T> items, Func<T, string?> getVersion,
+        Func<IReadOnlyList<string>, ICanonicalVersionResolver> resolverFor, Func<T, bool> preferred)
+    {
+        var versioned = pairWithVersions(items, getVersion);
 
-        var preferredItems = highestVersioned.Where(preferred).ToList();
-        return preferredItems.Count > 0 ? preferredItems[0] : highestVersioned[0];
+        // Without any version there is nothing to order, so every candidate ties.
+        if (versioned.Count == 0)
+            return preferredOrFirst(items, preferred);
+
+        var versions = versioned.Select(entry => entry.Version).ToList();
+        var resolver = resolverFor(versions);
+
+        var highestVersion = highestOf(versions, resolver);
+        var withHighestVersion = itemsAtVersion(versioned, highestVersion, resolver);
+
+        return preferredOrFirst(withHighestVersion, preferred);
+
+        static List<(T Item, string Version)> pairWithVersions(
+            List<T> items, Func<T, string?> getVersion)
+        {
+            var versioned = new List<(T Item, string Version)>();
+            foreach (var item in items)
+            {
+                var version = getVersion(item);
+                if (!string.IsNullOrEmpty(version))
+                    versioned.Add((item, version));
+            }
+            return versioned;
+        }
+
+        static string highestOf(List<string> versions, ICanonicalVersionResolver resolver) =>
+            versions.Aggregate((max, next) => resolver.Compare(next, max) > 0 ? next : max);
+
+        static List<T> itemsAtVersion(
+            List<(T Item, string Version)> versioned,
+            string version,
+            ICanonicalVersionResolver resolver) =>
+            versioned
+                .Where(entry => resolver.Compare(entry.Version, version) == 0)
+                .Select(entry => entry.Item)
+                .ToList();
+
+        // Throws InvalidOperationException when there are no items.
+        static T preferredOrFirst(List<T> items, Func<T, bool> preferred)
+        {
+            foreach (var item in items)
+            {
+                if (preferred(item))
+                    return item;
+            }
+            return items.First();
+        }
     }
 
     private static PackageFileReference resolveFromMultipleCandidates(List<PackageFileReference> candidates) =>
