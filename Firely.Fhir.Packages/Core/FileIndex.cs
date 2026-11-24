@@ -128,6 +128,14 @@ public class FileIndex : List<PackageFileReference>
     public static T SelectBestCandidate<T>(IEnumerable<T> candidates, Func<T, string?> getVersion, Func<T, string?> getVersionAlgorithm, Func<T, bool> preferred)
     {
         var items = candidates.ToList();
+        return SelectBestCandidateCore(items, getVersion,
+            versions => CanonicalReferenceHandling.ResolverFor(versions, items.Select(getVersionAlgorithm)), preferred);
+    }
+
+    // Shared selection core; resolverFor maps the present versions to the resolver that orders them.
+    internal static T SelectBestCandidateCore<T>(List<T> items, Func<T, string?> getVersion,
+        Func<IReadOnlyList<string>, ICanonicalVersionResolver> resolverFor, Func<T, bool> preferred)
+    {
         var versioned = versionedItems(items, getVersion);
 
         // Without any version there is nothing to order, so every candidate ties.
@@ -135,8 +143,7 @@ public class FileIndex : List<PackageFileReference>
             return preferredOrFirst(items, preferred);
 
         var versions = versioned.Select(entry => entry.Version).ToList();
-        var declaredAlgorithms = items.Select(getVersionAlgorithm);
-        var resolver = CanonicalReferenceHandling.ResolverFor(versions, declaredAlgorithms);
+        var resolver = resolverFor(versions);
 
         var highestVersion = highestOf(versions, resolver);
         var withHighestVersion = itemsWithVersion(versioned, highestVersion, resolver);

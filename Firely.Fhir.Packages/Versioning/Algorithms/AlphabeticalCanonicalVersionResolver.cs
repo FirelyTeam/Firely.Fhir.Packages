@@ -15,7 +15,7 @@ internal class AlphabeticalCanonicalVersionResolver : ICanonicalVersionResolver
 {
     public VersionAlgorithm Algorithm => VersionAlgorithm.Alpha;
 
-    public bool MatchThisAlgorithm(IReadOnlyList<string> versions) => true;
+    public bool Fits(IReadOnlyList<string> versions) => true;
 
     public int Compare(string a, string b) => StringComparer.OrdinalIgnoreCase.Compare(a, b);
 }

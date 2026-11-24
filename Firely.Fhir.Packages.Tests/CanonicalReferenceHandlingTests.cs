@@ -14,7 +14,7 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow(new[] { "1.0.0", "draft" }, false)]
         [DataTestMethod]
         public void SemVer_matches_only_when_every_version_is_strict_semver(string[] versions, bool expected)
-            => new SemVerCanonicalVersionResolver().MatchThisAlgorithm(versions).Should().Be(expected);
+            => new SemVerCanonicalVersionResolver().Fits(versions).Should().Be(expected);
 
         [TestMethod]
         public void SemVer_compares_numerically_and_ranks_release_above_prerelease()
@@ -33,7 +33,7 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow(new[] { "1", "" }, false)]
         [DataTestMethod]
         public void Integer_matches_only_non_empty_ascii_digits(string[] versions, bool expected)
-            => new IntegerCanonicalVersionResolver().MatchThisAlgorithm(versions).Should().Be(expected);
+            => new IntegerCanonicalVersionResolver().Fits(versions).Should().Be(expected);
 
         [DataRow("9", "10", -1)]
         [DataRow("0010", "9", 1)]
@@ -45,7 +45,7 @@ namespace Firely.Fhir.Packages.Tests
 
         [TestMethod]
         public void Natural_matches_anything()
-            => new NaturalCanonicalVersionResolver().MatchThisAlgorithm(new[] { "1.9", "draft", "2024-01-01", "" }).Should().BeTrue();
+            => new NaturalCanonicalVersionResolver().Fits(new[] { "1.9", "draft", "2024-01-01", "" }).Should().BeTrue();
 
         [DataRow("1.10", "1.9", 1)]
         [DataRow("4.0.1.2", "4.0.1", 1)]
@@ -72,7 +72,7 @@ namespace Firely.Fhir.Packages.Tests
         [DataRow(new[] { "٢٠٢٤" }, false)]
         [DataTestMethod]
         public void Date_matches_only_valid_dates_in_supported_formats(string[] versions, bool expected)
-            => new DateCanonicalVersionResolver().MatchThisAlgorithm(versions).Should().Be(expected);
+            => new DateCanonicalVersionResolver().Fits(versions).Should().Be(expected);
 
         [TestMethod]
         public void Date_orders_chronologically_and_ignores_separator_style()
@@ -86,7 +86,7 @@ namespace Firely.Fhir.Packages.Tests
         public void Alpha_matches_anything_and_compares_case_insensitively()
         {
             var r = new AlphabeticalCanonicalVersionResolver();
-            r.MatchThisAlgorithm(new[] { "1.9", "draft", "2024-01-01" }).Should().BeTrue();
+            r.Fits(new[] { "1.9", "draft", "2024-01-01" }).Should().BeTrue();
             r.Compare("draft", "DRAFT").Should().Be(0);
             r.Compare("b", "a").Should().BePositive();
         }

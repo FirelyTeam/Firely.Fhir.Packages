@@ -16,7 +16,7 @@ internal class IntegerCanonicalVersionResolver : ICanonicalVersionResolver
 {
     public VersionAlgorithm Algorithm => VersionAlgorithm.Integer;
 
-    public bool MatchThisAlgorithm(IReadOnlyList<string> versions) => versions.All(v => v.Length > 0 && v.All(IsAsciiDigit));
+    public bool Fits(IReadOnlyList<string> versions) => versions.All(v => v.Length > 0 && v.All(IsAsciiDigit));
 
     public int Compare(string a, string b) => CompareDigits(a.AsSpan(), b.AsSpan());
 

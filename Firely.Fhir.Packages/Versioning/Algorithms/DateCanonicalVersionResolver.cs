@@ -18,7 +18,7 @@ internal class DateCanonicalVersionResolver : ICanonicalVersionResolver
 
     public VersionAlgorithm Algorithm => VersionAlgorithm.Date;
 
-    public bool MatchThisAlgorithm(IReadOnlyList<string> versions) => versions.All(DateVersion.IsMatch);
+    public bool Fits(IReadOnlyList<string> versions) => versions.All(DateVersion.IsMatch);
 
     public int Compare(string a, string b) => string.CompareOrdinal(digitsOf(a), digitsOf(b));
 

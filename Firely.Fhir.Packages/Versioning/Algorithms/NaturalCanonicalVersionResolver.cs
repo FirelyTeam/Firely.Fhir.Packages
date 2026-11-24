@@ -15,7 +15,7 @@ internal class NaturalCanonicalVersionResolver : ICanonicalVersionResolver
 {
     public VersionAlgorithm Algorithm => VersionAlgorithm.Natural;
 
-    public bool MatchThisAlgorithm(IReadOnlyList<string> versions) => true;
+    public bool Fits(IReadOnlyList<string> versions) => true;
 
     // Compares runs of ASCII digits numerically and other runs case-insensitively; a digit run ranks below text, a shorter prefix ranks lower.
     public int Compare(string a, string b)

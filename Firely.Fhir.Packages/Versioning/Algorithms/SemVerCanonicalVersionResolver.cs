@@ -6,6 +6,7 @@
  * available at https://github.com/FirelyTeam/Firely.Fhir.Packages/blob/master/LICENSE
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +16,12 @@ internal class SemVerCanonicalVersionResolver : ICanonicalVersionResolver
 {
     public VersionAlgorithm Algorithm => VersionAlgorithm.SemVer;
 
-    public bool MatchThisAlgorithm(IReadOnlyList<string> versions) => versions.All(v => SemanticVersioning.Version.TryParse(v, out _));
+    public bool Fits(IReadOnlyList<string> versions) => versions.All(v => SemanticVersioning.Version.TryParse(v, out _));
 
-    public int Compare(string a, string b) => new SemanticVersioning.Version(a).CompareTo(new SemanticVersioning.Version(b));
+    public int Compare(string a, string b) => parse(a, nameof(a)).CompareTo(parse(b, nameof(b)));
+
+    private static SemanticVersioning.Version parse(string version, string paramName) =>
+        SemanticVersioning.Version.TryParse(version, out var parsed)
+            ? parsed
+            : throw new ArgumentException($"'{version}' is not a valid SemVer version.", paramName);
 }
