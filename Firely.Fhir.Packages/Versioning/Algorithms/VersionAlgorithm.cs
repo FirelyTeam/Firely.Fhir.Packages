@@ -11,7 +11,8 @@ namespace Firely.Fhir.Packages;
 internal enum VersionAlgorithm
 {
     SemVer,
-    Numeric,
+    Integer,
+    Alpha,
     Date,
-    Alpha
+    Natural
 }

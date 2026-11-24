@@ -13,15 +13,38 @@ namespace Firely.Fhir.Packages;
 
 internal static class CanonicalReferenceHandling
 {
-    // Tried in order; the alphabetical resolver matches anything, so it stays last.
-    private static readonly ICanonicalVersionResolver[] VersionResolvers =
-    [
-        new SemVerCanonicalVersionResolver(),
-        new NumericCanonicalVersionResolver(),
-        new DateCanonicalVersionResolver(),
-        new AlphabeticalCanonicalVersionResolver()
-    ];
+    internal static readonly IReadOnlyDictionary<VersionAlgorithm, ICanonicalVersionResolver> VersionResolvers =
+        new ICanonicalVersionResolver[]
+        {
+            new SemVerCanonicalVersionResolver(),
+            new IntegerCanonicalVersionResolver(),
+            new AlphabeticalCanonicalVersionResolver(),
+            new DateCanonicalVersionResolver(),
+            new NaturalCanonicalVersionResolver()
+        }.ToDictionary(r => r.Algorithm);
+
+    // Inference order; the natural resolver matches anything, so it stays last.
+    private static readonly VersionAlgorithm[] InferenceOrder = [VersionAlgorithm.SemVer, VersionAlgorithm.Date, VersionAlgorithm.Natural];
+
+    // FHIR version-algorithm codes (http://hl7.org/fhir/version-algorithm).
+    private static readonly Dictionary<string, VersionAlgorithm> AlgorithmCodes = new()
+    {
+        ["semver"] = VersionAlgorithm.SemVer,
+        ["integer"] = VersionAlgorithm.Integer,
+        ["alpha"] = VersionAlgorithm.Alpha,
+        ["date"] = VersionAlgorithm.Date,
+        ["natural"] = VersionAlgorithm.Natural
+    };
 
     internal static ICanonicalVersionResolver ResolverFor(IReadOnlyList<string> versions) =>
-        VersionResolvers.First(r => r.MatchThisAlgorithm(versions));
+        InferenceOrder.Select(a => VersionResolvers[a]).First(r => r.MatchThisAlgorithm(versions));
+
+    // Uses the declared algorithm when all declarations agree on a known code that fits every version; otherwise infers.
+    internal static ICanonicalVersionResolver ResolverFor(IReadOnlyList<string> versions, IEnumerable<string?> declaredAlgorithms)
+    {
+        var declared = declaredAlgorithms.Where(d => !string.IsNullOrEmpty(d)).Distinct(System.StringComparer.Ordinal).Take(2).ToList();
+        return declared.Count == 1 && AlgorithmCodes.TryGetValue(declared[0]!, out var algorithm) && VersionResolvers[algorithm].MatchThisAlgorithm(versions)
+            ? VersionResolvers[algorithm]
+            : ResolverFor(versions);
+    }
 }
