@@ -480,6 +480,12 @@ namespace Firely.Fhir.Packages
         public string? FhirVersion;
 
         /// <summary>
+        /// The declared version algorithm of a file, as written (R5 versionAlgorithm[x] or the R4/R4B artifact-versionAlgorithm extension)
+        /// </summary>
+        [JsonProperty("versionAlgorithm")]
+        public string? VersionAlgorithm;
+
+        /// <summary>
         /// True, if the file is a StructureDefinition resource, which has a snapshot.
         /// False if the file is a StructureDefinition resource and doesn't contain a snapshot.
         /// Null if the file isn't a StructureDefinition
@@ -531,6 +537,7 @@ namespace Firely.Fhir.Packages
             other.Kind = Kind;
             other.Type = Type;
             other.FhirVersion = FhirVersion;
+            other.VersionAlgorithm = VersionAlgorithm;
             other.HasExpansion = HasExpansion;
             other.HasSnapshot = HasSnapshot;
             other.ValueSetCodeSystem = ValueSetCodeSystem;

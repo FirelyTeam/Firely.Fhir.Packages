@@ -188,5 +188,5 @@ public class FileIndex : List<PackageFileReference>
     }
 
     private static PackageFileReference resolveFromMultipleCandidates(List<PackageFileReference> candidates) =>
-        SelectBestCandidate(candidates, f => f.Version, f => f.HasSnapshot == true || f.HasExpansion == true);
+        SelectBestCandidate(candidates, f => f.Version, f => f.VersionAlgorithm, f => f.HasSnapshot == true || f.HasExpansion == true);
 }

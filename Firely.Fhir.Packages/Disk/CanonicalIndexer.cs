@@ -20,7 +20,7 @@ namespace Firely.Fhir.Packages
 
     public static class CanonicalIndexer
     {
-        public const int FIRELY_INDEX_VERSION = 8;
+        public const int FIRELY_INDEX_VERSION = 9;
         public const int INDEX_JSON_VERSION = 1;
 
         /// <summary>
@@ -119,6 +119,7 @@ namespace Firely.Fhir.Packages
                 Kind = resource?.getString("kind"),
                 Type = resource?.getString("type"),
                 FhirVersion = resource?.getString("fhirVersion"),
+                VersionAlgorithm = resource?.getVersionAlgorithm(),
                 HasSnapshot = resource?.checkForSnapshot(),
                 HasExpansion = resource?.checkForExpansion(),
                 ValueSetCodeSystem = resource?.getCodeSystemFromValueSet(),
@@ -152,6 +153,14 @@ namespace Firely.Fhir.Packages
             if (node is null) return null;
             var decendant = node.findFirstDescendant(expression);
             return decendant?.Text;
+        }
+
+        // R5 versionAlgorithm[x] wins over the R4/R4B artifact-versionAlgorithm extension; stored raw.
+        private static string? getVersionAlgorithm(this ISourceNode node)
+        {
+            var extension = node.Children("extension").FirstOrDefault(e => e.getString("url") == "http://hl7.org/fhir/StructureDefinition/artifact-versionAlgorithm");
+            return node.getString("versionAlgorithmString") ?? node.getString("versionAlgorithmCoding.code")
+                ?? extension?.getString("valueString") ?? extension?.getString("valueCoding.code");
         }
 
         private static IEnumerable<string> getRelativePaths(string folder, IEnumerable<string> paths)
